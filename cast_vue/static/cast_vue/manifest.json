@@ -1,13 +1,13 @@
 {
   "js/main.css": {
-    "file": "main-ce10609f.css",
+    "file": "cast_vue/main-ce10609f.css",
     "src": "js/main.css"
   },
   "js/main.js": {
     "css": [
-      "main-ce10609f.css"
+      "cast_vue/main-ce10609f.css"
     ],
-    "file": "main-60419ecd.js",
+    "file": "cast_vue/main-60419ecd.js",
     "isEntry": true,
     "src": "js/main.js"
   }
