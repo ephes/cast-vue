@@ -1,10 +1,12 @@
 <script setup>
 import Counter from "./Counter.vue"
+import Page from "./Page.vue"
 </script>
 
 <template>
-    <h1>{{message}}</h1>
+    <h2>asdf</h2>
     <counter />
+    <page />
 </template>
  
 <script>
