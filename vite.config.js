@@ -18,7 +18,7 @@ module.exports = {
     },
   },
   resolve: {
-    extensions: ['.js', '.json'],
+    extensions: ['.js', '.json', '.ts'],
   },
   build: {
     outDir: resolve('./cast_vue/static/dist'),
@@ -28,7 +28,7 @@ module.exports = {
     target: 'es2015',
     rollupOptions: {
       input: {
-        main: resolve('./cast_vue/static/src/js/main.js'),
+        main: resolve('./cast_vue/static/src/js/main.ts'),
       },
       output: {
         chunkFileNames: undefined,
