@@ -16,6 +16,7 @@
     <script id="initial-value" type="application/json">256</script>
     <script id="base-url" type="application/json">"{{ request.path }}"</script>
     <script id="blog-api-url" type="application/json">"../api/wagtail/pages/{{ page.pk }}"</script>
+    <script id="blog-post-list-api-url" type="application/json">"../api/wagtail/pages?child_of={{ page.pk }}"</script>
   </head>
   <body>
     <h1>This is still Django...</h1>

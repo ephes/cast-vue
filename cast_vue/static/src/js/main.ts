@@ -2,7 +2,7 @@ import '../css/styles.css';
 
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from "vue-router";
-import PostList from "./components/PostList.vue";
+import LoadPostList from "./components/LoadPostList.vue";
 import Page from "./components/Page.vue";
 import Counter from "./components/Counter.vue";
 import Message from "./components/Message.vue";
@@ -13,7 +13,7 @@ const routes = [
     {
         path: "/",
         name: "PostList",
-        component: PostList,
+        component: LoadPostList,
     },
     {
         path: "/page",
