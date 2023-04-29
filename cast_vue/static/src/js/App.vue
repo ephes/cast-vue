@@ -8,7 +8,8 @@ import { useRouter } from 'vue-router';
     The header...<br />
   </header>
   <nav>
-    <router-link to="/post-list">PostList</router-link> |
+    <router-link to="/">Blog</router-link> |
+    <router-link to="/page">Page</router-link> |
     <router-link to="/counter">Counter</router-link> | 
     <router-link to="/message">Message</router-link> <br />
     The navigation
