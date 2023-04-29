@@ -1,18 +1,1 @@
 {% extends "./base.html" %}
-{% block main %}
-<main>
-  <script id="vue-message" type="application/json">"Foo bar bazzzz?"</script>
-  <script id="page-pk" type="application/json">{{ page.pk }}</script>
-  <script id="initial-value" type="application/json">256</script>
-
-  <p>This page has been generated from a Django template foo.</p>
-  <p>The CSS was loaded by Vite.</p>
-  <p>Everything inside the box was rendered by Vue.</p>
-  <p>Vite is a way to integrate Vue into an existing Django project.</p>
-  
-  <br>
-  
-  <div id="app"> 
-  </div>
-</main>
-{% endblock %}

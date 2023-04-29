@@ -1,21 +1,29 @@
-<script setup>
-import Counter from "./Counter.vue"
-import Page from "./Page.vue"
+<script setup lang="ts">
+import { useRouter } from 'vue-router';
 </script>
 
 <template>
-    <h2>asdf</h2>
-    <counter />
-    <page />
+  <header>
+    <h1>Cast Vue Theme!</h1>
+    The header...<br />
+  </header>
+  <nav>
+    <router-link to="/post-list">PostList</router-link> |
+    <router-link to="/counter">Counter</router-link> | 
+    <router-link to="/message">Message</router-link> <br />
+    The navigation
+  </nav>
+  <main>
+    <router-view></router-view>
+  </main>
 </template>
  
-<script>
+<script lang="ts">
 export default {
-  components: { Counter },
   data() {
     return {
       // message: "Hi from App.vue",
-      message: JSON.parse(document.getElementById("vue-message").textContent),
+      // message: JSON.parse(document.getElementById("vue-message").textContent),
     };
   },
 };
