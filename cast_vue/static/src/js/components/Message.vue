@@ -1,3 +1,6 @@
+<script setup lang="ts">
+</script>
+
 <template>
     <h1>Hello from Message Component!</h1>
     {{ message }}

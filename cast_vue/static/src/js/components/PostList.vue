@@ -1,11 +1,11 @@
-<script setup>
+<script setup lang="ts">
 </script>
 
 <template>
     <h1>Some Title</h1>
 </template>
  
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
