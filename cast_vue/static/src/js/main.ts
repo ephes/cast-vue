@@ -26,7 +26,11 @@ const routes = [
     },
 ];
 
-const baseUrl = JSON.parse(document.getElementById("base-url").textContent);
+let baseUrl = "/";
+const baseUrlElement = document.getElementById("base-url");
+if (baseUrlElement?.textContent) {
+    baseUrl = JSON.parse(baseUrlElement.textContent);
+}
 const router = createRouter({
     history: createWebHistory(baseUrl),
     routes,
