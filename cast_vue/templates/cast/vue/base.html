@@ -1,4 +1,8 @@
 {% load static %}
+{% load django_vite %}
+
+{% vite_hmr_client %}
+{% vite_asset 'js/main.ts' %}
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
