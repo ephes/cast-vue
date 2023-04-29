@@ -3,6 +3,7 @@ import '../css/styles.css';
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from "vue-router";
 import PostList from "./components/PostList.vue";
+import Page from "./components/Page.vue";
 import Counter from "./components/Counter.vue";
 import Message from "./components/Message.vue";
  
@@ -10,9 +11,14 @@ import App from './App.vue';
 
 const routes = [
     {
-        path: "/post-list",
+        path: "/",
         name: "PostList",
         component: PostList,
+    },
+    {
+        path: "/page",
+        name: "Page",
+        component: Page,
     },
     {
         path: "/counter",
