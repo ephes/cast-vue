@@ -18,14 +18,3 @@ import { useRouter } from 'vue-router';
     <router-view></router-view>
   </main>
 </template>
- 
-<script lang="ts">
-export default {
-  data() {
-    return {
-      // message: "Hi from App.vue",
-      // message: JSON.parse(document.getElementById("vue-message").textContent),
-    };
-  },
-};
-</script>
