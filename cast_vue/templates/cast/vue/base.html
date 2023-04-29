@@ -14,6 +14,11 @@
     <script id="vue-message" type="application/json">"Foo bar bazzzz?"</script>
     <script id="page-pk" type="application/json">{{ page.pk }}</script>
     <script id="initial-value" type="application/json">256</script>
+    <script id="base-url" type="application/json">"{{ request.path }}"</script>
   </head>
-  <body id="app"></body>
+  <body>
+    <h1>This is still Django...</h1>
+    <div id="app">
+    </div>
+  </body>
 </html>
