@@ -1,14 +1,14 @@
 {
-  "js/main.css": {
+  "js/cast_vue/main.css": {
     "file": "main-7eaa8c36.css",
-    "src": "js/main.css"
+    "src": "js/cast_vue/main.css"
   },
-  "js/main.ts": {
+  "js/cast_vue/main.ts": {
     "css": [
       "main-7eaa8c36.css"
     ],
     "file": "main-7bec5ed2.js",
     "isEntry": true,
-    "src": "js/main.ts"
+    "src": "js/cast_vue/main.ts"
   }
 }
