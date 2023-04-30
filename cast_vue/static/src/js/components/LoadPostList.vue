@@ -2,7 +2,7 @@
   <div>
       <p v-if="isLoading">Loading data...</p>
       <div v-else>
-        <post-list :blog="blog" :post-list="postList"/>
+        <post-list :blog="blog" :posts="postsFromApi"/>
       </div>
   </div>
 </template>
@@ -10,6 +10,8 @@
 <script lang="ts">
 import { ref, onMounted } from 'vue';
 import PostList from './PostList.vue'
+import { PostsFromApi } from './types';
+
 
 async function fetchElementData(elementId: string) {
     const element = document.getElementById(elementId);
@@ -31,13 +33,13 @@ export default {
     setup() {
         const isLoading = ref(true);
         const blog = ref({});
-        const postList = ref([]);
+        const postsFromApi = ref({} as PostsFromApi);
 
         const fetchData = async () => {
             try {
                 const elements = {
                     "blog-api-url": blog,
-                    "blog-post-list-api-url": postList,
+                    "blog-post-list-api-url": postsFromApi,
                 };
 
                 for (const [key, value] of Object.entries(elements)) {
@@ -45,7 +47,7 @@ export default {
                 }
             }
             catch (error) {
-                console.error('Error fetching blog data from API:', error);
+                console.error('Error fetching blog data from API: ', error);
             } finally {
                 isLoading.value = false;
             }
@@ -55,7 +57,7 @@ export default {
         return {
             isLoading,
             blog,
-            postList
+            postsFromApi
         };
     },
 };
