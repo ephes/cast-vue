@@ -12,11 +12,11 @@ export default {
   props: {
     postList: {
       type: Array,
-      default: []
+      default: () => [],
     },
     blog: {
       type: Object,
-      default: {}
+      default: () => ({}),
     }
   }
 }

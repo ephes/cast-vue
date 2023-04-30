@@ -11,40 +11,41 @@
 import { ref, onMounted } from 'vue';
 import PostList from './PostList.vue'
 
+async function fetchElementData(elementId: string) {
+    const element = document.getElementById(elementId);
+    if (element === null || element.textContent === null) {
+        throw new Error(`Could not find element with id "${elementId}"`);
+    }
+    const url = JSON.parse(element.textContent);
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+}
+
 export default {
     components: {
         PostList
     },
     setup() {
         const isLoading = ref(true);
-        const blog = ref(null);
-        const postList = ref(null);
+        const blog = ref({});
+        const postList = ref([]);
 
         const fetchData = async () => {
             try {
-                const blogUrlElement = document.getElementById("blog-api-url");
-                if (blogUrlElement === null || blogUrlElement.textContent === null) {
-                    throw new Error(`Could not find element with id "blog-api-url"`);
-                }
-                const blogUrl = JSON.parse(blogUrlElement.textContent);
-                const responseBlog = await fetch(blogUrl);
-                if (!responseBlog.ok) {
-                    throw new Error(`HTTP error! status: ${responseBlog.status}`);
-                }
-                blog.value = await responseBlog.json();
+                const elements = {
+                    "blog-api-url": blog,
+                    "blog-post-list-api-url": postList,
+                };
 
-                const postListUrlElement = document.getElementById("blog-post-list-api-url");
-                if (postListUrlElement === null || postListUrlElement.textContent === null) {
-                    throw new Error(`Could not find element with id "blog-post-list-api-url"`);
+                for (const [key, value] of Object.entries(elements)) {
+                    value.value = await fetchElementData(key);
                 }
-                const postListUrl = JSON.parse(postListUrlElement.textContent);
-                const responsePostList = await fetch(postListUrl);
-                if (!responsePostList.ok) {
-                    throw new Error(`HTTP error! status: ${responsePostList.status}`);
-                }
-                postList.value = await responsePostList.json();
-            } catch (error) {
-                console.error('Error fetching blog data:', error);
+            }
+            catch (error) {
+                console.error('Error fetching blog data from API:', error);
             } finally {
                 isLoading.value = false;
             }
