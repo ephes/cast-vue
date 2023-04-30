@@ -26,7 +26,7 @@ const routes = [
         component: Counter,
     },
     {
-        path: "/©message",
+        path: "/message",
         name: "Message",
         component: Message,
     },
