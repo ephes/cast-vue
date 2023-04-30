@@ -70,7 +70,8 @@ export default {
     methods: {
         async changePage(delta: number) {
             this.currentPage += delta;
-            const url = `../api/wagtail/pages?child_of=4&order=-first_published_at&limit=5&offset=${this.currentPage}`;
+            const offset = (this.currentPage - 1) * this.itemsPerPage;
+            const url = `../api/wagtail/pages?child_of=4&order=-first_published_at&limit=5&offset=${offset}`;
             console.log("change page: ", this.currentPage);
             console.log("url: ", url);
             try {
