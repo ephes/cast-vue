@@ -1,4 +1,4 @@
-import '../css/styles.css';
+import '../../css/cast_vue/styles.css';
 
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from "vue-router";

@@ -28,7 +28,7 @@ module.exports = {
     target: 'es2015',
     rollupOptions: {
       input: {
-        main: resolve('./cast_vue/static/src/js/main.ts'),
+        main: resolve('./cast_vue/static/src/js/cast_vue/main.ts'),
       },
       output: {
         chunkFileNames: undefined,
