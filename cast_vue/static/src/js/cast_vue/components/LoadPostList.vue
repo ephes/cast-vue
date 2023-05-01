@@ -18,6 +18,14 @@ import { ref, onMounted } from 'vue';
 import PostList from './PostList.vue'
 import { PostsFromApi } from './types';
 
+function getTexContentFromElement(elementId: string): string {
+    const element = document.getElementById(elementId);
+    if (element === null || element.textContent === null) {
+        throw new Error(`Could not find element with id "${elementId}"`);
+    }
+    return JSON.parse(element.textContent);
+}
+
 async function fetchPostsFromApi(url: string) {
     const response = await fetch(url);
     if (!response.ok) {
@@ -28,11 +36,7 @@ async function fetchPostsFromApi(url: string) {
 
 
 async function fetchElementData(elementId: string) {
-    const element = document.getElementById(elementId);
-    if (element === null || element.textContent === null) {
-        throw new Error(`Could not find element with id "${elementId}"`);
-    }
-    const url = JSON.parse(element.textContent);
+    const url = getTexContentFromElement(elementId);
     console.log(`Fetching data from ${url}`);
     console.log("elementId: ", elementId);
     if (elementId === "blog-post-list-api-url") {
@@ -48,9 +52,10 @@ export default {
         PostList
     },
     data() {
+        const pagesize = Number(getTexContentFromElement("pagination-page-size"));
         return {
             currentPage: 1,
-            itemsPerPage: 5,
+            itemsPerPage: pagesize,
         };
     },
     computed: {
