@@ -72,8 +72,6 @@ export default {
             this.currentPage += delta;
             const offset = (this.currentPage - 1) * this.itemsPerPage;
             const url = `../api/wagtail/pages?child_of=4&type=cast.Post&order=-visible_date&limit=5&offset=${offset}`;
-            console.log("change page: ", this.currentPage);
-            console.log("url: ", url);
             try {
                 this.postsFromApi = await fetchPostsFromApi(url);
                 console.log("postsFromApi: ", this.postsFromApi)
