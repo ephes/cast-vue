@@ -11,25 +11,24 @@
     <meta name="viewport" content="width=device-width" />
   </head>
   <body>
-      <header>The header</header>
-      <nav>The navigation</nav>
-      <main>
-        {{ vue_message|json_script:"vue-message"}}
-        {{ initial_value|json_script:"initial-value"}}
+    <header>The header</header>
+    <nav>The navigation</nav>
+    <main>
+      {{ vue_message|json_script:"vue-message"}}
+      {{ initial_value|json_script:"initial-value"}}
 
-        <h2>{{ django_message }}</h2>
-        <p>This page has been generated from a Django template.</p>
-        <p>The CSS was loaded by Vite.</p>
-        <p>Everything inside the box was rendered by Vue.</p>
-        <p>Vite is a way to integrate Vue into an existing Django project.</p>
-        
-        <br>
-        
-        <div id="app">
-        
-        </div>
-      </main>
-      <footer>The footer</footer>
+      <h2>{{ django_message }}</h2>
+      <p>This page has been generated from a Django template.</p>
+      <p>The CSS was loaded by Vite.</p>
+      <p>Everything inside the box was rendered by Vue.</p>
+      <p>Vite is a way to integrate Vue into an existing Django project.</p>
+
+      <br>
+
+      <div id="app">
+
+      </div>
+    </main>
+    <footer>The footer</footer>
   </body>
 </html>
-

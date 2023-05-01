@@ -17,4 +17,3 @@ export interface PostsFromApi {
     };
     items: [Post];
 }
-  

@@ -6,7 +6,7 @@ import LoadPostList from "./components/LoadPostList.vue";
 import Page from "./components/Page.vue";
 import Counter from "./components/Counter.vue";
 import Message from "./components/Message.vue";
- 
+
 import App from './App.vue';
 
 const routes = [
@@ -40,9 +40,9 @@ if (baseUrlElement?.textContent) {
 const router = createRouter({
     history: createWebHistory(baseUrl),
     routes,
-  }); 
+  });
 
 const app = createApp(App)
 app.use(router);
- 
-app.mount("#app") 
+
+app.mount("#app")

@@ -4,7 +4,7 @@
       <p>{{ post.meta }}</p>
     </div>
   </template>
-  
+
   <script lang="ts">
   import { Post } from './types';
 
@@ -18,4 +18,3 @@
     },
   };
   </script>
-  

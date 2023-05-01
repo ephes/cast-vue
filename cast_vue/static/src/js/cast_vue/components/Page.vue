@@ -6,7 +6,7 @@
         <p v-else>{{ data }}</p>
   </div>
 </template>
- 
+
 <script lang="ts">
 import { ref, onMounted } from 'vue';
 
