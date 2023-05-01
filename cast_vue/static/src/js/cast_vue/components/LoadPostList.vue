@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, Ref, onMounted } from 'vue';
 import PostList from './PostList.vue'
 import { PostsFromApi } from './types';
 
@@ -37,8 +37,6 @@ async function fetchPostsFromApi(url: string) {
 
 async function fetchElementData(elementId: string) {
     const url = getTexContentFromElement(elementId);
-    console.log(`Fetching data from ${url}`);
-    console.log("elementId: ", elementId);
     if (elementId === "blog-post-list-api-url") {
         const postsUrl = url + "&limit=5&offset=0";
         return await fetchPostsFromApi(postsUrl);
@@ -89,16 +87,36 @@ export default {
         const isLoading = ref(true);
         const blog = ref({});
         const postsFromApi = ref({} as PostsFromApi);
+        console.log("blog-post-list-api-url: ", getTexContentFromElement("blog-post-list-api-url"));
+        console.log("wagtail-api-pages-url: ", getTexContentFromElement("wagtail-api-pages-url"));
+        // const wagtailApiUrl = getTexContentFromElement("wagtail-api-pages-url");
+        const blogPk = getTexContentFromElement("blog-pk");
+        const pagesize = Number(getTexContentFromElement("pagination-page-size"));
+        const wagtailApiUrlString = getTexContentFromElement("wagtail-api-pages-url");
+        const wagtailApiUrl = new URL(wagtailApiUrlString);
+        wagtailApiUrl.searchParams.set("child_of", blogPk);
+        wagtailApiUrl.searchParams.set("type", "cast.Post");
+        wagtailApiUrl.searchParams.set("offset", "0");
+        wagtailApiUrl.searchParams.set("limit", pagesize.toString());
+        wagtailApiUrl.searchParams.set("order", "-visible_date");
+        const blogDetailUrl = new URL(wagtailApiUrlString + blogPk + "/");
+        console.log("wagtailApiUrl: ", wagtailApiUrl)
+        console.log("blogDetailUrl: ", blogDetailUrl)
+
 
         const fetchData = async () => {
             try {
-                const elements = {
-                    "blog-api-url": blog,
-                    "blog-post-list-api-url": postsFromApi,
-                };
+                const urlsAndResults: [URL, Ref][] = [
+                    [blogDetailUrl, blog],
+                    [wagtailApiUrl, postsFromApi],
+                ];
 
-                for (const [key, value] of Object.entries(elements)) {
-                    value.value = await fetchElementData(key);
+                for (const [url, refData] of urlsAndResults) {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    refData.value = await response.json();
                 }
             }
             catch (error) {

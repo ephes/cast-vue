@@ -17,7 +17,7 @@
     <script id="pagination-page-size" type="application/json">{{ pagination_page_size }}</script>
     <script id="initial-value" type="application/json">256</script>
     <script id="base-url" type="application/json">"{{ request.path }}"</script>
-    <script id="blog-api-url" type="application/json">"../api/wagtail/pages/{{ page.pk }}"</script>
+    <script id="wagtail-api-pages-url" type="application/json">"{{ request.scheme }}://{{ request.get_host }}/{{ wagtail_api_pages_url }}"</script>
     <script id="blog-post-list-api-url" type="application/json">
       "../api/wagtail/pages?child_of={{ page.pk }}&order=-first_published_at"
     </script>
