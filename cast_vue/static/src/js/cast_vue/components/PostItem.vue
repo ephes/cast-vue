@@ -1,7 +1,7 @@
 <template>
     <div class="post-item">
       <h2>{{ post.title }}</h2>
-      <p>{{ post.meta }}</p>
+      <div v-html="post.html_overview"></div>
     </div>
   </template>
 

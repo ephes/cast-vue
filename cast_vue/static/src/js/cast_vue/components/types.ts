@@ -1,6 +1,8 @@
 export interface Post {
     id: number;
     title: string;
+    html_overview: string;
+    html_detail: string;
     meta: {
         type: string;
         detail_url: string;

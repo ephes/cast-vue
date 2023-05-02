@@ -86,6 +86,7 @@ export default {
         const wagtailApiUrl = new URL(wagtailApiUrlString);
         wagtailApiUrl.searchParams.set("child_of", blogPk);
         wagtailApiUrl.searchParams.set("type", "cast.Post");
+        wagtailApiUrl.searchParams.set("fields", "html_overview,html_detail");
         wagtailApiUrl.searchParams.set("offset", "0");
         wagtailApiUrl.searchParams.set("limit", pagesize.toString());
         wagtailApiUrl.searchParams.set("order", "-visible_date");
