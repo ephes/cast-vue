@@ -26,7 +26,7 @@ function getTexContentFromElement(elementId: string): string {
     return JSON.parse(element.textContent);
 }
 
-async function fetchPostsFromApi(url: string) {
+async function fetchJson(url: URL) {
     const response = await fetch(url);
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -34,16 +34,6 @@ async function fetchPostsFromApi(url: string) {
     return await response.json();
 }
 
-
-async function fetchElementData(elementId: string) {
-    const url = getTexContentFromElement(elementId);
-    if (elementId === "blog-post-list-api-url") {
-        const postsUrl = url + "&limit=5&offset=0";
-        return await fetchPostsFromApi(postsUrl);
-    } else {
-        return await fetchPostsFromApi(url);
-    }
-}
 
 export default {
     components: {
@@ -74,9 +64,10 @@ export default {
         async changePage(delta: number) {
             this.currentPage += delta;
             const offset = (this.currentPage - 1) * this.itemsPerPage;
-            const url = `../api/wagtail/pages?child_of=4&type=cast.Post&order=-visible_date&limit=5&offset=${offset}`;
+            // const url = `../api/wagtail/pages?child_of=4&type=cast.Post&order=-visible_date&limit=5&offset=${offset}`;
+            this.wagtailApiUrl.searchParams.set("offset", offset.toString());
             try {
-                this.postsFromApi = await fetchPostsFromApi(url);
+                this.postsFromApi = await fetchJson(this.wagtailApiUrl);
                 console.log("postsFromApi: ", this.postsFromApi)
             } catch (error) {
                 console.error('Error fetching data from API: ', error);
@@ -84,12 +75,12 @@ export default {
         },
     },
     setup() {
+        // refs for data
         const isLoading = ref(true);
         const blog = ref({});
         const postsFromApi = ref({} as PostsFromApi);
-        console.log("blog-post-list-api-url: ", getTexContentFromElement("blog-post-list-api-url"));
-        console.log("wagtail-api-pages-url: ", getTexContentFromElement("wagtail-api-pages-url"));
-        // const wagtailApiUrl = getTexContentFromElement("wagtail-api-pages-url");
+
+        // prepare api urls
         const blogPk = getTexContentFromElement("blog-pk");
         const pagesize = Number(getTexContentFromElement("pagination-page-size"));
         const wagtailApiUrlString = getTexContentFromElement("wagtail-api-pages-url");
@@ -100,8 +91,6 @@ export default {
         wagtailApiUrl.searchParams.set("limit", pagesize.toString());
         wagtailApiUrl.searchParams.set("order", "-visible_date");
         const blogDetailUrl = new URL(wagtailApiUrlString + blogPk + "/");
-        console.log("wagtailApiUrl: ", wagtailApiUrl)
-        console.log("blogDetailUrl: ", blogDetailUrl)
 
 
         const fetchData = async () => {
@@ -112,11 +101,7 @@ export default {
                 ];
 
                 for (const [url, refData] of urlsAndResults) {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    refData.value = await response.json();
+                    refData.value = await fetchJson(url);
                 }
             }
             catch (error) {
@@ -129,6 +114,7 @@ export default {
         onMounted(fetchData);
         return {
             isLoading,
+            wagtailApiUrl,
             blog,
             postsFromApi,
         };
