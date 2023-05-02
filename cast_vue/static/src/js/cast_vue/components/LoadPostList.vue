@@ -26,7 +26,7 @@ function getTexContentFromElement(elementId: string): string {
     return JSON.parse(element.textContent);
 }
 
-async function fetchJson(url: URL) {
+async function fetchJson(url: URL): Promise<any> {
     const response = await fetch(url);
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
