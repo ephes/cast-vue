@@ -6,8 +6,8 @@
 export default {
   data() {
     return {
-      // count: 23,
-      count: JSON.parse(document.getElementById("initial-value").textContent),
+      count: 23,
+      //count: JSON.parse(document.getElementById("initial-value").textContent),
     };
   },
 };
