@@ -16,19 +16,9 @@ const routes = [
         component: LoadPostList,
     },
     {
-        path: "/page",
-        name: "Page",
-        component: Page,
-    },
-    {
         path: "/counter",
         name: "Counter",
         component: Counter,
-    },
-    {
-        path: "/message",
-        name: "Message",
-        component: Message,
     },
 ];
 
