@@ -11,15 +11,15 @@
     <meta name="viewport" content="width=device-width">
     <title>Cast Vue Template!</title>
     <meta name="description" content="Description of Cast Vue Template">
-    <script id="vue-message" type="application/json">"Foo bar bazzzz?"</script>
-    <script id="page-pk" type="application/json">5</script>
+    <!-- Used for blog api detail url and posts endpoint child_of=blog.pk -->
     <script id="blog-pk" type="application/json">{{ blog.pk }}</script>
+    <!-- Used for pagination -->
     <script id="pagination-page-size" type="application/json">{{ pagination_page_size }}</script>
-    <script id="initial-value" type="application/json">256</script>
+    <!-- Used for vue router base url-->
     <script id="base-url" type="application/json">"{{ request.path }}"</script>
-    <script id="wagtail-api-pages-url" type="application/json">"{{ request.scheme }}://{{ request.get_host }}/{{ wagtail_api_pages_url }}"</script>
-    <script id="blog-post-list-api-url" type="application/json">
-      "../api/wagtail/pages?child_of={{ page.pk }}&order=-first_published_at"
+    <!-- Where to fetch the posts-->
+    <script id="wagtail-api-pages-url" type="application/json">
+      "{{ request.scheme }}://{{ request.get_host }}/{{ wagtail_api_pages_url }}"
     </script>
   </head>
   <body>
