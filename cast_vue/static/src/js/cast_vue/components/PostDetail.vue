@@ -2,6 +2,7 @@
   <div>
     <p v-if="isLoading">Loading data...</p>
     <div v-else>
+      <router-link to="/">Back to Blog</router-link>
       <post-item :post="posts.items[0]"></post-item>
     </div>
   </div>

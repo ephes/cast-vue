@@ -1,16 +1,7 @@
 <template>
-  <header>
-    <h1>Cast Vue Theme!</h1>
-    The header...<br />
-  </header>
-  <nav>
-    <router-link to="/">Blog</router-link> |
-    <router-link to="/counter">Counter</router-link> |
-    The navigation
-  </nav>
-  <main>
+  <div>
     <router-view></router-view>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
