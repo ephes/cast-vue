@@ -21,15 +21,6 @@ import { getTexContentFromElement, getWagtailApiBaseUrl } from './domHelpers';
 import { useDataStore } from '../stores/dataStore';
 
 
-async function fetchJson(url: URL): Promise<any> {
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.json();
-}
-
-
 export default {
     components: {
         PostList
@@ -57,11 +48,12 @@ export default {
     },
     methods: {
         async changePage(delta: number) {
+            const dataStore = useDataStore();
             this.currentPage += delta;
             const offset = (this.currentPage - 1) * this.itemsPerPage;
             this.wagtailApiUrl.searchParams.set("offset", offset.toString());
             try {
-                this.postsFromApi = await fetchJson(this.wagtailApiUrl);
+                this.postsFromApi = await dataStore.fetchJson(this.wagtailApiUrl);
                 console.log("postsFromApi: ", this.postsFromApi)
             } catch (error) {
                 console.error('Error fetching data from API: ', error);
@@ -99,7 +91,6 @@ export default {
 
                 for (const [url, refData] of urlsAndResults) {
                     refData.value = await dataStore.fetchJson(url);
-                    //refData.value = await fetchJson(url);
                 }
             }
             catch (error) {
@@ -115,6 +106,7 @@ export default {
             wagtailApiUrl,
             blog,
             postsFromApi,
+            dataStore,
         };
     },
 };
