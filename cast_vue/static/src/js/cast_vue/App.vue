@@ -1,7 +1,3 @@
-<script setup lang="ts">
-import { useRouter } from 'vue-router';
-</script>
-
 <template>
   <header>
     <h1>Cast Vue Theme!</h1>
@@ -16,3 +12,19 @@ import { useRouter } from 'vue-router';
     <router-view></router-view>
   </main>
 </template>
+
+<script setup lang="ts">
+import { useRouter } from 'vue-router';
+import { getTexContentFromElement } from './components/domHelpers';
+
+const router = useRouter();
+const vueRouteName = getTexContentFromElement("vue-route-name");
+console.log('vueRouteName: ', vueRouteName);
+
+if (vueRouteName == "PostDetail") {
+  const slug = getTexContentFromElement("slug");
+  router.push({name: vueRouteName, params: {slug: slug}})
+} else {
+  router.push({name: vueRouteName})
+}
+</script>

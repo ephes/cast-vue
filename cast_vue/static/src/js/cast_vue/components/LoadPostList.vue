@@ -8,7 +8,7 @@
             <span>Page {{ currentPage }} of {{ totalPages }}</span>
             <button @click="changePage(1)" :disabled="currentPage >= totalPages">Next &raquo;</button>
         </div>
-        <post-list :blog="blog" :posts="postsFromApi"/>
+        <post-list :blog="blog" :posts="postsFromApi" :apiBaseUrl="wagtailApiUrl" />
       </div>
   </div>
 </template>
@@ -17,14 +17,9 @@
 import { ref, Ref, onMounted } from 'vue';
 import PostList from './PostList.vue'
 import { PostsFromApi } from './types';
+import { getTexContentFromElement, getWagtailApiBaseUrl } from './domHelpers';
+import { useDataStore } from '../stores/dataStore';
 
-function getTexContentFromElement(elementId: string): string {
-    const element = document.getElementById(elementId);
-    if (element === null || element.textContent === null) {
-        throw new Error(`Could not find element with id "${elementId}"`);
-    }
-    return JSON.parse(element.textContent);
-}
 
 async function fetchJson(url: URL): Promise<any> {
     const response = await fetch(url);
@@ -83,14 +78,16 @@ export default {
         const blogPk = getTexContentFromElement("blog-pk");
         const pagesize = Number(getTexContentFromElement("pagination-page-size"));
         const wagtailApiUrlString = getTexContentFromElement("wagtail-api-pages-url");
-        const wagtailApiUrl = new URL(wagtailApiUrlString);
-        wagtailApiUrl.searchParams.set("child_of", blogPk);
+        const wagtailApiUrl = getWagtailApiBaseUrl();
         wagtailApiUrl.searchParams.set("type", "cast.Post");
         wagtailApiUrl.searchParams.set("fields", "html_overview,html_detail");
         wagtailApiUrl.searchParams.set("offset", "0");
         wagtailApiUrl.searchParams.set("limit", pagesize.toString());
         wagtailApiUrl.searchParams.set("order", "-visible_date");
         const blogDetailUrl = new URL(wagtailApiUrlString + blogPk + "/");
+
+        // fetch data
+        const dataStore = useDataStore();
 
 
         const fetchData = async () => {
@@ -101,7 +98,8 @@ export default {
                 ];
 
                 for (const [url, refData] of urlsAndResults) {
-                    refData.value = await fetchJson(url);
+                    refData.value = await dataStore.fetchJson(url);
+                    //refData.value = await fetchJson(url);
                 }
             }
             catch (error) {

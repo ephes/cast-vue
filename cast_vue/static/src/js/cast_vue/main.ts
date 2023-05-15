@@ -1,11 +1,11 @@
 import '../../css/cast_vue/styles.css';
 
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import { createRouter, createWebHistory } from "vue-router";
 import LoadPostList from "./components/LoadPostList.vue";
-import Page from "./components/Page.vue";
 import Counter from "./components/Counter.vue";
-import Message from "./components/Message.vue";
+import PostDetail from "./components/PostDetail.vue";
 
 import App from './App.vue';
 
@@ -14,6 +14,11 @@ const routes = [
         path: "/",
         name: "PostList",
         component: LoadPostList,
+    },
+    {
+        path: "/:slug/",
+        name: "PostDetail",
+        component: PostDetail,
     },
     {
         path: "/counter",
@@ -34,5 +39,8 @@ const router = createRouter({
 
 const app = createApp(App)
 app.use(router);
+
+const pinia = createPinia()
+app.use(pinia);
 
 app.mount("#app")

@@ -1,11 +1,5 @@
 {% extends "./base.html" %}
-{% block main %}
-  <main>
-    <script id="vue-message" type="application/json">"Foo bar bazzzz?"</script>
-    <script id="page-pk" type="application/json">{{ page.pk }}</script>
-    <script id="initial-value" type="application/json">256</script>
-    <h1>This is still Django...</h1>
-    <div id="app">
-    </div>
-  </main>
-{% endblock %}
+{% block head %}
+  <!-- Used to determine the route name of vue route -->
+  <script id="vue-route-name" type="application/json">"PostList"</script>
+{% endblock head %}
