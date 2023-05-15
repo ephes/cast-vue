@@ -30,10 +30,6 @@ export default {
     blog: {
       type: Object,
       default: () => ({}),
-    },
-    apiBaseUrl: {
-      type: URL,
-      required: true,
     }
   },
   setup() {

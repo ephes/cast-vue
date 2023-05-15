@@ -8,7 +8,7 @@
             <span>Page {{ currentPage }} of {{ totalPages }}</span>
             <button @click="changePage(1)" :disabled="currentPage >= totalPages">Next &raquo;</button>
         </div>
-        <post-list :blog="blog" :posts="postsFromApi" :apiBaseUrl="wagtailApiUrl" />
+        <post-list :blog="blog" :posts="postsFromApi" />
       </div>
   </div>
 </template>
@@ -103,7 +103,6 @@ export default {
         onMounted(fetchData);
         return {
             isLoading,
-            wagtailApiUrl,
             blog,
             postsFromApi,
             dataStore,
