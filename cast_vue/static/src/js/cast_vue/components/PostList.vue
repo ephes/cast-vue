@@ -1,10 +1,11 @@
 <template>
   <div>
     <h1>{{ blog.title }}</h1>
+    <p>Description is still missing 😁.</p>
     <div v-for="post in posts.items" :key="post.id">
-      api base url: {{ apiBaseUrl }} <br />
+      <h2>{{ post.title }}</h2>
       <router-link :to="{ name: 'PostDetail', params: {slug: post.meta.slug}}">
-        details for {{ post.id }}
+        {{ post.visible_date }}
       </router-link>
       <post-item :post="post"></post-item>
     </div>

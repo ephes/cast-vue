@@ -72,7 +72,7 @@ export default {
         const wagtailApiUrlString = getTexContentFromElement("wagtail-api-pages-url");
         const wagtailApiUrl = getWagtailApiBaseUrl();
         wagtailApiUrl.searchParams.set("type", "cast.Post");
-        wagtailApiUrl.searchParams.set("fields", "html_overview,html_detail");
+        wagtailApiUrl.searchParams.set("fields", "html_overview,html_detail,visible_date");
         wagtailApiUrl.searchParams.set("offset", "0");
         wagtailApiUrl.searchParams.set("limit", pagesize.toString());
         wagtailApiUrl.searchParams.set("order", "-visible_date");

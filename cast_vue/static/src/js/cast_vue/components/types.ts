@@ -1,6 +1,7 @@
 export interface Post {
     id: number;
     title: string;
+    visible_date: string;
     html_overview: string;
     html_detail: string;
     meta: {
