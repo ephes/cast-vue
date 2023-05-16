@@ -106,6 +106,7 @@ export default {
             blog,
             postsFromApi,
             dataStore,
+            wagtailApiUrl,
         };
     },
 };
