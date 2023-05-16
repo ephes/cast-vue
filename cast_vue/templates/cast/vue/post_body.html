@@ -1,6 +1,7 @@
 {% load wagtailcore_tags %}
 
 <article>
+  <script id="vue-article-date" type="application/json">"{{ page.visible_date|date}}"</script>
   {% for block in page.body %}
     {% if block.block_type != "detail" or render_detail %}
       <section class="block-{{ block.block_type }}">
