@@ -2,6 +2,8 @@
 
 <article>
   <script id="vue-article-date" type="application/json">"{{ page.visible_date|date}}"</script>
+  <script id="vue-article-datetime" type="application/json">"{{ page.visible_date|date:"c" }}"</script>
+  <script id="vue-article-author" type="application/json">"{{ page.owner.username | title}}"</script>
   {% for block in page.body %}
     {% if block.block_type != "detail" or render_detail %}
       <section class="block-{{ block.block_type }}">
