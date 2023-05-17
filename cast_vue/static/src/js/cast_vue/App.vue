@@ -10,7 +10,6 @@ import { getTexContentFromElement } from './components/domHelpers';
 
 const router = useRouter();
 const vueRouteName = getTexContentFromElement("vue-route-name");
-console.log('vueRouteName: ', vueRouteName);
 
 if (vueRouteName == "PostDetail") {
   const slug = getTexContentFromElement("slug");
