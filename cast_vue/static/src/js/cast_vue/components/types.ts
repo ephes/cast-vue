@@ -20,3 +20,11 @@ export interface PostsFromApi {
     };
     items: [Post];
 }
+
+
+export interface ModalImage {
+    src: string;
+    srcset: string;
+    next: string;
+    prev: string;
+}
