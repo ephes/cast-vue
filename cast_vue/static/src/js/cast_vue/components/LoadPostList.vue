@@ -2,6 +2,7 @@
   <div>
       <p v-if="isLoading">Loading data...</p>
       <div v-else>
+        <filter-form @submit-filter-form="handleSubmitFilterForm "></filter-form>
         <br />
         <div class="pagination">
             <button @click="changePage(-1)" :disabled="currentPage <= 1">&laquo; Prev</button>
@@ -15,7 +16,9 @@
 
 <script lang="ts">
 import { ref, Ref, onMounted } from 'vue';
-import PostList from './PostList.vue'
+import { useRoute } from 'vue-router';
+import FilterForm from './FilterForm.vue';
+import PostList from './PostList.vue';
 import { PostsFromApi } from './types';
 import { getTexContentFromElement, getWagtailApiBaseUrl } from './domHelpers';
 import { useDataStore } from '../stores/dataStore';
@@ -23,12 +26,12 @@ import { useDataStore } from '../stores/dataStore';
 
 export default {
     components: {
-        PostList
+        PostList,
+        FilterForm,
     },
     data() {
         const pagesize = Number(getTexContentFromElement("pagination-page-size"));
         return {
-            currentPage: 1,
             itemsPerPage: pagesize,
         };
     },
@@ -55,6 +58,23 @@ export default {
             try {
                 this.postsFromApi = await dataStore.fetchJson(this.wagtailApiUrl);
                 console.log("postsFromApi: ", this.postsFromApi)
+                this.$router.push({ query: { page: this.currentPage } });
+            } catch (error) {
+                console.error('Error fetching data from API: ', error);
+            }
+        },
+        async handleSubmitFilterForm(data: any) {
+            const dataStore = useDataStore();
+            console.log("handleSubmitFilterForm: ", data);
+            if (data.search === "") {
+                this.wagtailApiUrl.searchParams.delete("search");
+            } else {
+                this.wagtailApiUrl.searchParams.set("search", data.search);
+                this.$router.push({ query: { search: data.search } });
+            }
+            try {
+                this.postsFromApi = await dataStore.fetchJson(this.wagtailApiUrl);
+                console.log("postsFromApi: ", this.postsFromApi)
             } catch (error) {
                 console.error('Error fetching data from API: ', error);
             }
@@ -63,8 +83,10 @@ export default {
     setup() {
         // refs for data
         const isLoading = ref(true);
+        const currentPage = ref(1);
         const blog = ref({});
         const postsFromApi = ref({} as PostsFromApi);
+        const route = useRoute();
 
         // prepare api urls
         const blogPk = getTexContentFromElement("blog-pk");
@@ -76,6 +98,15 @@ export default {
         wagtailApiUrl.searchParams.set("offset", "0");
         wagtailApiUrl.searchParams.set("limit", pagesize.toString());
         wagtailApiUrl.searchParams.set("order", "-visible_date");
+        wagtailApiUrl.searchParams.set("use_post_filter", "true");
+        if (route.query.page !== undefined) {
+            currentPage.value = Number(route.query.page);
+            const offset = (currentPage.value - 1) * pagesize;
+            wagtailApiUrl.searchParams.set("offset", offset.toString());
+        }
+        if (route.query.search !== undefined) {
+            wagtailApiUrl.searchParams.set("search", route.query.search as string);
+        }
         const blogDetailUrl = new URL(wagtailApiUrlString + blogPk + "/");
 
         // fetch data
@@ -107,6 +138,7 @@ export default {
             postsFromApi,
             dataStore,
             wagtailApiUrl,
+            currentPage,
         };
     },
 };
