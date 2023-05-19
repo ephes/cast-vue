@@ -16,7 +16,7 @@
       </p>
       <p>
         <label for="id_o">Ordering:</label>
-        <select v-model="form.o" name="o" id="id_o">
+        <select v-model="form.order" name="order" id="id_o">
           <option value="">---------</option>
           <option value="visible_date">Date</option>
           <option value="-visible_date">Date (descending)</option>
@@ -27,24 +27,29 @@
   </template>
 
   <script lang="ts">
-  import { ref } from 'vue';
+  import { ref, watchEffect } from 'vue';
 
   interface Form {
     search: string;
     date_after: string;
     date_before: string;
     date_facets: string;
-    o: string;
+    order: string;
   }
 
   export default {
-    setup(_, context) {
-      const form = ref<Form>({
-        search: '',
-        date_after: '',
-        date_before: '',
-        date_facets: '',
-        o: '',
+    props: {
+      form: {
+        type: Object as () => Form,
+        default: () => ({}),
+      },
+    },
+    setup(props, context) {
+      const form = ref<Form>(props.form);
+
+      watchEffect(() => {
+        // Update the ref whenever the prop changes
+        form.value = props.form;
       });
 
       const submitForm = () => {

@@ -2,7 +2,7 @@
   <div>
       <p v-if="isLoading">Loading data...</p>
       <div v-else>
-        <filter-form @submit-filter-form="handleSubmitFilterForm "></filter-form>
+        <filter-form @submit-filter-form="handleSubmitFilterForm" :form="form"></filter-form>
         <br />
         <div class="pagination">
             <button @click="changePage(-1)" :disabled="currentPage <= 1">&laquo; Prev</button>
@@ -70,8 +70,28 @@ export default {
                 this.wagtailApiUrl.searchParams.delete("search");
             } else {
                 this.wagtailApiUrl.searchParams.set("search", data.search);
-                this.$router.push({ query: { search: data.search } });
             }
+            if (data.date_after === "") {
+                this.wagtailApiUrl.searchParams.delete("date_after");
+            } else {
+                this.wagtailApiUrl.searchParams.set("date_after", data.date_after);
+            }
+            if (data.date_before === "") {
+                this.wagtailApiUrl.searchParams.delete("date_before");
+            } else {
+                this.wagtailApiUrl.searchParams.set("date_before", data.date_before);
+            }
+            if (data.order === "") {
+                this.wagtailApiUrl.searchParams.delete("order");
+            } else {
+                this.wagtailApiUrl.searchParams.set("order", data.order);
+            }
+            if (data.date_facets === "") {
+                this.wagtailApiUrl.searchParams.delete("date_facets");
+            } else {
+                this.wagtailApiUrl.searchParams.set("date_facets", data.date_facets);
+            }
+            this.$router.push({ query: data });
             try {
                 this.postsFromApi = await dataStore.fetchJson(this.wagtailApiUrl);
                 console.log("postsFromApi: ", this.postsFromApi)
@@ -87,6 +107,7 @@ export default {
         const blog = ref({});
         const postsFromApi = ref({} as PostsFromApi);
         const route = useRoute();
+        const form = ref({ search: "", date_after: "", date_before: "", date_facets: "", order: ""});
 
         // prepare api urls
         const blogPk = getTexContentFromElement("blog-pk");
@@ -106,6 +127,23 @@ export default {
         }
         if (route.query.search !== undefined) {
             wagtailApiUrl.searchParams.set("search", route.query.search as string);
+            form.value.search = route.query.search as string;
+        }
+        if (route.query.date_after !== undefined) {
+            wagtailApiUrl.searchParams.set("date_after", route.query.date_after as string);
+            form.value.date_after = route.query.date_after as string;
+        }
+        if (route.query.date_before !== undefined) {
+            wagtailApiUrl.searchParams.set("date_before", route.query.date_before as string);
+            form.value.date_before = route.query.date_before as string;
+        }
+        if (route.query.order !== undefined) {
+            wagtailApiUrl.searchParams.set("order", route.query.order as string);
+            form.value.order = route.query.order as string;
+        }
+        if (route.query.date_facets !== undefined) {
+            wagtailApiUrl.searchParams.set("date_facets", route.query.date_facets as string);
+            form.value.date_facets = route.query.date_facets as string;
         }
         const blogDetailUrl = new URL(wagtailApiUrlString + blogPk + "/");
 
@@ -132,6 +170,7 @@ export default {
         };
 
         onMounted(fetchData);
+        console.log("form: ", form);
         return {
             isLoading,
             blog,
@@ -139,6 +178,7 @@ export default {
             dataStore,
             wagtailApiUrl,
             currentPage,
+            form,
         };
     },
 };
