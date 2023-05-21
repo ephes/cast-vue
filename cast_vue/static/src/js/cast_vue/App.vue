@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { getTexContentFromElement } from './components/domHelpers';
+import { getTexContentFromElement } from './helpers/dom';
 
 const router = useRouter();
 const vueRouteName = getTexContentFromElement("vue-route-name");
@@ -30,10 +30,10 @@ function getQueryParameters() {
 
 if (vueRouteName == "PostDetail") {
   const slug = getTexContentFromElement("slug");
-  router.push({name: vueRouteName, params: {slug: slug}})
+  router.push({ name: vueRouteName, params: { slug: slug } })
 } else {
   // get query params from URL and push them to router
   const params: Record<string, any> = getQueryParameters();
-  router.push({name: vueRouteName, query: params});
+  router.push({ name: vueRouteName, query: params });
 }
 </script>
