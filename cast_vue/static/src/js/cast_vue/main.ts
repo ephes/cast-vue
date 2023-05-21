@@ -1,4 +1,5 @@
 import '../../css/cast_vue/styles.css';
+import '../../css/cast_vue/pygments.css';
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
