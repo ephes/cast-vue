@@ -3,8 +3,7 @@
     <h2>{{ post.title }}</h2>
     <div v-if="detail">
       <p>
-        <time :date-time="visibleDateTimeStr">{{ visibleDate }}</time
-        >, by
+        <time :date-time="visibleDateTimeStr">{{ visibleDate }}</time>, by
         <span class="author">{{ author }}</span>
       </p>
     </div>
@@ -12,29 +11,21 @@
       visible date detail
       <p>
         <router-link :to="{ name: 'PostDetail', params: { slug: post.meta.slug } }">
-          <time :date-time="visibleDateTimeStr">{{ visibleDate }}</time> </router-link
-        >, by
+          <time :date-time="visibleDateTimeStr">{{ visibleDate }}</time> </router-link>, by
         <span class="author">{{ author }}</span>
       </p>
     </div>
     <div v-html="post.html_overview" @click="handleClick"></div>
     <div v-if="isModalOpen" id="modal-div" class="modal" @click="handleModalClick">
       <span class="close" @click="closeModal">&times;</span>
-        <img
-          id="modal-image"
-          class="modal-content"
-          :src="modalImage.src"
-          :srcset="modalImage.srcset"
-          :next="modalImage.next"
-          :prev="modalImage.prev"
-          alt="Full-sized image"
-        />
+      <img id="modal-image" class="modal-content" :src="modalImage.src" :srcset="modalImage.srcset"
+        :next="modalImage.next" :prev="modalImage.prev" alt="Full-sized image" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { getTexContentFromElement } from "./domHelpers";
+import { getTexContentFromElement } from "../helpers/dom";
 import { Post, ModalImage } from "./types";
 
 
