@@ -1,5 +1,6 @@
 import '../../css/cast_vue/styles.css';
 import '../../css/cast_vue/pygments.css';
+import 'vite/modulepreload-polyfill';  // recommended by django-vite, dunno why
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
