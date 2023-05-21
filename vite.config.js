@@ -21,7 +21,7 @@ module.exports = {
     extensions: ['.js', '.json', '.ts'],
   },
   build: {
-    outDir: resolve('./cast_vue/static/dist'),
+    outDir: resolve('./cast_vue/static/cast_vue'),
     assetsDir: '',
     manifest: true,
     emptyOutDir: true,
