@@ -28,14 +28,8 @@
 
   <script lang="ts">
   import { ref, watchEffect } from 'vue';
+  import { Form } from './types';
 
-  interface Form {
-    search: string;
-    date_after: string;
-    date_before: string;
-    date_facets: string;
-    order: string;
-  }
 
   export default {
     props: {
