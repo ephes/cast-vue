@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>{{ blog.title }}</h1>
-    <p>Description is still missing 😁.</p>
+    <p v-html="blog.description"></p>
     <div v-for="post in posts.items" :key="post.id">
       <post-item :post="post" :detail="false"></post-item>
     </div>

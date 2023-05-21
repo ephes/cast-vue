@@ -44,6 +44,7 @@ export default {
         const blogPk = getTexContentFromElement("blog-pk");
         const wagtailApiUrlString = getTexContentFromElement("wagtail-api-pages-url");
         const blogDetailUrl = new URL(`${wagtailApiUrlString}${blogPk}/`);
+        blogDetailUrl.searchParams.set("type", "cast.Blog");
 
         const updateSearchParams = (wagtailApiUrl: URL, data: any) => {
             const { page: _, ...params } = data;  // remove page from params
