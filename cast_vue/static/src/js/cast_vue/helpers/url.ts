@@ -14,7 +14,6 @@ export const setUrlSearchParams = (url: URL, params: Record<string, any>) => {
 export const getUrlSearchParams = (
   query: Record<string, any>
 ): Record<string, string> => {
-  console.log("query: ", query)
   let result: Record<string, string> = {};
   Object.keys(query).forEach((key) => {
     result[key] = query[key] as string;

@@ -13,6 +13,14 @@
       <p>
         <label for="id_date_facets">Date Facets:</label>
         <input v-model="form.date_facets" id="id_date_facets" />
+        <div class="cast-date-facet-container" id="id_date_facets">
+          <div class="cast-date-facet-item">
+            <a class="selected" href="#" @click.prevent="selectDateFacet('')">All</a>
+          </div>
+          <div v-for="(count, facet) in facetCounts" :key="facet" class="cast-date-facet-item">
+            <a href="#" @click.prevent="selectDateFacet(facet)">{{ facet }} ({{ count }})</a>
+          </div>
+        </div>
       </p>
       <p>
         <label for="id_o">Ordering:</label>
@@ -37,6 +45,10 @@
         type: Object as () => Form,
         default: () => ({}),
       },
+      facetCounts: {
+        type: Object,
+        default: () => ({}),
+      },
     },
     setup(props, context) {
       const form = ref<Form>(props.form);
@@ -52,7 +64,12 @@
         context.emit("submitFilterForm", form.value);
       };
 
-      return { form, submitForm };
+      const selectDateFacet = (month: string) => {
+        form.value.date_facets = month;
+        context.emit("submitFilterForm", form.value);
+      };
+
+      return { form, submitForm, selectDateFacet };
     },
     emits: ["submitFilterForm"],
   };

@@ -24,3 +24,10 @@ export function getWagtailApiBaseUrl(): URL {
   wagtailApiUrl.searchParams.set("child_of", blogPk);
   return wagtailApiUrl;
 }
+
+
+export function getFacetCountsApiBaseUrl(): URL {
+  const apiFacetCountsStr = getTexContentFromElement("api-facet-counts-url");
+  const apiFacetCountsUrl = new URL(apiFacetCountsStr);
+  return apiFacetCountsUrl;
+}

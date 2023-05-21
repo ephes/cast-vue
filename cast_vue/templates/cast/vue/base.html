@@ -22,6 +22,10 @@
     <script id="wagtail-api-pages-url" type="application/json">
       "{{ request.scheme }}://{{ request.get_host }}{{ blog.wagtail_api_pages_url }}"
     </script>
+    <!-- Where to fetch the facet counts -->
+    <script id="api-facet-counts-url" type="application/json">
+      "{{ request.scheme }}://{{ request.get_host }}{{ blog.facet_counts_api_url }}"
+    </script>
     {% block head %}
     {% endblock head %}
   </head>

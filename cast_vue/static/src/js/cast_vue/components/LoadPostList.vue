@@ -2,7 +2,11 @@
     <div>
         <p v-if="isLoading">Loading data...</p>
         <div v-else>
-            <filter-form @submit-filter-form="handleSubmitFilterForm" :form="(form as any)"></filter-form>
+            <filter-form
+                @submit-filter-form="handleSubmitFilterForm"
+                :form="(form as any)"
+                :facetCounts="facetCounts"
+            ></filter-form>
             <br />
             <pagination-buttons :currentPage="currentPage" :totalPages="totalPages" @change-page="changePage">
             </pagination-buttons>
@@ -20,7 +24,7 @@ import PostList from './PostList.vue';
 import PaginationButtons from './PaginationButtons.vue';
 import { useDataStore } from '../stores/dataStore';
 import { setUrlSearchParams, getUrlSearchParams } from '../helpers/url';
-import { getWagtailApiBaseUrl, getTexContentFromElement } from '../helpers/dom';
+import { getWagtailApiBaseUrl, getTexContentFromElement, getFacetCountsApiBaseUrl } from '../helpers/dom';
 import { Form } from './types';
 
 
@@ -36,6 +40,7 @@ export default {
         const isLoading = ref(true);
         const blog = ref({});
         const postsFromApi = ref({} as PostsFromApi);
+        const facetCounts = ref({} as Record<string, number>);
         const form = ref(getUrlSearchParams(route.query));
         const currentPage = ref(isNaN(Number(form.value.page)) ? 1 : Number(form.value.page));  // maybe page was already set in url
         const itemsPerPage = Number(getTexContentFromElement("pagination-page-size"));
@@ -60,7 +65,7 @@ export default {
             return params;
         };
 
-        // init api url
+        // init pages api url
         const wagtailApiUrl = getWagtailApiBaseUrl();
         wagtailApiUrl.searchParams.set("type", "cast.Post");
         wagtailApiUrl.searchParams.set("fields", "html_overview,html_detail,visible_date");
@@ -70,10 +75,16 @@ export default {
         wagtailApiUrl.searchParams.set("use_post_filter", "true");
         updateSearchParams(wagtailApiUrl, calculateFirstOffset(form.value));
 
+        // init blog facet counts api url
+        const facetCountsApiUrl = getFacetCountsApiBaseUrl();
+        updateSearchParams(facetCountsApiUrl, calculateFirstOffset(form.value));
+
         const fetchData = async () => {
             try {
                 const dataStore = useDataStore();
                 blog.value = await dataStore.fetchJson(blogDetailUrl);
+                const facetResult = await dataStore.fetchJson(facetCountsApiUrl);
+                facetCounts.value = facetResult.facet_counts;
                 postsFromApi.value = await dataStore.fetchJson(wagtailApiUrl);
             } catch (error) {
                 console.error('Error fetching blog data from API: ', error);
@@ -85,6 +96,7 @@ export default {
         const handleSubmitFilterForm = async (data: Form) => {
             currentPage.value = 1;
             updateSearchParams(wagtailApiUrl, data);
+            updateSearchParams(facetCountsApiUrl, data);
             await fetchData();
             router.push({ query: data as any });
         };
@@ -95,8 +107,6 @@ export default {
             router.push({ query: { ...route.query, page: currentPage.value } });
             await fetchData();
         };
-
-        // watch([route.query, currentPage], fetchData);
 
         const totalPages = computed(() => {
             return Math.ceil(postsFromApi.value.meta.total_count / itemsPerPage);
@@ -110,6 +120,7 @@ export default {
             totalPages,
             blog,
             postsFromApi,
+            facetCounts,
             form,
             wagtailApiUrl,
             blogDetailUrl,
