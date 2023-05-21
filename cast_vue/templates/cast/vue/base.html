@@ -20,7 +20,7 @@
     <script id="base-url" type="application/json">"{{ blog.url }}"</script>
     <!-- Where to fetch the posts-->
     <script id="wagtail-api-pages-url" type="application/json">
-      "{{ request.scheme }}://{{ request.get_host }}/{{ blog.wagtail_api_pages_url }}"
+      "{{ request.scheme }}://{{ request.get_host }}{{ blog.wagtail_api_pages_url }}"
     </script>
     {% block head %}
     {% endblock head %}
