@@ -15,7 +15,8 @@
         <span class="author">{{ author }}</span>
       </p>
     </div>
-    <div v-html="post.html_overview" @click="handleClick"></div>
+    <div v-if="detail" v-html="post.html_detail" @click="handleClick"></div>
+    <div v-else v-html="post.html_overview" @click="handleClick"></div>
     <div v-if="isModalOpen" id="modal-div" class="modal" @click="handleModalClick">
       <span class="close" @click="closeModal">&times;</span>
       <img id="modal-image" class="modal-content" :src="modalImage.src" :srcset="modalImage.srcset"
