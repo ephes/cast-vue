@@ -32,10 +32,13 @@ export default {
 
     const fetchPostFromAPI = async () => {
       const postSlug = route.params.slug as string;
+      // FIXME maybe use clean detail url? But then we need to have
+      // the page id instead of the slug and and either modify the API
+      // to accept slugs or do a second request to get the page id. :/
       const postDetailUrl = new URL(wagtailApiUrl.href);
       postDetailUrl.searchParams.set("type", "cast.Post");
       postDetailUrl.searchParams.set("slug", postSlug);
-      postDetailUrl.searchParams.set("fields", "html_overview,html_detail");
+      postDetailUrl.searchParams.set("fields", "html_detail,comments");
 
       try {
         const posts = await dataStore.fetchJson(postDetailUrl);

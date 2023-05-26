@@ -1,9 +1,18 @@
+export interface Comment {
+  id: number;
+  parent: number | null;
+  user: string;
+  date: string;
+  comment: string;
+}
+
 export interface Post {
   id: number;
   title: string;
   visible_date: string;
   html_overview: string;
   html_detail: string;
+  comments: [Comment];
   meta: {
     type: string;
     detail_url: string;
