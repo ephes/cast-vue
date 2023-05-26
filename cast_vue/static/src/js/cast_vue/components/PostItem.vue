@@ -17,6 +17,9 @@
     </div>
     <div v-if="detail" v-html="post.html_detail" @click="handleClick"></div>
     <div v-else v-html="post.html_overview" @click="handleClick"></div>
+    <div v-if="post.comments" class="comments">
+      <comment-list :comments="post.comments"></comment-list>
+    </div>
     <div v-if="isModalOpen" id="modal-div" class="modal" @click="handleModalClick">
       <span class="close" @click="closeModal">&times;</span>
       <img id="modal-image" class="modal-content" :src="modalImage.src" :srcset="modalImage.srcset"
@@ -28,6 +31,7 @@
 <script lang="ts">
 import { getTexContentFromElement } from "../helpers/dom";
 import { Post, ModalImage } from "./types";
+import CommentList from "./CommentList.vue";
 
 
 export default {
@@ -40,6 +44,9 @@ export default {
     window.removeEventListener("keydown", this.handleKeyDown);
   },
   name: "PostItem",
+  components: {
+    CommentList,
+  },
   props: {
     post: {
       type: Object as () => Post,
