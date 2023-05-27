@@ -38,7 +38,7 @@ export default {
       const postDetailUrl = new URL(wagtailApiUrl.href);
       postDetailUrl.searchParams.set("type", "cast.Post");
       postDetailUrl.searchParams.set("slug", postSlug);
-      postDetailUrl.searchParams.set("fields", "html_detail,comments");
+      postDetailUrl.searchParams.set("fields", "html_detail,comments,comments_security_data");
 
       try {
         const posts = await dataStore.fetchJson(postDetailUrl);

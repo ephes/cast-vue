@@ -18,7 +18,11 @@
     <div v-if="detail" v-html="post.html_detail" @click="handleClick"></div>
     <div v-else v-html="post.html_overview" @click="handleClick"></div>
     <div v-if="post.comments" class="comments">
-      <comment-list :comments="post.comments"></comment-list>
+      <comment-list
+        :comments="post.comments"
+        :postId="post.id"
+        :securityData="post.comments_security_data">
+      </comment-list>
     </div>
     <div v-if="isModalOpen" id="modal-div" class="modal" @click="handleModalClick">
       <span class="close" @click="closeModal">&times;</span>

@@ -19,6 +19,9 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref } from 'vue';
 import { Comment } from './types';
+import { getTexContentFromElement } from '../helpers/dom';
+
+const postCommentUrl = new URL(getTexContentFromElement("post-comment-url"));
 
 export default defineComponent({
     name: 'CommentItem',
@@ -42,6 +45,7 @@ export default defineComponent({
 
         const submitReply = () => {
             console.log('Submit reply:', replyText.value);
+            console.log('post to url: ', postCommentUrl);
             // Add your logic here to submit the reply
             replyText.value = '';
             showReplyForm.value = false;
@@ -75,4 +79,5 @@ export default defineComponent({
 
 .comment-children {
     margin-left: 20px;
-}</style>
+}
+</style>

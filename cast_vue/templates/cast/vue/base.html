@@ -26,6 +26,14 @@
     <script id="api-facet-counts-url" type="application/json">
       "{{ request.scheme }}://{{ request.get_host }}{{ blog.facet_counts_api_url }}"
     </script>
+    <!-- Where to post comments -->
+    <script id="post-comment-url" type="application/json">
+      "{{ request.scheme }}://{{ request.get_host }}{{ blog.comment_post_url }}"
+    </script>
+    <!-- csrf token needed for posting comments -->
+    <script id="csrf-token" type="application/json">
+      "{{ csrf_token }}"
+    </script>
     {% block head %}
     {% endblock head %}
   </head>

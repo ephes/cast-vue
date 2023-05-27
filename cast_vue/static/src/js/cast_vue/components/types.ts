@@ -6,6 +6,25 @@ export interface Comment {
   comment: string;
 }
 
+export interface CommentSecurityData {
+  "content-type": string;
+  object_pk: string;
+  timestamp: string;
+  security_hash: string;
+}
+
+export interface CommentFormData {
+  [key: string]: string;
+  content_type: string;
+  object_pk: string;
+  comment: string;
+  name: string;
+  email: string;
+  title: string;
+  security_hash: string;
+  timestamp: string;
+}
+
 export interface Post {
   id: number;
   title: string;
@@ -13,6 +32,7 @@ export interface Post {
   html_overview: string;
   html_detail: string;
   comments: [Comment];
+  comments_security_data: CommentSecurityData,
   meta: {
     type: string;
     detail_url: string;
