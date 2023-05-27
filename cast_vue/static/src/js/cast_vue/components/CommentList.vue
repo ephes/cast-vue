@@ -37,7 +37,7 @@ export default defineComponent({
             required: true,
         }
     },
-    setup(props) {
+    setup(props, context) {
         const newCommentText = ref("");
         const newCommentError = ref("");
         const rootComments = computed(() =>
@@ -79,6 +79,7 @@ export default defineComponent({
                     console.log("response json: ", json)
                     if (json["success"]) {
                         // cache invalidate post detail + refetch
+                        context.emit("comment-posted", true);
                     } else {
                         // comment not successfully saved
                         if (json["is_moderated"]) {

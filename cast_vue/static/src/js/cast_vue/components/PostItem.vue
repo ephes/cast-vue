@@ -21,7 +21,8 @@
       <comment-list
         :comments="post.comments"
         :postId="post.id"
-        :securityData="post.comments_security_data">
+        :securityData="post.comments_security_data"
+        @comment-posted="handleCommentPosted">
       </comment-list>
     </div>
     <div v-if="isModalOpen" id="modal-div" class="modal" @click="handleModalClick">
@@ -68,6 +69,10 @@ export default {
     };
   },
   methods: {
+    handleCommentPosted() {
+      console.log("handleCommentPosted");
+      this.$emit("comment-posted");
+    },
     handleClick(e: Event) {
       // console.log("handleClick: ", e);
       if (!e.target) {

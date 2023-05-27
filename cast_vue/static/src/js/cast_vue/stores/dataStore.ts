@@ -12,11 +12,11 @@ export const useDataStore = defineStore({
     jsonCache: {},
   }),
   actions: {
-    async fetchJson(url: URL): Promise<any> {
+    async fetchJson(url: URL, invalidateCache: boolean = false): Promise<any> {
       // Check if the URL is in the cache.
       const urlStr = url.toString();
       // console.log("fetchJson: ", urlStr)
-      if (this.jsonCache[urlStr]) {
+      if (this.jsonCache[urlStr] && !invalidateCache) {
         return this.jsonCache[urlStr];
       }
 

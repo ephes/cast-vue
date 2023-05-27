@@ -3,7 +3,7 @@
     <p v-if="isLoading">Loading data...</p>
     <div v-else>
       <router-link to="/">Back to Blog</router-link>
-      <post-item :post="post" :detail="true"></post-item>
+      <post-item :post="post" :detail="true" @comment-posted="handleCommentPosted"></post-item>
     </div>
   </div>
 </template>
@@ -21,6 +21,12 @@ export default {
   components: {
     PostItem,
   },
+  methods: {
+    async handleCommentPosted() {
+      console.log("handleCommentPosted in PostDetail");
+      await this.fetchPostFromAPI(true);
+    }
+  },
   setup() {
     const route = useRoute();
     const dataStore = useDataStore();
@@ -30,7 +36,7 @@ export default {
     const post = ref({} as Post);
     const visibleDateStr = ref("");
 
-    const fetchPostFromAPI = async () => {
+    const fetchPostFromAPI = async (invalidateCache: boolean = false) => {
       const postSlug = route.params.slug as string;
       // FIXME maybe use clean detail url? But then we need to have
       // the page id instead of the slug and and either modify the API
@@ -41,7 +47,7 @@ export default {
       postDetailUrl.searchParams.set("fields", "html_detail,comments,comments_security_data");
 
       try {
-        const posts = await dataStore.fetchJson(postDetailUrl);
+        const posts = await dataStore.fetchJson(postDetailUrl, invalidateCache);
         post.value = posts.items[0];
       } catch (error) {
         console.error('Error fetching data from API: ', error);
@@ -51,7 +57,7 @@ export default {
     }
 
     onMounted(fetchPostFromAPI);
-    return { dataStore, isLoading, post, visibleDate: visibleDateStr };
+    return { dataStore, isLoading, post, visibleDate: visibleDateStr, fetchPostFromAPI };
   },
 }
 </script>
