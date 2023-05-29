@@ -13,6 +13,14 @@ export interface CommentSecurityData {
   security_hash: string;
 }
 
+export interface CommentInputData {
+  parent: string;
+  comment: string;
+  name: string;
+  email: string;
+  title: string;
+}
+
 export interface CommentFormData {
   [key: string]: string;
   content_type: string;
@@ -23,6 +31,7 @@ export interface CommentFormData {
   title: string;
   security_hash: string;
   timestamp: string;
+  parent: string;
 }
 
 export interface Post {

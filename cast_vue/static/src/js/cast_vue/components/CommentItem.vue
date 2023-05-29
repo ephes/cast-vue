@@ -5,8 +5,7 @@
         <div class="comment-body">{{ comment.comment }}</div>
         <button @click="showReplyForm = !showReplyForm">Reply</button>
         <div v-if="showReplyForm">
-            <textarea v-model="replyText" placeholder="Write a reply..."></textarea>
-            <button @click="submitReply">Submit</button>
+            <comment-form :parent="comment.id" @comment-submitted="submitReply"></comment-form>
         </div>
         <div class="comment-children" v-if="hasChildren">
             <div v-for="child in children" :key="child.id">
@@ -17,14 +16,18 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref } from 'vue';
-import { Comment } from './types';
+import { computed, defineComponent, PropType, ref, reactive } from 'vue';
+import { Comment, CommentInputData } from './types';
 import { getTexContentFromElement } from '../helpers/dom';
+import CommentForm from './CommentForm.vue';
 
 const postCommentUrl = new URL(getTexContentFromElement("post-comment-url"));
 
 export default defineComponent({
     name: 'CommentItem',
+    components: {
+        CommentForm,
+    },
     props: {
         comment: {
             type: Object as PropType<Comment>,
@@ -35,24 +38,22 @@ export default defineComponent({
             required: true,
         },
     },
-    setup(props) {
-        const replyText = ref('');
+    emits: ['comment-submitted'],
+    setup(props, context) {
+        const reply = reactive({parent: props.comment.id.toString(), comment: "", name: "", email: "", title: ""} as CommentInputData);
         const showReplyForm = ref(false);
         const children = computed(() =>
             props.comments.filter((c) => c.parent === props.comment.id)
         );
         const hasChildren = computed(() => children.value.length > 0);
 
-        const submitReply = () => {
-            console.log('Submit reply:', replyText.value);
-            console.log('post to url: ', postCommentUrl);
-            // Add your logic here to submit the reply
-            replyText.value = '';
+        const submitReply = (comment: CommentInputData) => {
             showReplyForm.value = false;
+            context.emit('comment-submitted', comment);
         };
 
         return {
-            replyText,
+            reply,
             showReplyForm,
             submitReply,
             children,

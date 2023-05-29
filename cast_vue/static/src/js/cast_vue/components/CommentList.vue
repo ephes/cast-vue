@@ -1,18 +1,18 @@
 <template>
     <div class="comment-list">
-        <div v-if="newCommentError">{{ newCommentError }}</div>
+        <div v-if="commentError">{{ commentError }}</div>
         <div v-for="comment in rootComments" :key="comment.id">
-            <comment-item :comment="comment" :comments="comments" />
+            <comment-item @comment-submitted="submitComment" :comment="comment" :comments="comments" />
         </div>
-        <textarea v-model="newCommentText" placeholder="Add a comment..."></textarea>
-        <button @click="submitNewComment">Submit</button>
+        <comment-form :parent="null" @comment-submitted="submitComment"></comment-form>
     </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed } from 'vue';
 import CommentItem from './CommentItem.vue';
-import { Comment, CommentSecurityData, CommentFormData } from './types';
+import CommentForm from './CommentForm.vue';
+import { Comment, CommentSecurityData, CommentFormData, CommentInputData } from './types';
 
 import { getTexContentFromElement } from '../helpers/dom';
 
@@ -22,6 +22,7 @@ const csrfToken = getTexContentFromElement("csrf-token")
 export default defineComponent({
     components: {
         CommentItem,
+        CommentForm,
     },
     props: {
         comments: {
@@ -39,25 +40,26 @@ export default defineComponent({
     },
     setup(props, context) {
         const newCommentText = ref("");
-        const newCommentError = ref("");
+        const commentError = ref("");
         const rootComments = computed(() =>
             props.comments.filter((comment) => comment.parent === null)
         );
 
-        const submitNewComment = () => {
-            console.log('Submit new comment:', newCommentText.value);
+        const submitComment = (comment: CommentInputData) => {
+            console.log('Submit new comment - comment list:', comment.comment);
             console.log('post to url: ', postCommentUrl);
             console.log("csrf-token: ", csrfToken);
             console.log("security data: ", props.securityData)
             const newComment: CommentFormData = {
                 content_type: "cast.post",
                 object_pk: props.postId.toString(),
-                comment: newCommentText.value,
-                name: "User Name",
-                email: "foo@example.com",
-                title: "title foobar",
+                comment: comment.comment,
+                name: comment.name,
+                email: comment.email,
+                title: comment.title,
                 security_hash: props.securityData.security_hash,
                 timestamp: props.securityData.timestamp,
+                parent: comment.parent,
             }
             const newCommentData = new URLSearchParams();
             Object.keys(newComment).forEach(key => newCommentData.append(key, newComment[key]));
@@ -80,24 +82,24 @@ export default defineComponent({
                     if (json["success"]) {
                         // cache invalidate post detail + refetch
                         context.emit("comment-posted", true);
+                        commentError.value = "";
                     } else {
                         // comment not successfully saved
                         if (json["is_moderated"]) {
-                            newCommentError.value = `Your comment was moderated: ${json["html"]}`
+                            commentError.value = `Your comment was moderated: ${json["html"]}`
                         } else {
-                            newCommentError.value = `Some other error occurred saving comment: ${json["html"]}`
+                            commentError.value = `Some other error occurred saving comment: ${json["html"]}`
                         }
                     }
                     return json
                 })
                 .catch(err => console.error('Error posting comment: ', err));
-
         };
 
         return {
             newCommentText,
-            newCommentError,
-            submitNewComment,
+            commentError,
+            submitComment,
             rootComments,
 
         }
