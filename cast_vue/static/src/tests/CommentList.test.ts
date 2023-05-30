@@ -1,6 +1,6 @@
 import { expect, test, describe } from "vitest";
 import { mount } from '@vue/test-utils'
-import CommentList from "../js/cast_vue/components/CommentList.vue";
+import CommentList from "@/components/CommentList.vue";
 import { Comment } from "../js/cast_vue/components/types";
 
 describe("CommentList.vue", () => {
