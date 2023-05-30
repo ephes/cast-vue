@@ -1,14 +1,14 @@
 {
-  "main.css": {
-    "file": "main-bb4dac24.css",
-    "src": "main.css"
+  "js/cast_vue/main.css": {
+    "file": "main-098c2e3f.css",
+    "src": "js/cast_vue/main.css"
   },
-  "main.ts": {
+  "js/cast_vue/main.ts": {
     "css": [
-      "main-bb4dac24.css"
+      "main-098c2e3f.css"
     ],
-    "file": "main-26c29cc5.js",
+    "file": "main-2f5e5047.js",
     "isEntry": true,
-    "src": "main.ts"
+    "src": "js/cast_vue/main.ts"
   }
 }
