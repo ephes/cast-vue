@@ -160,3 +160,6 @@ node_modules
 
 # vim
 *.swp
+
+# macos
+.DS_Store
