@@ -18,10 +18,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref, reactive } from 'vue';
 import { Comment, CommentInputData } from './types';
-import { getTexContentFromElement } from '../helpers/dom';
 import CommentForm from './CommentForm.vue';
-
-const postCommentUrl = new URL(getTexContentFromElement("post-comment-url"));
 
 export default defineComponent({
     name: 'CommentItem',
