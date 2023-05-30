@@ -1,5 +1,11 @@
 <template>
     <div class="comment-form">
+        <label for="fname">Name: </label>
+        <input id="fname" type="text" v-model="comment.name" placeholder="Your name"><br />
+        <label for="femail">Mailaddress: </label>
+        <input id="femail" type="text" v-model="comment.email" placeholder="..."><br />
+        <label for="ftitle">Title: </label>
+        <input id="ftitle" type="text" v-model="comment.title" placeholder="..."><br />
         <textarea v-model="comment.comment" placeholder="Add a comment..."></textarea>
         <button @click="submitComment">Submit</button>
     </div>
