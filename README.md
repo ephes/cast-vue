@@ -43,3 +43,11 @@ complete site or just one blog.
 
 That's it! You have successfully installed and set up the Vue.js theme
 for [`django-cast`](https://github.com/ephes/django-cast).
+
+## Development
+
+### Run Tests
+
+```shell
+npx vitest -r cast_vue/static/src/tests
+```

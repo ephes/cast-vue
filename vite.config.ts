@@ -1,10 +1,19 @@
-import vue from "@vitejs/plugin-vue";
+import { resolve } from "path";
+import { defineConfig } from "vite";
+import Vue from "@vitejs/plugin-vue";
+import type { UserConfig as VitestUserConfigInterface } from "vitest/config"
 
-const { resolve } = require("path");
+const vitestConfig: VitestUserConfigInterface = {
+  test: {
+    globals: true,
+    environment: "jsdom",
+  },
+}
 
-module.exports = {
-  plugins: [vue()],
-  root: resolve("./cast_vue/static/src"),
+export default defineConfig({
+  plugins: [Vue()],
+  test: vitestConfig.test,
+  root: resolve("./cast_vue/static/src/js/cast_vue/"),
   base: "/static/",
   server: {
     host: "0.0.0.0",
@@ -17,6 +26,9 @@ module.exports = {
   },
   resolve: {
     extensions: [".js", ".json", ".ts"],
+    alias: {
+      "@": resolve("./cast_vue/static/src/js/cast_vue"),
+    },
   },
   build: {
     outDir: resolve("./cast_vue/static/cast_vue"),
@@ -33,4 +45,4 @@ module.exports = {
       },
     },
   },
-};
+})
