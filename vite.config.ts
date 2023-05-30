@@ -13,7 +13,7 @@ const vitestConfig: VitestUserConfigInterface = {
 export default defineConfig({
   plugins: [Vue()],
   test: vitestConfig.test,
-  root: resolve("./cast_vue/static/src/js/cast_vue/"),
+  root: resolve("./cast_vue/static/src/"),
   base: "/static/",
   server: {
     host: "0.0.0.0",
