@@ -1,7 +1,8 @@
-import { expect, test, describe } from "vitest";
+import { expect, test, describe, beforeAll } from "vitest";
 import { mount } from '@vue/test-utils'
 import CommentList from "@/components/CommentList.vue";
-import { Comment } from "../js/cast_vue/components/types";
+import { Comment } from "@/components/types";
+
 
 describe("CommentList.vue", () => {
   test("renders comment list", () => {

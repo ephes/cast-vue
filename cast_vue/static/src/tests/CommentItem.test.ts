@@ -1,6 +1,6 @@
 import { expect, test, describe } from "vitest";
 import CommentItem from "@/components/CommentItem.vue";
-import { Comment } from "../js/cast_vue/components/types";
+import { Comment } from "@/components/types";
 import { mount } from '@vue/test-utils'
 
 describe("CommentItem.vue", () => {
