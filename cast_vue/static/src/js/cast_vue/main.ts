@@ -6,7 +6,6 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { createRouter, createWebHistory } from "vue-router";
 import LoadPostList from "./components/LoadPostList.vue";
-import Counter from "./components/Counter.vue";
 import PostDetail from "./components/PostDetail.vue";
 
 import App from './App.vue';
@@ -21,11 +20,6 @@ const routes = [
         path: "/:slug/",
         name: "PostDetail",
         component: PostDetail,
-    },
-    {
-        path: "/counter",
-        name: "Counter",
-        component: Counter,
     },
 ];
 
