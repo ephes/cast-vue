@@ -12,10 +12,9 @@ export function getTexContentFromElement(
 
   const element = dom.getElementById(elementId);
   if (element === null || element.textContent === null) {
-    return "https://example.com";  // just a dummy value
-  } else {
-    return JSON.parse(element.textContent);
+    throw new Error(`Element with id ${elementId} not found`);
   }
+  return JSON.parse(element.textContent);
 }
 
 export function getWagtailApiBaseUrl(): URL {
