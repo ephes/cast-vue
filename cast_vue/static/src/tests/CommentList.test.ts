@@ -1,7 +1,7 @@
 import { expect, test, describe, beforeAll } from "vitest";
 import { mount } from '@vue/test-utils'
 import CommentList from "@/components/CommentList.vue";
-import { Comment } from "@/components/types";
+import { Comment, CommentMeta } from "@/components/types";
 
 
 describe("CommentList.vue", () => {
@@ -23,11 +23,21 @@ describe("CommentList.vue", () => {
       },
     ];
 
+    const commentMeta: CommentMeta = {
+      content_type: "cast.post",
+      object_pk: "1",
+      timestamp: "1685519465",
+      security_hash: "fea323148dc8d5886db3e30c1f4714f35b130073",
+      csrfToken: "ELgJPDvW24T0u7NGr4i9z8nyKIFNThd4Y6PNyPUEhKv1N5CMAPdQxrk2IF5mYdKL",
+      postCommentUrl: new URL("http://localhost:8000/show/comments/post/ajax/"),
+    }
+
     expect(CommentList).toBeTruthy()
 
     const wrapper = mount(CommentList, {
       props: {
         comments: comments,
+        commentMeta,
       },
     })
 

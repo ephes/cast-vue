@@ -20,8 +20,7 @@
     <div v-if="post.comments" class="comments">
       <comment-list
         :comments="post.comments"
-        :postId="post.id"
-        :securityData="post.comments_security_data"
+        :commentMeta="commentMeta"
         @comment-posted="handleCommentPosted">
       </comment-list>
     </div>
@@ -35,7 +34,7 @@
 
 <script lang="ts">
 import { getTexContentFromElement } from "../helpers/dom";
-import { Post, ModalImage } from "./types";
+import { Post, ModalImage, CommentMeta } from "./types";
 import CommentList from "./CommentList.vue";
 
 
@@ -173,6 +172,16 @@ export default {
         this.post.html_detail
       );
       return author;
+    },
+    commentMeta(): CommentMeta {
+      const postCommentUrl = new URL(getTexContentFromElement("post-comment-url"));
+      const csrfToken = getTexContentFromElement("csrf-token");
+      const commentMeta: CommentMeta = {
+        ...this.post.comments_security_data,
+        postCommentUrl,
+        csrfToken,
+      }
+      return commentMeta;
     },
   },
 };

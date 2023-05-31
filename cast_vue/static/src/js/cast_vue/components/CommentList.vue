@@ -9,15 +9,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed } from 'vue';
+import { defineComponent, PropType, ref, computed, onMounted } from 'vue';
 import CommentItem from './CommentItem.vue';
 import CommentForm from './CommentForm.vue';
-import { Comment, CommentSecurityData, CommentFormData, CommentInputData } from './types';
-
-import { getTexContentFromElement } from '../helpers/dom';
-
-const postCommentUrl = new URL(getTexContentFromElement("post-comment-url"));
-const csrfToken = getTexContentFromElement("csrf-token")
+import { Comment, CommentMeta, CommentFormData, CommentInputData, CommentResponse } from './types';
 
 export default defineComponent({
     components: {
@@ -29,17 +24,12 @@ export default defineComponent({
             type: Array as PropType<Comment[]>,
             required: true,
         },
-        securityData: {
-            type: Object as PropType<CommentSecurityData>,
+        commentMeta: {
+            type: Object as PropType<CommentMeta>,
             required: true,
         },
-        postId: {
-            type: Number,
-            required: true,
-        }
     },
     setup(props, context) {
-        const newCommentText = ref("");
         const commentError = ref("");
         const rootComments = computed(() =>
             props.comments.filter((comment) => comment.parent === null)
@@ -47,57 +37,55 @@ export default defineComponent({
 
         const submitComment = (comment: CommentInputData) => {
             console.log('Submit new comment - comment list:', comment.comment);
-            console.log('post to url: ', postCommentUrl);
-            console.log("csrf-token: ", csrfToken);
-            console.log("security data: ", props.securityData)
+            console.log("commentMeta: ", props.commentMeta)
             const newComment: CommentFormData = {
-                content_type: "cast.post",
-                object_pk: props.postId.toString(),
+                content_type: props.commentMeta.content_type,
+                object_pk: props.commentMeta.object_pk,
                 comment: comment.comment,
                 name: comment.name,
                 email: comment.email,
                 title: comment.title,
-                security_hash: props.securityData.security_hash,
-                timestamp: props.securityData.timestamp,
+                security_hash: props.commentMeta.security_hash,
+                timestamp: props.commentMeta.timestamp,
                 parent: comment.parent,
             }
             const newCommentData = new URLSearchParams();
             Object.keys(newComment).forEach(key => newCommentData.append(key, newComment[key]));
 
-            fetch(postCommentUrl, {
-                method: 'POST',
+            fetch(props.commentMeta.postCommentUrl, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": csrfToken,
+                    "X-CSRFToken": props.commentMeta.csrfToken,
                     "X-Requested-With": "XMLHttpRequest",
                 },
                 body: newCommentData
             })
-                .then(response => {
-                    console.log("response start: ", response)
-                    return response.json()
-                })
-                .then(json => {
-                    console.log("response json: ", json)
-                    if (json["success"]) {
-                        // cache invalidate post detail + refetch
-                        context.emit("comment-posted", true);
-                        commentError.value = "";
+            .then(response => {
+                console.log("response start: ", response)
+                return response.json() as Promise<CommentResponse>
+            })
+            .then(json => {
+                console.log("response json: ", json)
+                if (json.success) {
+                    // cache invalidate post detail + refetch
+                    context.emit("comment-posted", true);
+                    commentError.value = "";
+                } else {
+                    // comment not successfully saved
+                    if (json.is_moderated) {
+                        commentError.value = `Your comment was moderated: ${json["html"]}`
                     } else {
-                        // comment not successfully saved
-                        if (json["is_moderated"]) {
-                            commentError.value = `Your comment was moderated: ${json["html"]}`
-                        } else {
-                            commentError.value = `Some other error occurred saving comment: ${json["html"]}`
-                        }
+                        commentError.value = `Some other error occurred saving comment: ${json["html"]}`
                     }
-                    return json
-                })
-                .catch(err => console.error('Error posting comment: ', err));
+                    console.log("commentError: ", json)
+                }
+                return json
+            })
+            .catch(err => console.error('Error posting comment: ', err));
         };
 
         return {
-            newCommentText,
             commentError,
             submitComment,
             rootComments,

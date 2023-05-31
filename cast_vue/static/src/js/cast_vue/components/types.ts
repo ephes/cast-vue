@@ -1,3 +1,5 @@
+import { Comment } from "vue";
+
 export interface Comment {
   id: number;
   parent: number | null;
@@ -6,11 +8,25 @@ export interface Comment {
   comment: string;
 }
 
-export interface CommentSecurityData {
-  "content-type": string;
+export interface CommentMeta {
+  content_type: string;
   object_pk: string;
   timestamp: string;
   security_hash: string;
+  postCommentUrl: URL;
+  csrfToken: string;
+}
+
+export interface CommentResponse {
+  success: boolean;
+  action: string;
+  errors: string;
+  object_id: string;
+  parent_id: string | null;
+  comment_id: string;
+  is_moderated: boolean;
+  html: string;
+  use_threadedcomments: boolean;
 }
 
 export interface CommentInputData {
