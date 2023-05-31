@@ -46,6 +46,12 @@ for [`django-cast`](https://github.com/ephes/django-cast).
 
 ## Development
 
+### Run Vite Development Server
+
+```shell
+npx vite
+```
+
 ### Run Tests
 
 ```shell
