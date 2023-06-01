@@ -7,12 +7,12 @@
         <label for="ftitle">Title: </label>
         <input id="ftitle" type="text" v-model="comment.title" placeholder="..."><br />
         <textarea v-model="comment.comment" placeholder="Add a comment..."></textarea>
-        <button @click="submitComment">Submit</button>
+        <button @click="submitComment" :disabled="!isFormValid">Submit</button>
     </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType } from 'vue';
+import { defineComponent, reactive, PropType, computed } from 'vue';
 import { CommentInputData } from './types';
 
 export default defineComponent({
@@ -36,8 +36,11 @@ export default defineComponent({
             comment.comment = "";
         };
 
+        const isFormValid = computed(() => comment.name !== '' && comment.comment !== '');
+
         return {
             comment,
+            isFormValid,
             submitComment,
 
         }
