@@ -96,6 +96,7 @@ export interface Form {
   date_before: string;
   date_facets: string;
   order: string;
+  page: number;
 }
 
 export interface ArticleData {

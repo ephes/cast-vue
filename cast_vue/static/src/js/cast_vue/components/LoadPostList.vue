@@ -4,7 +4,7 @@
         <div v-else>
             <filter-form
                 @submit-filter-form="handleSubmitFilterForm"
-                :form="(form as any)"
+                :form="form"
                 :facetCounts="facetCounts"
             ></filter-form>
             <br />
@@ -18,7 +18,7 @@
 <script lang="ts">
 import config from '../config';
 import { PostsFromApi } from './types';
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, computed, Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import FilterForm from './FilterForm.vue';
 import PostList from './PostList.vue';
@@ -41,7 +41,7 @@ export default {
         const blog = ref({});
         const postsFromApi = ref({} as PostsFromApi);
         const facetCounts = ref({} as Record<string, number>);
-        const form = ref(getUrlSearchParams(route.query));
+        const form = ref(getUrlSearchParams(route.query)) as unknown as Ref<Form>;
         const currentPage = ref(isNaN(Number(form.value.page)) ? 1 : Number(form.value.page));  // maybe page was already set in url
         const itemsPerPage = config.paginationPageSize;
 
