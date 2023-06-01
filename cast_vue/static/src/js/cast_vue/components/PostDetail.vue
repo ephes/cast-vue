@@ -13,7 +13,7 @@ import config from '../config';
 import { useRoute } from 'vue-router';
 import PostItem from './PostItem.vue';
 import { useDataStore } from '../stores/dataStore';
-import { Post } from './types';
+import { Post, PostsFromApi } from './types';
 import { ref, onMounted } from 'vue';
 
 export default {
@@ -47,7 +47,7 @@ export default {
       postDetailUrl.searchParams.set("fields", "html_detail,comments,comments_security_data,comments_are_enabled");
 
       try {
-        const posts = await dataStore.fetchJson(postDetailUrl, invalidateCache);
+        const posts = await dataStore.fetchJson(postDetailUrl, invalidateCache) as unknown as PostsFromApi;
         post.value = posts.items[0];
       } catch (error) {
         console.error('Error fetching data from API: ', error);
