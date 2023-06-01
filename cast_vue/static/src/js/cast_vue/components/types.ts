@@ -51,6 +51,13 @@ export interface CommentFormData {
   parent: string;
 }
 
+export interface CommentSecurityData {
+  content_type: string;
+  object_pk: string;
+  timestamp: string;
+  security_hash: string;
+}
+
 export interface Post {
   id: number;
   title: string;
