@@ -19,7 +19,7 @@
 import config from '../config';
 import { PostsFromApi } from './types';
 import { ref, onMounted, computed, Ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { LocationQueryRaw, useRoute, useRouter } from 'vue-router';
 import FilterForm from './FilterForm.vue';
 import PostList from './PostList.vue';
 import PaginationButtons from './PaginationButtons.vue';
@@ -92,7 +92,7 @@ export default {
             updateSearchParams(wagtailApiUrl, data);
             updateSearchParams(facetCountsApiUrl, data);
             await fetchData();
-            router.push({ query: data as any });
+            router.push({ query: data as unknown as LocationQueryRaw});
         };
 
         const changePage = async (delta: number) => {
