@@ -1,13 +1,23 @@
 <template>
     <div class="comment-form">
+      <div class="input-field">
         <label for="fname">Name: </label>
-        <input id="fname" type="text" v-model="comment.name" placeholder="Your name"><br />
-        <label for="femail">Mailaddress: </label>
-        <input id="femail" type="text" v-model="comment.email" placeholder="..."><br />
+        <input id="fname" type="text" v-model="comment.name" placeholder="Your name">
+      </div>
+      <div class="input-field">
+        <label for="femail">Mail Address: </label>
+        <input id="femail" type="text" v-model="comment.email" placeholder="Your email">
+      </div>
+      <div class="input-field">
         <label for="ftitle">Title: </label>
-        <input id="ftitle" type="text" v-model="comment.title" placeholder="..."><br />
+        <input id="ftitle" type="text" v-model="comment.title" placeholder="Title">
+      </div>
+      <div class="input-field">
         <textarea v-model="comment.comment" placeholder="Add a comment..."></textarea>
-        <button @click="submitComment" :disabled="!isFormValid">Submit</button>
+      </div>
+      <div class="input-field">
+        <button @click="submitComment" :disabled="!isFormValid" class="submit-button">Submit</button>
+      </div>
     </div>
 </template>
 
@@ -47,3 +57,38 @@ export default defineComponent({
     }
 });
 </script>
+<style scoped>
+.comment-form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+.input-field {
+  margin-bottom: 20px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+button.submit-button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+</style>
