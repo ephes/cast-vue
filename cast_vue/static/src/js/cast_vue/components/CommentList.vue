@@ -2,9 +2,14 @@
     <div class="comment-list">
         <div v-if="commentError">{{ commentError }}</div>
         <div v-for="comment in rootComments" :key="comment.id">
-            <comment-item @comment-submitted="submitComment" :comment="comment" :comments="comments" />
+            <comment-item
+                @comment-submitted="submitComment"
+                :comment="comment"
+                :comments="comments"
+                :comments-enabled="commentMeta.commentsAreEnabled"
+            />
         </div>
-        <comment-form :parent="null" @comment-submitted="submitComment"></comment-form>
+        <comment-form v-if="commentMeta.commentsAreEnabled" :parent="null" @comment-submitted="submitComment"></comment-form>
     </div>
 </template>
 

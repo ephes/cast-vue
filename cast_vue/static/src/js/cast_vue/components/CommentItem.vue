@@ -3,13 +3,15 @@
         <div class="comment-user">{{ comment.user }}</div>
         <div class="comment-date">{{ comment.date }}</div>
         <div class="comment-body">{{ comment.comment }}</div>
-        <button @click="showReplyForm = !showReplyForm">Reply</button>
-        <div v-if="showReplyForm">
-            <comment-form :parent="comment.id" @comment-submitted="submitReply"></comment-form>
+        <div v-if="commentsEnabled">
+            <button @click="showReplyForm = !showReplyForm">Reply</button>
+            <div v-if="showReplyForm">
+                <comment-form :parent="comment.id" @comment-submitted="submitReply"></comment-form>
+            </div>
         </div>
         <div class="comment-children" v-if="hasChildren">
             <div v-for="child in children" :key="child.id">
-                <comment-item :comment="child" :comments="comments" />
+                <comment-item :comment="child" :comments="comments" :comments-enabled="commentsEnabled"/>
             </div>
         </div>
     </div>
@@ -32,6 +34,10 @@ export default defineComponent({
         },
         comments: {
             type: Array as PropType<Comment[]>,
+            required: true,
+        },
+        commentsEnabled: {
+            type: Boolean as PropType<boolean>,
             required: true,
         },
     },

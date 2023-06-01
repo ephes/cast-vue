@@ -171,6 +171,7 @@ export default {
         ...this.post.comments_security_data,
         postCommentUrl,
         csrfToken,
+        commentsAreEnabled: this.post.comments_are_enabled,
       }
       return commentMeta;
     },

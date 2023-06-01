@@ -15,6 +15,7 @@ export interface CommentMeta {
   security_hash: string;
   postCommentUrl: URL;
   csrfToken: string;
+  commentsAreEnabled: boolean;
 }
 
 export interface CommentResponse {
@@ -56,6 +57,7 @@ export interface Post {
   visible_date: string;
   html_overview: string;
   html_detail: string;
+  comments_are_enabled: boolean;
   comments: [Comment];
   comments_security_data: CommentSecurityData,
   meta: {
