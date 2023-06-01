@@ -9,12 +9,12 @@
 </template>
 
 <script lang="ts">
+import config from '../config';
 import { useRoute } from 'vue-router';
 import PostItem from './PostItem.vue';
 import { useDataStore } from '../stores/dataStore';
 import { Post } from './types';
 import { ref, onMounted } from 'vue';
-import { getWagtailApiBaseUrl } from '../helpers/dom';
 
 export default {
   name: "PostDetail",
@@ -30,7 +30,7 @@ export default {
   setup() {
     const route = useRoute();
     const dataStore = useDataStore();
-    const wagtailApiUrl = getWagtailApiBaseUrl();
+    const wagtailApiUrl = new URL(config.postListUrl.toString()); // make a copy to not modify the original url
 
     const isLoading = ref(true);
     const post = ref({} as Post);

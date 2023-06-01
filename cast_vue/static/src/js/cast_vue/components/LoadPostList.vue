@@ -16,6 +16,7 @@
 </template>
 
 <script lang="ts">
+import config from '../config';
 import { PostsFromApi } from './types';
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -24,7 +25,6 @@ import PostList from './PostList.vue';
 import PaginationButtons from './PaginationButtons.vue';
 import { useDataStore } from '../stores/dataStore';
 import { setUrlSearchParams, getUrlSearchParams } from '../helpers/url';
-import { getWagtailApiBaseUrl, getTexContentFromElement, getFacetCountsApiBaseUrl } from '../helpers/dom';
 import { Form } from './types';
 
 
@@ -43,13 +43,7 @@ export default {
         const facetCounts = ref({} as Record<string, number>);
         const form = ref(getUrlSearchParams(route.query));
         const currentPage = ref(isNaN(Number(form.value.page)) ? 1 : Number(form.value.page));  // maybe page was already set in url
-        const itemsPerPage = Number(getTexContentFromElement("pagination-page-size"));
-
-        // blog detail url
-        const blogPk = getTexContentFromElement("blog-pk");
-        const wagtailApiUrlString = getTexContentFromElement("wagtail-api-pages-url");
-        const blogDetailUrl = new URL(`${wagtailApiUrlString}${blogPk}/`);
-        blogDetailUrl.searchParams.set("type", "cast.Blog");
+        const itemsPerPage = config.paginationPageSize;
 
         const updateSearchParams = (wagtailApiUrl: URL, data: any) => {
             const { page: _, ...params } = data;  // remove page from params
@@ -66,7 +60,7 @@ export default {
         };
 
         // init pages api url
-        const wagtailApiUrl = getWagtailApiBaseUrl();
+        const wagtailApiUrl = new URL(config.postListUrl.toString()); // make a copy to not modify the original url
         wagtailApiUrl.searchParams.set("type", "cast.Post");
         wagtailApiUrl.searchParams.set("fields", "html_overview,html_detail,visible_date");
         wagtailApiUrl.searchParams.set("offset", "0");
@@ -76,16 +70,16 @@ export default {
         updateSearchParams(wagtailApiUrl, calculateFirstOffset(form.value));
 
         // init blog facet counts api url
-        const facetCountsApiUrl = getFacetCountsApiBaseUrl();
+        const facetCountsApiUrl = config.apiFacetCountsUrl;
         updateSearchParams(facetCountsApiUrl, calculateFirstOffset(form.value));
 
         const fetchData = async () => {
             try {
                 const dataStore = useDataStore();
-                blog.value = await dataStore.fetchJson(blogDetailUrl);
+                blog.value = await dataStore.fetchJson(config.blogDetailUrl);
                 const facetResult = await dataStore.fetchJson(facetCountsApiUrl);
-                facetCounts.value = facetResult.facet_counts;
-                postsFromApi.value = await dataStore.fetchJson(wagtailApiUrl);
+                facetCounts.value = facetResult.facet_counts as Record<string, number>;
+                postsFromApi.value = await dataStore.fetchJson(wagtailApiUrl) as unknown as PostsFromApi;
             } catch (error) {
                 console.error('Error fetching blog data from API: ', error);
             } finally {
@@ -122,8 +116,6 @@ export default {
             postsFromApi,
             facetCounts,
             form,
-            wagtailApiUrl,
-            blogDetailUrl,
             handleSubmitFilterForm,
             changePage
         };

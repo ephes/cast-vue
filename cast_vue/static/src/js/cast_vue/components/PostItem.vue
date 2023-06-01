@@ -33,6 +33,7 @@
 </template>
 
 <script lang="ts">
+import config from '../config';
 import { getTexContentFromElement } from "../helpers/dom";
 import { Post, ModalImage, CommentMeta } from "./types";
 import CommentList from "./CommentList.vue";
@@ -174,8 +175,8 @@ export default {
       return author;
     },
     commentMeta(): CommentMeta {
-      const postCommentUrl = new URL(getTexContentFromElement("post-comment-url"));
-      const csrfToken = getTexContentFromElement("csrf-token");
+      const postCommentUrl = config.postCommentUrl;
+      const csrfToken = config.csrfToken;
       const commentMeta: CommentMeta = {
         ...this.post.comments_security_data,
         postCommentUrl,

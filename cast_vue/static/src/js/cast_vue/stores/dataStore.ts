@@ -12,7 +12,7 @@ export const useDataStore = defineStore({
     jsonCache: {},
   }),
   actions: {
-    async fetchJson(url: URL, invalidateCache: boolean = false): Promise<Record<string, unknown> | null> {
+    async fetchJson(url: URL, invalidateCache: boolean = false): Promise<Record<string, unknown>> {
       // Check if the URL is in the cache.
       const urlStr = url.toString();
       // console.log("fetchJson: ", urlStr)
@@ -33,7 +33,7 @@ export const useDataStore = defineStore({
         return data;
       } catch (error) {
         console.error("Failed to fetch JSON", error);
-        return null;
+        throw error;
       }
     },
   },

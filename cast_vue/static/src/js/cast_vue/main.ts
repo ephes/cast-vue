@@ -5,6 +5,7 @@ import 'vite/modulepreload-polyfill';  // recommended by django-vite, dunno why
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { createRouter, createWebHistory } from "vue-router";
+import config from './config';
 import LoadPostList from "./components/LoadPostList.vue";
 import PostDetail from "./components/PostDetail.vue";
 
@@ -23,13 +24,10 @@ const routes = [
     },
 ];
 
-let baseUrl = "/";
-const baseUrlElement = document.getElementById("base-url");
-if (baseUrlElement?.textContent) {
-    baseUrl = JSON.parse(baseUrlElement.textContent);
-}
+console.log("blogUrl: ", config.blogUrl);
+console.log("blog detail url: ", config.blogDetailUrl);
 const router = createRouter({
-    history: createWebHistory(baseUrl),
+    history: createWebHistory(config.blogUrl),
     routes,
   });
 
