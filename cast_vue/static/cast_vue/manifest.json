@@ -1,13 +1,13 @@
 {
   "js/cast_vue/main.css": {
-    "file": "main-098c2e3f.css",
+    "file": "main-8a67667b.css",
     "src": "js/cast_vue/main.css"
   },
   "js/cast_vue/main.ts": {
     "css": [
-      "main-098c2e3f.css"
+      "main-8a67667b.css"
     ],
-    "file": "main-2f5e5047.js",
+    "file": "main-db10b965.js",
     "isEntry": true,
     "src": "js/cast_vue/main.ts"
   }
