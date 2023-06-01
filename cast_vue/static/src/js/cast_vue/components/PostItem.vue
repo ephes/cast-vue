@@ -8,7 +8,6 @@
       </p>
     </div>
     <div v-else>
-      visible date detail
       <p>
         <router-link :to="{ name: 'PostDetail', params: { slug: post.meta.slug } }">
           <time :date-time="articleData.articleDateTime">{{ articleData.articleDate }}</time> </router-link>, by
