@@ -12,7 +12,7 @@ export const useDataStore = defineStore({
     jsonCache: {},
   }),
   actions: {
-    async fetchJson(url: URL, invalidateCache: boolean = false): Promise<any> {
+    async fetchJson(url: URL, invalidateCache: boolean = false): Promise<Record<string, unknown> | null> {
       // Check if the URL is in the cache.
       const urlStr = url.toString();
       // console.log("fetchJson: ", urlStr)
@@ -21,15 +21,20 @@ export const useDataStore = defineStore({
       }
 
       // Fetch the JSON if it's not in the cache.
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
 
-      // Store the result in the cache.
-      this.jsonCache[urlStr] = data;
-      return data;
+        // Store the result in the cache.
+        this.jsonCache[urlStr] = data;
+        return data;
+      } catch (error) {
+        console.error("Failed to fetch JSON", error);
+        return null;
+      }
     },
   },
 });
