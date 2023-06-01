@@ -3,16 +3,16 @@
     <h2>{{ post.title }}</h2>
     <div v-if="detail">
       <p>
-        <time :date-time="visibleDateTimeStr">{{ visibleDate }}</time>, by
-        <span class="author">{{ author }}</span>
+        <time :date-time="articleData.articleDateTime">{{ articleData.articleDate }}</time>, by
+        <span class="author">{{ articleData.articleAuthor }}</span>
       </p>
     </div>
     <div v-else>
       visible date detail
       <p>
         <router-link :to="{ name: 'PostDetail', params: { slug: post.meta.slug } }">
-          <time :date-time="visibleDateTimeStr">{{ visibleDate }}</time> </router-link>, by
-        <span class="author">{{ author }}</span>
+          <time :date-time="articleData.articleDateTime">{{ articleData.articleDate }}</time> </router-link>, by
+        <span class="author">{{ articleData.articleAuthor }}</span>
       </p>
     </div>
     <div v-if="detail" v-html="post.html_detail" @click="handleClick"></div>
@@ -34,8 +34,7 @@
 
 <script lang="ts">
 import config from '../config';
-import { getTexContentFromElement } from "../helpers/dom";
-import { Post, ModalImage, CommentMeta } from "./types";
+import { Post, ModalImage, CommentMeta, ArticleData } from "./types";
 import CommentList from "./CommentList.vue";
 
 
@@ -153,26 +152,18 @@ export default {
     }
   },
   computed: {
-    visibleDate(): string {
-      const visibleDateStr = getTexContentFromElement(
-        "vue-article-date",
-        this.post.html_detail
-      );
-      return visibleDateStr;
-    },
-    visibleDateTimeStr(): string {
-      const visibleDateTimeStr = getTexContentFromElement(
-        "vue-article-datetime",
-        this.post.html_detail
-      );
-      return visibleDateTimeStr;
-    },
-    author(): string {
-      const author = getTexContentFromElement(
-        "vue-article-author",
-        this.post.html_detail
-      );
-      return author;
+    articleData(): ArticleData {
+      const dom = new DOMParser().parseFromString(this.post.html_detail, "text/html");
+      const {
+        articleDate = "",
+        articleDateTime = "",
+        articleAuthor = "",
+      } = dom.getElementById("vue-article-data")?.dataset ?? {};
+      return {
+        articleDate,
+        articleDateTime,
+        articleAuthor,
+      }
     },
     commentMeta(): CommentMeta {
       const postCommentUrl = config.postCommentUrl;

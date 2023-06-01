@@ -88,3 +88,9 @@ export interface Form {
   date_facets: string;
   order: string;
 }
+
+export interface ArticleData {
+  articleDate: string;
+  articleDateTime: string;
+  articleAuthor: string;
+}
