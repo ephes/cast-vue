@@ -1,5 +1,3 @@
-import { parse } from "vue/compiler-sfc";
-
 const {
   blogUrl = "/",
   csrfToken = "",
@@ -8,6 +6,8 @@ const {
   wagtailApiPagesUrl = "/",
   apiFacetCountsUrl = "/",
   postCommentUrl = "/",
+  vueRouteName = "PostList",
+  postSlug = "",
 } = document.getElementById("vue-configuration")?.dataset ?? {};
 
 let parsedBlogId = null;
@@ -46,4 +46,6 @@ export default {
   postCommentUrl: parsedPostCommentUrl,
   blogDetailUrl,
   postListUrl,
+  vueRouteName,
+  postSlug,
 };

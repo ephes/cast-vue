@@ -11,28 +11,23 @@
     <meta name="viewport" content="width=device-width">
     <title>Cast Vue Template!</title>
     <meta name="description" content="Description of Cast Vue Template">
-    <!--
-      Try to set all vue configuration values in one go / script:
-       - blog-url is needed for vue router base url
-       - data-csrf-token is needed for posting comments
-       - blog-id is used for blog api detail url and posts endpoint child_of=blog.pk
-       - pagination-page-size is used for pagination
-       - wagtail-api-pages-url is where to fetch the posts
-       - api-facet-counts-url is where to fetch the facet counts
-       - post-comment-url is where to post comments
-    -->
+
+    <!-- Try to set all vue configuration values in one go / script tag -->
     <script id="vue-configuration"
-            data-blog-url="{{ blog.url }}"
-            data-csrf-token="{{ csrf_token }}"
-            data-blog-id="{{ blog.pk }}"
-            data-pagination-page-size="{{ blog.pagination_page_size }}"
-            data-wagtail-api-pages-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.wagtail_api_pages_url }}"
-            data-api-facet-counts-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.facet_counts_api_url }}"
-            data-post-comment-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.comment_post_url }}"
+            {% block vuejs-data %}
+              data-blog-url="{{ blog.url }}" {# Used for vue router base url #}
+              data-csrf-token="{{ csrf_token }}" {# Used for posting comments #}
+              data-blog-id="{{ blog.pk }}" {# Used for blog api detail url and posts endpoint child_of=blog.pk #}
+              data-pagination-page-size="{{ blog.pagination_page_size }}" {# Used for pagination #}
+            {# Used for fetching posts #}
+              data-wagtail-api-pages-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.wagtail_api_pages_url }}"
+            {# Used for fetching facet counts #}
+              data-api-facet-counts-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.facet_counts_api_url }}"
+            {# Used for posting comments #}
+              data-post-comment-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.comment_post_url }}"
+            {% endblock vuejs-data %}
     >
     </script>
-    {% block head %}
-    {% endblock head %}
   </head>
   <body>
     {% block main %}

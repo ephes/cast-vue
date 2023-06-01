@@ -24,8 +24,8 @@ const routes = [
     },
 ];
 
-console.log("blogUrl: ", config.blogUrl);
 console.log("blog detail url: ", config.blogDetailUrl);
+console.log("vue route name: ", config.vueRouteName);
 const router = createRouter({
     history: createWebHistory(config.blogUrl),
     routes,
