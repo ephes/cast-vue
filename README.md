@@ -30,7 +30,7 @@ INSTALLED_APPS = [
 
 DJANGO_VITE_ASSETS_PATH = ROOT_DIR.path("staticfiles").path("cast_vue")  # does not matter for development
 DJANGO_VITE_MANIFEST_PATH = DJANGO_VITE_ASSETS_PATH.path("manifest.json")
-DJANGO_VITE_STATIC_URL_PREFIX = "/static/cast_vue/"  # really important for production!
+DJANGO_VITE_STATIC_URL_PREFIX = "cast_vue/"  # really important for production!
 DJANGO_VITE_DEV_MODE = DEBUG
 ```
 
