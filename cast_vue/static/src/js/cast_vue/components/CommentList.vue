@@ -9,7 +9,7 @@
                 :comments-enabled="commentMeta.commentsAreEnabled"
             />
         </div>
-        <comment-form v-if="commentMeta.commentsAreEnabled" :parent="null" @comment-submitted="submitComment"></comment-form>
+        <comment-form v-if="commentMeta.commentsAreEnabled" @comment-submitted="submitComment"></comment-form>
     </div>
 </template>
 

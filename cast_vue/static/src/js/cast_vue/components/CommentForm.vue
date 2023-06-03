@@ -28,13 +28,13 @@ import { CommentInputData } from './types';
 export default defineComponent({
     props: {
         parent: {
-            type: Number as PropType<number | null>,
-            required: true,
+            type: Number as PropType<number>,
+            required: false,
         },
     },
     emits: ["comment-submitted"],
     setup(props, context) {
-        let parent = "";
+        let parent = null;
         if (props.parent) {
             parent = props.parent.toString();
         }
