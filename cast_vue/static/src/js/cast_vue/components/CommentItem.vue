@@ -72,6 +72,10 @@ export default defineComponent({
     margin-bottom: 10px;
 }
 
+.comment-children {
+    margin-top: 10px;
+}
+
 .comment-user {
     font-weight: bold;
 }
