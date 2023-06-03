@@ -79,7 +79,9 @@ export default {
                 blog.value = await dataStore.fetchJson(config.blogDetailUrl);
                 const facetResult = await dataStore.fetchJson(facetCountsApiUrl);
                 facetCounts.value = facetResult.facet_counts as Record<string, number>;
-                postsFromApi.value = await dataStore.fetchJson(wagtailApiUrl) as unknown as PostsFromApi;
+                const posts = await dataStore.fetchJson(wagtailApiUrl) as unknown as PostsFromApi;
+                dataStore.setSlugToId(posts);
+                postsFromApi.value = posts;
             } catch (error) {
                 console.error('Error fetching blog data from API: ', error);
             } finally {

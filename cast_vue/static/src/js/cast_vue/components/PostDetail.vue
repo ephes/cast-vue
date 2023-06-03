@@ -42,7 +42,12 @@ export default {
       // the page id instead of the slug and and either modify the API
       // to accept slugs or do a second request to get the page id. :/
       const postDetailUrl = new URL(wagtailApiUrl.href);
-      postDetailUrl.searchParams.set("type", "cast.Post");
+      let pageType = config.pageType;
+      if (postSlug in dataStore.slugToPost) {
+        // FIXME we could also just use the post detail url?
+        pageType = dataStore.slugToPost[postSlug].meta.type;
+      }
+      postDetailUrl.searchParams.set("type", pageType);
       postDetailUrl.searchParams.set("slug", postSlug);
       postDetailUrl.searchParams.set("fields", "html_detail,comments,comments_security_data,comments_are_enabled");
 

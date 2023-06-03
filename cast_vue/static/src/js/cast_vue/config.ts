@@ -8,6 +8,7 @@ const {
   postCommentUrl = "/",
   vueRouteName = "PostList",
   postSlug = "",
+  pageType = "",
 } = document.getElementById("vue-configuration")?.dataset ?? {};
 
 let parsedBlogId = null;
@@ -48,4 +49,5 @@ export default {
   postListUrl,
   vueRouteName,
   postSlug,
+  pageType,
 };

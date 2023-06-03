@@ -1,8 +1,10 @@
+import { PostsFromApi, Post } from './../components/types';
 import { defineStore } from 'pinia';
 
 // Define the store type
 interface DataStoreState {
   jsonCache: Record<string, any>;
+  slugToPost: Record<string, Post>;
 }
 
 // Define and export the store
@@ -10,6 +12,7 @@ export const useDataStore = defineStore({
   id: "main",
   state: (): DataStoreState => ({
     jsonCache: {},
+    slugToPost: {},
   }),
   actions: {
     async fetchJson(url: URL, invalidateCache: boolean = false): Promise<Record<string, unknown>> {
@@ -36,5 +39,10 @@ export const useDataStore = defineStore({
         throw error;
       }
     },
+    setSlugToId(posts: PostsFromApi) {
+      for (const post of posts.items) {
+        this.slugToPost[post.meta.slug] = post;
+      }
+    }
   },
 });
