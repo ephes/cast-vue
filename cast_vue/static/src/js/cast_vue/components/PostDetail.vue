@@ -49,7 +49,7 @@ export default {
       }
       postDetailUrl.searchParams.set("type", pageType);
       postDetailUrl.searchParams.set("slug", postSlug);
-      postDetailUrl.searchParams.set("fields", "html_detail,comments,comments_security_data,comments_are_enabled");
+      postDetailUrl.searchParams.set("fields", "html_detail,comments,comments_security_data,comments_are_enabled,podlove_players");
 
       try {
         const posts = await dataStore.fetchJson(postDetailUrl, invalidateCache) as unknown as PostsFromApi;

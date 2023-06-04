@@ -67,6 +67,7 @@ export interface Post {
   comments_are_enabled: boolean;
   comments: [Comment];
   comments_security_data: CommentSecurityData,
+  podlove_players: [string, string][]; // [elementId, apiUrl]
   meta: {
     type: string;
     detail_url: string;

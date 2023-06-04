@@ -62,7 +62,7 @@ export default {
         // init pages api url
         const wagtailApiUrl = new URL(config.postListUrl.toString()); // make a copy to not modify the original url
         wagtailApiUrl.searchParams.set("type", "cast.Post");
-        wagtailApiUrl.searchParams.set("fields", "html_overview,html_detail,visible_date");
+        wagtailApiUrl.searchParams.set("fields", "html_overview,html_detail,visible_date,podlove_players");
         wagtailApiUrl.searchParams.set("offset", "0");
         wagtailApiUrl.searchParams.set("limit", itemsPerPage.toString());
         wagtailApiUrl.searchParams.set("order", "-visible_date");

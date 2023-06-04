@@ -16,6 +16,11 @@
     </div>
     <div v-if="detail" v-html="post.html_detail" @click="handleClick"></div>
     <div v-else v-html="post.html_overview" @click="handleClick"></div>
+    <!-- Podlove Players -->
+    <div v-for="([elementId, apiUrl]) in podlovePlayers" :key="elementId">
+      <podlove-player :element-id="elementId" :api-url="apiUrl"></podlove-player>
+    </div>
+    <!-- Comments -->
     <div v-if="post.comments" class="comments">
       <comment-list
         :comments="post.comments"
@@ -23,6 +28,7 @@
         @comment-posted="handleCommentPosted">
       </comment-list>
     </div>
+    <!-- Modal for Images / Galleries -->
     <div v-if="isModalOpen" id="modal-div" class="modal" @click="handleModalClick">
       <span class="close" @click="closeModal">&times;</span>
       <img id="modal-image" class="modal-content" :src="modalImage.src" :srcset="modalImage.srcset"
@@ -35,6 +41,7 @@
 import config from '../config';
 import { Post, ModalImage, CommentMeta, ArticleData } from "./types";
 import CommentList from "./CommentList.vue";
+import PodlovePlayer from "./PodlovePlayer.vue";
 
 
 export default {
@@ -49,6 +56,7 @@ export default {
   name: "PostItem",
   components: {
     CommentList,
+    PodlovePlayer,
   },
   props: {
     post: {
@@ -174,6 +182,9 @@ export default {
         commentsAreEnabled: this.post.comments_are_enabled,
       }
       return commentMeta;
+    },
+    podlovePlayers(): [string, string][] {
+      return this.post.podlove_players;
     },
   },
 };
