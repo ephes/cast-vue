@@ -41,7 +41,7 @@ export default defineComponent({
         );
 
         const submitComment = (comment: CommentInputData) => {
-            console.log('Submit new comment - comment list:', comment.comment);
+            console.log('Submit new comment - comment list:', comment);
             console.log("commentMeta: ", props.commentMeta)
             const newComment: CommentFormData = {
                 content_type: props.commentMeta.content_type,
@@ -52,7 +52,7 @@ export default defineComponent({
                 title: comment.title,
                 security_hash: props.commentMeta.security_hash,
                 timestamp: props.commentMeta.timestamp,
-                parent: comment.parent,
+                parent: comment.parent ?? "",
             }
             const newCommentData = new URLSearchParams();
             Object.keys(newComment).forEach(key => newCommentData.append(key, newComment[key]));
@@ -78,10 +78,11 @@ export default defineComponent({
                     commentError.value = "";
                 } else {
                     // comment not successfully saved
+                    const errorMessage = JSON.stringify(json.errors);
                     if (json.is_moderated) {
-                        commentError.value = `Your comment was moderated: ${json["html"]}`
+                        commentError.value = `Your comment was moderated: ${errorMessage}`
                     } else {
-                        commentError.value = `Some other error occurred saving comment: ${json["html"]}`
+                        commentError.value = `Some other error occurred saving comment: ${errorMessage}`
                     }
                     console.log("commentError: ", json)
                 }
