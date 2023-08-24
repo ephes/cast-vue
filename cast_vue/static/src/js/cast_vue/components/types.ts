@@ -97,6 +97,8 @@ export interface Form {
   date_after: string;
   date_before: string;
   date_facets: string;
+  category_facets: string;
+  tag_facets: string;
   order: string;
   page: number;
 }
@@ -107,9 +109,14 @@ export interface ArticleData {
   articleAuthor: string;
 }
 
+interface Facet {
+  slug: string;
+  name: string;
+  count: number;
+}
 
 export interface FacetCounts {
-  date_facets: Record<string, number>;
-  category_facets: Record<string, [string, number]>;
-  tag_facets: Record<string, [string, number]>;
+  date_facets: [Facet];
+  category_facets: [Facet];
+  tag_facets: [Facet];
 }

@@ -15,10 +15,34 @@
         <input v-model="form.date_facets" id="id_date_facets" />
         <div class="cast-date-facet-container" id="id_date_facets">
           <div class="cast-date-facet-item">
-            <a class="selected" href="#" @click.prevent="selectDateFacet('')">All</a>
+            <a class="selected" href="#" @click.prevent="selectFacet('date_facets', '')">All</a>
           </div>
-          <div v-for="(facet, count) in facetCounts.date_facets" :key="facet" class="cast-date-facet-item">
-            <a href="#" @click.prevent="selectDateFacet(facet)">{{ facet }} ({{ count }})</a>
+          <div v-for="facet in facetCounts.date_facets" :key="facet.slug" class="cast-date-facet-item">
+            <a href="#" @click.prevent="selectFacet('date_facets', facet.slug)">{{ facet.name }} ({{ facet.count }})</a>
+          </div>
+        </div>
+      </p>
+      <p>
+        <label for="id_category_facets">Category Facets:</label>
+        <input v-model="form.category_facets" id="id_category_facets" />
+        <div class="cast-category-facet-container" id="id_category_facets">
+          <div class="cast-date-facet-item">
+            <a class="selected" href="#" @click.prevent="selectFacet('category_facets', '')">All</a>
+          </div>
+          <div v-for="facet in facetCounts.category_facets" :key="facet.slug" class="cast-date-facet-item">
+            <a href="#" @click.prevent="selectFacet('category_facets', facet.slug)">{{ facet.name }} ({{ facet.count }})</a>
+          </div>
+        </div>
+      </p>
+      <p>
+        <label for="id_tag_facets">Tag Facets:</label>
+        <input v-model="form.tag_facets" id="id_tag_facets" />
+        <div class="cast-tag-facet-container" id="id_tag_facets">
+          <div class="cast-date-facet-item">
+            <a class="selected" href="#" @click.prevent="selectFacet('tag_facets', '')">All</a>
+          </div>
+          <div v-for="facet in facetCounts.tag_facets" :key="facet.slug" class="cast-date-facet-item">
+            <a href="#" @click.prevent="selectFacet('tag_facets', facet.slug)">{{ facet.name }} ({{ facet.count }})</a>
           </div>
         </div>
       </p>
@@ -36,7 +60,7 @@
 
   <script lang="ts">
   import { ref, watchEffect } from 'vue';
-  import { Form } from './types';
+  import { Form, FacetCounts } from './types';
 
 
   export default {
@@ -46,7 +70,7 @@
         default: () => ({}),
       },
       facetCounts: {
-        type: Object,
+        type: Object as () => FacetCounts,
         default: () => ({}),
       },
     },
@@ -60,16 +84,18 @@
 
       const submitForm = () => {
         // handle form submission here
-        console.log(form.value);
+        console.log("form value: ", form.value);
         context.emit("submitFilterForm", form.value);
       };
 
-      const selectDateFacet = (month: string) => {
-        form.value.date_facets = month;
+      type FacetType = 'date_facets' | 'category_facets' | 'tag_facets';
+      const selectFacet = (type: FacetType, value: string) => {
+        form.value[type] = value;
+        console.log(`select ${type} - form value: `, form.value);
         context.emit("submitFilterForm", form.value);
       };
 
-      return { form, submitForm, selectDateFacet };
+      return { form, submitForm, selectFacet };
     },
     emits: ["submitFilterForm"],
   };
