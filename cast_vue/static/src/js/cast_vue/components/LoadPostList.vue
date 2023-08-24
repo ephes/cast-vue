@@ -17,7 +17,7 @@
 
 <script lang="ts">
 import config from '../config';
-import { PostsFromApi } from './types';
+import { FacetCounts, PostsFromApi } from './types';
 import { ref, onMounted, computed, Ref } from 'vue';
 import { LocationQueryRaw, useRoute, useRouter } from 'vue-router';
 import FilterForm from './FilterForm.vue';
@@ -40,7 +40,7 @@ export default {
         const isLoading = ref(true);
         const blog = ref({});
         const postsFromApi = ref({} as PostsFromApi);
-        const facetCounts = ref({} as Record<string, number>);
+        const facetCounts = ref({} as FacetCounts);
         const form = ref(getUrlSearchParams(route.query)) as unknown as Ref<Form>;
         const currentPage = ref(isNaN(Number(form.value.page)) ? 1 : Number(form.value.page));  // maybe page was already set in url
         const itemsPerPage = config.paginationPageSize;
@@ -78,7 +78,7 @@ export default {
                 const dataStore = useDataStore();
                 blog.value = await dataStore.fetchJson(config.blogDetailUrl);
                 const facetResult = await dataStore.fetchJson(facetCountsApiUrl);
-                facetCounts.value = facetResult.facet_counts as Record<string, number>;
+                facetCounts.value = facetResult.facet_counts as FacetCounts;
                 const posts = await dataStore.fetchJson(wagtailApiUrl) as unknown as PostsFromApi;
                 dataStore.setSlugToId(posts);
                 postsFromApi.value = posts;

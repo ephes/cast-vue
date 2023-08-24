@@ -1,3 +1,4 @@
+import { AnymatchFn } from "vite";
 import { Comment } from "vue";
 
 export interface Comment {
@@ -104,4 +105,11 @@ export interface ArticleData {
   articleDate: string;
   articleDateTime: string;
   articleAuthor: string;
+}
+
+
+export interface FacetCounts {
+  date_facets: Record<string, number>;
+  category_facets: Record<string, [string, number]>;
+  tag_facets: Record<string, [string, number]>;
 }

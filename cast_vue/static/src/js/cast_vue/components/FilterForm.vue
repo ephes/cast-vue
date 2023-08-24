@@ -17,7 +17,7 @@
           <div class="cast-date-facet-item">
             <a class="selected" href="#" @click.prevent="selectDateFacet('')">All</a>
           </div>
-          <div v-for="(count, facet) in facetCounts" :key="facet" class="cast-date-facet-item">
+          <div v-for="(facet, count) in facetCounts.date_facets" :key="facet" class="cast-date-facet-item">
             <a href="#" @click.prevent="selectDateFacet(facet)">{{ facet }} ({{ count }})</a>
           </div>
         </div>
