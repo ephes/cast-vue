@@ -2,6 +2,7 @@
     <div>
         <p v-if="isLoading">Loading data...</p>
         <div v-else>
+            <select-theme></select-theme>
             <filter-form
                 @submit-filter-form="handleSubmitFilterForm"
                 :form="form"
@@ -23,6 +24,7 @@ import { LocationQueryRaw, useRoute, useRouter } from 'vue-router';
 import FilterForm from './FilterForm.vue';
 import PostList from './PostList.vue';
 import PaginationButtons from './PaginationButtons.vue';
+import SelectTheme from './SelectTheme.vue';
 import { useDataStore } from '../stores/dataStore';
 import { setUrlSearchParams, getUrlSearchParams } from '../helpers/url';
 import { Form } from './types';
@@ -32,7 +34,8 @@ export default {
     components: {
         FilterForm,
         PostList,
-        PaginationButtons
+        PaginationButtons,
+        SelectTheme,
     },
     setup() {
         const route = useRoute();

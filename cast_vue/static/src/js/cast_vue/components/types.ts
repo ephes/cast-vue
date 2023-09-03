@@ -120,3 +120,10 @@ export interface FacetCounts {
   category_facets: [Facet];
   tag_facets: [Facet];
 }
+
+
+export interface Theme {
+  slug: string;
+  name: string;
+  selected: boolean;
+}

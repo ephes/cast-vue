@@ -9,6 +9,8 @@ const {
   vueRouteName = "PostList",
   postSlug = "",
   pageType = "",
+  apiThemeListUrl = "/",
+  apiThemeUpdateUrl = "/",
 } = document.getElementById("vue-configuration")?.dataset ?? {};
 
 let parsedBlogId = null;
@@ -45,6 +47,8 @@ export default {
   wagtailApiPagesUrl,
   apiFacetCountsUrl: parsedApiFacetCountsUrl,
   postCommentUrl: parsedPostCommentUrl,
+  apiThemeListUrl: new URL(apiThemeListUrl),
+  apiThemeUpdateUrl: new URL(apiThemeUpdateUrl),
   blogDetailUrl,
   postListUrl,
   vueRouteName,

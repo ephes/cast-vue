@@ -25,6 +25,9 @@
               data-api-facet-counts-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.facet_counts_api_url }}"
             {# Used for posting comments #}
               data-post-comment-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.comment_post_url }}"
+            {# Used for theme selection #}
+              data-api-theme-list-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.theme_list_api_url }}"
+              data-api-theme-update-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.theme_update_api_url }}"
             {% endblock vuejs-data %}
     >
     </script>
