@@ -27,7 +27,6 @@
         const dataStore = useDataStore();
         const themeList = await dataStore.fetchJson(config.apiThemeListUrl);
         this.themes = themeList.items as Theme[];
-        this.themes.push({name: "Invalid", slug: "invalid", selected: false})
         const selectedTheme = this.themes.find((theme) => theme.selected);
         if (selectedTheme) {
           this.selectedTheme = selectedTheme.slug;
