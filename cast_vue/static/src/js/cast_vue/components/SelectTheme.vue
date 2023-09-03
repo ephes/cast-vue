@@ -38,6 +38,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-CSRFToken": config.csrfToken,
           },
           body: JSON.stringify({ theme_slug: this.selectedTheme }),
         });
