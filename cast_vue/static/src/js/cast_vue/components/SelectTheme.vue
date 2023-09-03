@@ -46,7 +46,9 @@
           // Reload the page to see the new theme
           window.location.reload();
         } else {
+          console.log("theme error response: ", response);
           const result = await response.json();
+          console.log("theme error result: ", result);
           this.errorMessage = `An error occurred: ${result.error}`;
         }
       },
