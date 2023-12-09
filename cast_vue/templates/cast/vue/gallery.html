@@ -1,5 +1,3 @@
-{% load wagtail_srcset_tags %}
-
 <div class="cast-gallery-container">
   {% for image in value %}
     {% srcset_image image max-120x80 as thumbnail %}
