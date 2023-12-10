@@ -63,6 +63,26 @@ dev server (5173, was 3000 some time ago) and the port `django-vite` uses
 
 ### Run Tests
 
+Just the tests:
 ```shell
 npx vitest -r cast_vue/static/src/tests
+```
+
+With coverage:
+```shell
+npm run coverage
+```
+
+### Build
+
+```shell
+npm run build
+```
+
+Don't forget to commit the changes in `cast_vue/static/dist`!
+
+### Update Dependencies
+
+```shell
+npx npm-check-updates -u
 ```
