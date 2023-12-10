@@ -56,6 +56,11 @@ for [`django-cast`](https://github.com/ephes/django-cast).
 npx vite
 ```
 
+Then the vue app will be available at `http://localhost:8000`, the
+url of the django app. If there's nothing to see, the actual port of vite
+dev server (5173, was 3000 some time ago) and the port `django-vite` uses
+(5173) might be different.
+
 ### Run Tests
 
 ```shell
