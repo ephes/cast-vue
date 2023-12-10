@@ -75,6 +75,12 @@ npm run coverage
 
 ### Build
 
+This works:
+```shell
+npx vite build
+```
+
+This does not work!
 ```shell
 npm run build
 ```
