@@ -85,10 +85,20 @@ export interface PostsFromApi {
   items: [Post];
 }
 
+export interface ModalSource {
+  src: string;
+  srcset: string;
+  type: string;
+  sizes: string;
+}
+
 export interface ModalImage {
   src: string;
   alt: string;
   srcset: string;
+  sizes: string;
+  height: string;
+  width: string;
   next: string;
   prev: string;
 }

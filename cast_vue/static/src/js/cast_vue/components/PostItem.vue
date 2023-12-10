@@ -31,15 +31,31 @@
     <!-- Modal for Images / Galleries -->
     <div v-if="isModalOpen" id="modal-div" class="modal" @click="handleModalClick">
       <span class="close" @click="closeModal">&times;</span>
-      <img id="modal-image" class="modal-content" :src="modalImage.src" :srcset="modalImage.srcset"
-        :next="modalImage.next" :prev="modalImage.prev" alt="Full-sized image" />
+      <picture>
+        <source
+          :srcset="modalSource.srcset"
+          :src="modalSource.src"
+          :type="modalSource.type"
+          :sizes="modalSource.sizes"
+        />
+        <img
+          id="modal-image"
+          class="modal-content"
+          :src="modalImage.src"
+          :srcset="modalImage.srcset"
+          :sizes="modalImage.sizes"
+          :next="modalImage.next"
+          :prev="modalImage.prev"
+          alt="Full-sized image"
+        />
+      </picture>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import config from '../config';
-import { Post, ModalImage, CommentMeta, ArticleData } from "./types";
+import { Post, ModalImage, ModalSource, CommentMeta, ArticleData } from "./types";
 import CommentList from "./CommentList.vue";
 import PodlovePlayer from "./PodlovePlayer.vue";
 
@@ -72,6 +88,7 @@ export default {
     return {
       isModalOpen: false,
       modalImage: {} as ModalImage,
+      modalSource: {} as ModalSource,
     };
   },
   methods: {
@@ -94,15 +111,36 @@ export default {
       this.setModalFromImage(clickedEl);
     },
     setModalFromImage(clickedEl: HTMLImageElement) {
-      const attributes = [
+      const picture = clickedEl.parentNode as HTMLPictureElement;
+      const source = picture.querySelector('source') as HTMLSourceElement;
+      // console.log("setModalFromImage get picture and source?: ", picture, source);
+
+      const sourceAttributes = [
+        { attr: "data-modal-srcset", prop: "srcset" },
+        { attr: "data-modal-src", prop: "src" },
+        { attr: "type", prop: "type" },
+        { attr: "data-modal-sizes", prop: "sizes" },
+      ];
+
+      for (const { attr, prop } of sourceAttributes) {
+        const value = source.getAttribute(attr);
+        if (value) {
+          this.modalSource[prop as keyof ModalSource] = value;
+        }
+      }
+
+      const imgAttributes = [
         { attr: "alt", prop: "alt" },
         { attr: "data-prev", prop: "prev" },
         { attr: "data-next", prop: "next" },
-        { attr: "data-modal-src", prop: "src" },
+        { attr: "data-fullsrc", prop: "src" },
         { attr: "data-modal-srcset", prop: "srcset" },
+        { attr: "data-modal-sizes", prop: "sizes" },
+        { attr: "data-modal-height", prop: "height"},
+        { attr: "data-modal-width", prop: "width"},
       ];
 
-      for (const { attr, prop } of attributes) {
+      for (const { attr, prop } of imgAttributes) {
         const value = clickedEl.getAttribute(attr);
         if (value) {
           this.modalImage[prop as keyof ModalImage] = value;
