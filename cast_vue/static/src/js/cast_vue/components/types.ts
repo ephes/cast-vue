@@ -87,6 +87,7 @@ export interface PostsFromApi {
 
 export interface ModalImage {
   src: string;
+  alt: string;
   srcset: string;
   next: string;
   prev: string;

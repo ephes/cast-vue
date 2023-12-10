@@ -94,26 +94,20 @@ export default {
       this.setModalFromImage(clickedEl);
     },
     setModalFromImage(clickedEl: HTMLImageElement) {
-      const prev = clickedEl.getAttribute("data-prev");
-      if (!prev) {
-        return;
+      const attributes = [
+        { attr: "alt", prop: "alt" },
+        { attr: "data-prev", prop: "prev" },
+        { attr: "data-next", prop: "next" },
+        { attr: "data-modal-src", prop: "src" },
+        { attr: "data-modal-srcset", prop: "srcset" },
+      ];
+
+      for (const { attr, prop } of attributes) {
+        const value = clickedEl.getAttribute(attr);
+        if (value) {
+          this.modalImage[prop as keyof ModalImage] = value;
+        }
       }
-      this.modalImage.prev = prev;
-      const next = clickedEl.getAttribute("data-next");
-      if (!next) {
-        return;
-      }
-      this.modalImage.next = next;
-      const fullSrc = clickedEl.getAttribute("data-fullsrc");
-      if (!fullSrc) {
-        return;
-      }
-      this.modalImage.src = fullSrc;
-      const srcset = clickedEl.getAttribute("data-srcset");
-      if (!srcset) {
-        return;
-      }
-      this.modalImage.srcset = srcset;
       this.isModalOpen = true;
     },
     closeModal() {
