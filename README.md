@@ -80,6 +80,13 @@ This works:
 npx vite build
 ```
 
+After that, you need to copy the manifest.json to `cast_vue/static/dist`:
+```shell
+cp cast_vue/static/.vite/manifest.json cast_vue/static/dist
+```
+
+Commit the whole stuff and push.
+
 This does not work!
 ```shell
 npm run build
