@@ -1,8 +1,8 @@
 {% load static %}
 {% load django_vite %}
 
-{% vite_hmr_client %}
-{% vite_asset 'js/cast_vue/main.ts' %}
+{% vite_hmr_client app="cast_vue" %}
+{% vite_asset 'js/cast_vue/main.ts' app="cast_vue" %}
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
