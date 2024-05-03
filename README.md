@@ -80,6 +80,11 @@ This works:
 npx vite build
 ```
 
+After that, you need to copy the bundle files to `cast_vue/static/dist`:
+```shell
+cp cast_vue/static/cast_vue/* cast_vue/static/dist
+```
+
 After that, you need to copy the manifest.json to `cast_vue/static/dist`:
 ```shell
 cp cast_vue/static/cast_vue/.vite/manifest.json cast_vue/static/dist
