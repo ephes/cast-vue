@@ -82,7 +82,7 @@ npx vite build
 
 After that, you need to copy the manifest.json to `cast_vue/static/dist`:
 ```shell
-cp cast_vue/static/.vite/manifest.json cast_vue/static/dist
+cp cast_vue/static/cast_vue/.vite/manifest.json cast_vue/static/dist
 ```
 
 Commit the whole stuff and push.
