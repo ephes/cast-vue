@@ -25,13 +25,15 @@
               data-api-facet-counts-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.facet_counts_api_url }}"
             {# Used for posting comments #}
               data-post-comment-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.comment_post_url }}"
+            {# Used for podlove player config #}
+              data-api-podlove-player-config-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.podlove_player_config_url }}"
             {# Used for theme selection #}
               data-api-theme-list-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.theme_list_api_url }}"
               data-api-theme-update-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.theme_update_api_url }}"
             {% endblock vuejs-data %}
     >
     </script>
-    <script src={% static 'cast/js/web-player/embed.4.js' %}></script>
+    <script src={% static 'cast/js/web-player/embed.5.js' %}></script>
   </head>
   <body>
     {% block main %}

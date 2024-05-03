@@ -11,6 +11,7 @@ const {
   pageType = "",
   apiThemeListUrl = "/",
   apiThemeUpdateUrl = "/",
+  apiPodlovePlayerConfigUrl= "/",
 } = document.getElementById("vue-configuration")?.dataset ?? {};
 
 let parsedBlogId = null;
@@ -47,6 +48,7 @@ export default {
   wagtailApiPagesUrl,
   apiFacetCountsUrl: parsedApiFacetCountsUrl,
   postCommentUrl: parsedPostCommentUrl,
+  apiPodlovePlayerConfigUrl: new URL(apiPodlovePlayerConfigUrl),
   apiThemeListUrl: new URL(apiThemeListUrl),
   apiThemeUpdateUrl: new URL(apiThemeUpdateUrl),
   blogDetailUrl,

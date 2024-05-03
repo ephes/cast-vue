@@ -18,6 +18,10 @@ export default defineComponent({
             type: String,
             required: true,
         },
+        playerConfig: {
+            type: URL,
+            required: true,
+        },
     },
     setup(props) {
         const player = ref(null);
@@ -25,7 +29,7 @@ export default defineComponent({
         onMounted(() => {
             // Ensure that the function is available globally
             if (typeof podlovePlayer === 'function') {
-                podlovePlayer(props.elementId, props.apiUrl);
+                podlovePlayer(props.elementId, props.apiUrl, props.playerConfig);
             }
         });
 

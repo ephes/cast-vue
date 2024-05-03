@@ -18,7 +18,7 @@
     <div v-else v-html="post.html_overview" @click="handleClick"></div>
     <!-- Podlove Players -->
     <div v-for="([elementId, apiUrl]) in podlovePlayers" :key="elementId">
-      <podlove-player :element-id="elementId" :api-url="apiUrl"></podlove-player>
+      <podlove-player :element-id="elementId" :api-url="apiUrl" :player-config="apiPodlovePlayerConfigUrl"></podlove-player>
     </div>
     <!-- Comments -->
     <div v-if="post.comments" class="comments">
@@ -217,6 +217,9 @@ export default {
     },
     podlovePlayers(): [string, string][] {
       return this.post.podlove_players;
+    },
+    apiPodlovePlayerConfigUrl() {
+      return config.apiPodlovePlayerConfigUrl;
     },
   },
 };
