@@ -24,12 +24,12 @@ export default defineComponent({
         },
     },
     setup(props) {
-        const player = ref(null);
+        const player = ref<HTMLElement | null>(null);
 
         onMounted(() => {
             // Ensure that the function is available globally
-            if (typeof podlovePlayer === 'function') {
-                podlovePlayer(props.elementId, props.apiUrl, props.playerConfig);
+            if (typeof podlovePlayer === 'function' && player.value) {
+                podlovePlayer(player.value, props.apiUrl, props.playerConfig);
             }
         });
 

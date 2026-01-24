@@ -9,16 +9,25 @@
     </div>
     <div v-else>
       <p>
-        <router-link :to="{ name: 'PostDetail', params: { slug: post.meta.slug } }">
-          <time :date-time="articleData.articleDateTime">{{ articleData.articleDate }}</time> </router-link>, by
-        <span class="author">{{ articleData.articleAuthor }}</span>
+        <router-link
+          v-if="useRouterLink"
+          :to="{ name: 'PostDetail', params: { slug: post.meta.slug } }"
+        >
+          <time :date-time="articleData.articleDateTime">{{ articleData.articleDate }}</time>
+        </router-link>
+        <a v-else :href="postLink">
+          <time :date-time="articleData.articleDateTime">{{ articleData.articleDate }}</time>
+        </a>,
+        by <span class="author">{{ articleData.articleAuthor }}</span>
       </p>
     </div>
-    <div v-if="detail" v-html="post.html_detail" @click="handleClick"></div>
-    <div v-else v-html="post.html_overview" @click="handleClick"></div>
+    <div v-if="detail" v-html="detailHtml" @click="handleClick"></div>
+    <div v-else v-html="overviewHtml" @click="handleClick"></div>
     <!-- Podlove Players -->
-    <div v-for="([elementId, apiUrl]) in podlovePlayers" :key="elementId">
-      <podlove-player :element-id="elementId" :api-url="apiUrl" :player-config="apiPodlovePlayerConfigUrl"></podlove-player>
+    <div v-if="showPodlovePlayers">
+      <div v-for="([elementId, apiUrl]) in podlovePlayers" :key="elementId">
+        <podlove-player :element-id="elementId" :api-url="apiUrl" :player-config="apiPodlovePlayerConfigUrl"></podlove-player>
+      </div>
     </div>
     <!-- Comments -->
     <div v-if="post.comments" class="comments">
@@ -188,9 +197,29 @@ export default {
       } else if (clickedEl.id === "modal-image") {
         window.open(this.modalImage.src, '_blank');
       }
-    }
+    },
+    stripAudioBlocks(html: string): string {
+      if (config.pageType !== "styleguide" || !html) {
+        return html ?? "";
+      }
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      doc.querySelectorAll(".block-audio, podlove-player").forEach((node) => node.remove());
+      return doc.body.innerHTML;
+    },
   },
   computed: {
+    useRouterLink(): boolean {
+      return config.pageType !== "styleguide";
+    },
+    postLink(): string {
+      if (this.post?.meta?.html_url) {
+        return this.post.meta.html_url;
+      }
+      if (this.post?.meta?.detail_url) {
+        return this.post.meta.detail_url;
+      }
+      return "#";
+    },
     articleData(): ArticleData {
       const dom = new DOMParser().parseFromString(this.post.html_detail, "text/html");
       const {
@@ -220,6 +249,18 @@ export default {
     },
     apiPodlovePlayerConfigUrl() {
       return config.apiPodlovePlayerConfigUrl;
+    },
+    detailHtml(): string {
+      return this.stripAudioBlocks(this.post.html_detail);
+    },
+    overviewHtml(): string {
+      return this.stripAudioBlocks(this.post.html_overview);
+    },
+    showPodlovePlayers(): boolean {
+      if (config.pageType !== "styleguide") {
+        return true;
+      }
+      return this.detail;
     },
   },
 };
