@@ -8,26 +8,35 @@ import { createRouter, createWebHistory } from "vue-router";
 import config from './config';
 import LoadPostList from "./components/LoadPostList.vue";
 import PostDetail from "./components/PostDetail.vue";
+import Styleguide from "./components/Styleguide.vue";
 
 import App from './App.vue';
 
-const routes = [
-    {
-        path: "/",
-        name: "PostList",
-        component: LoadPostList,
-    },
-    {
-        path: "/:slug/",
-        name: "PostDetail",
-        component: PostDetail,
-    },
-];
+const routes = config.pageType === "styleguide"
+    ? [
+        {
+            path: "/",
+            name: "Styleguide",
+            component: Styleguide,
+        },
+    ]
+    : [
+        {
+            path: "/",
+            name: "PostList",
+            component: LoadPostList,
+        },
+        {
+            path: "/:slug/",
+            name: "PostDetail",
+            component: PostDetail,
+        },
+    ];
 
 console.log("blog detail url: ", config.blogDetailUrl);
 console.log("vue route name: ", config.vueRouteName);
 const router = createRouter({
-    history: createWebHistory(config.blogUrl),
+    history: createWebHistory(config.routerBase),
     routes,
   });
 

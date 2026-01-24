@@ -12,6 +12,7 @@ const {
   apiThemeListUrl = "/",
   apiThemeUpdateUrl = "/",
   apiPodlovePlayerConfigUrl= "/",
+  styleguideUrl = "",
 } = document.getElementById("vue-configuration")?.dataset ?? {};
 
 let parsedBlogId = null;
@@ -39,6 +40,12 @@ if (isNaN(parsedPaginationPageSize)) {
 
 const parsedApiFacetCountsUrl = new URL(apiFacetCountsUrl);
 const parsedPostCommentUrl = new URL(postCommentUrl);
+const routerBase = pageType === "styleguide" && styleguideUrl ? styleguideUrl : blogUrl;
+const styleguideDataElement = document.getElementById("cast-vue-styleguide-data");
+let styleguideData = null;
+if (styleguideDataElement?.textContent) {
+  styleguideData = JSON.parse(styleguideDataElement.textContent);
+}
 
 export default {
   blogUrl,
@@ -56,4 +63,7 @@ export default {
   vueRouteName,
   postSlug,
   pageType,
+  routerBase,
+  styleguideUrl,
+  styleguideData,
 };
