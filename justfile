@@ -25,7 +25,7 @@ js-build-sync:
 
 # Run tests once
 js-test:
-    npx vitest -r cast_vue/static/src/tests/
+    npx vitest run -r cast_vue/static/src/tests/
 
 # Run tests in watch mode
 js-test-watch:
