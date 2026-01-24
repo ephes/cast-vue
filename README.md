@@ -75,38 +75,25 @@ npm run coverage
 
 ### Build
 
-This works:
+Build the production bundle and normalize the manifest location:
+```shell
+just js-build-sync
+```
+
+This produces:
+- `cast_vue/static/cast_vue/main-*.js`
+- `cast_vue/static/cast_vue/main-*.css`
+- `cast_vue/static/cast_vue/manifest.json`
+
+Commit the updated files in `cast_vue/static/cast_vue/` so deploys and
+`collectstatic` can pick them up.
+
+If you prefer, you can run the underlying commands directly:
 ```shell
 npx vite build
+mv cast_vue/static/cast_vue/.vite/manifest.json cast_vue/static/cast_vue/manifest.json
+rm -rf cast_vue/static/cast_vue/.vite
 ```
-
-After that, you need to copy the `manifest.json` to `cast_vue/static/cast_vue/`
-because vite adds the manifest.json to the `.vite` directory:
-```shell
-cp cast_vue/static/cast_vue/.vite/manifest.json cast_vue/static/cast_vue/
-```
-
-Don't know if the next two steps are necessary? Probably not if you
-install the package via git.
-
-After that, you need to copy the bundle files to `cast_vue/static/dist`:
-```shell
-cp cast_vue/static/cast_vue/* cast_vue/static/dist
-```
-
-After that, you need to copy the manifest.json to `cast_vue/static/dist`:
-```shell
-cp cast_vue/static/cast_vue/.vite/manifest.json cast_vue/static/dist
-```
-
-Commit the whole stuff and push.
-
-This does not work!
-```shell
-npm run build
-```
-
-Don't forget to commit the changes in `cast_vue/static/dist`!
 
 ### Update Dependencies
 
