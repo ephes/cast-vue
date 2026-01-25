@@ -8,8 +8,7 @@ interface DataStoreState {
 }
 
 // Define and export the store
-export const useDataStore = defineStore({
-  id: "main",
+export const useDataStore = defineStore("main", {
   state: (): DataStoreState => ({
     jsonCache: {},
     slugToPost: {},
