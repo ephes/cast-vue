@@ -50,6 +50,26 @@ for [`django-cast`](https://github.com/ephes/django-cast).
 
 ## Development
 
+### Podlove player integration (Vue wrapper)
+
+The Podlove Web Player is **not installed via npm** in `cast-vue`. Instead, it
+is provided by `django-cast` as a static asset and loaded globally in the
+Vue base template:
+
+```html
+<script src="{% static 'cast/js/web-player/embed.5.js' %}"></script>
+```
+
+This script exposes a global `podlovePlayer(...)` function. The Vue wrapper
+component (`cast_vue/static/src/js/cast_vue/components/PodlovePlayer.vue`)
+mounts the player into a local `<div>` and passes:
+
+- the API URL for the episode (`apiUrl`)
+- the player config URL (`playerConfig`)
+
+No server-rendered `<podlove-player>` markup is required; the wrapper renders
+the player purely via JS.
+
 ### Run Vite Development Server
 
 ```shell
