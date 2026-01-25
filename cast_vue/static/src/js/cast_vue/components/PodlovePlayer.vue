@@ -27,14 +27,15 @@ export default defineComponent({
         const player = ref<HTMLElement | null>(null);
 
         onMounted(() => {
-            // Ensure that the function is available globally
             if (typeof podlovePlayer === 'function' && player.value) {
-                podlovePlayer(player.value, props.apiUrl, props.playerConfig);
+                podlovePlayer(player.value, props.apiUrl, props.playerConfig.toString());
             }
         });
 
         onBeforeUnmount(() => {
-            // Perform any necessary cleanup here
+            if (player.value) {
+                player.value.innerHTML = "";
+            }
         });
 
         return { player };

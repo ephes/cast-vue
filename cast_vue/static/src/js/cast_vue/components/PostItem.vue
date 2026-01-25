@@ -200,8 +200,8 @@ export default {
       }
     },
     stripAudioBlocks(html: string): string {
-      if (config.pageType !== "styleguide" || !html) {
-        return html ?? "";
+      if (!html) {
+        return "";
       }
       const doc = new DOMParser().parseFromString(html, "text/html");
       doc.querySelectorAll(".block-audio, podlove-player").forEach((node) => node.remove());
