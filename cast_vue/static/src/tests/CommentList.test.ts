@@ -30,6 +30,7 @@ describe("CommentList.vue", () => {
       security_hash: "fea323148dc8d5886db3e30c1f4714f35b130073",
       csrfToken: "ELgJPDvW24T0u7NGr4i9z8nyKIFNThd4Y6PNyPUEhKv1N5CMAPdQxrk2IF5mYdKL",
       postCommentUrl: new URL("http://localhost:8000/show/comments/post/ajax/"),
+      commentsAreEnabled: true,
     }
 
     expect(CommentList).toBeTruthy()

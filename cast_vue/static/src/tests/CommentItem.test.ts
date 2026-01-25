@@ -30,6 +30,7 @@ describe("CommentItem.vue", () => {
       props: {
         comment: comment,
         comments: comments,
+        commentsEnabled: false,
       },
     })
 
