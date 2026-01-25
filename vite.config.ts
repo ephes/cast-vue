@@ -33,7 +33,7 @@ export default defineConfig({
   build: {
     outDir: resolve("./cast_vue/static/cast_vue"),
     assetsDir: "",
-    manifest: true,
+    manifest: "manifest.json",
     emptyOutDir: true,
     target: "es2015",
     rollupOptions: {
