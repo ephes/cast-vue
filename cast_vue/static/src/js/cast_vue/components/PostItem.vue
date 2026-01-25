@@ -151,8 +151,9 @@ export default {
 
       for (const { attr, prop } of imgAttributes) {
         const value = clickedEl.getAttribute(attr);
-        if (value) {
-          this.modalImage[prop as keyof ModalImage] = value;
+        const isPrevNext = attr === "data-prev" || attr === "data-next";
+        if (value || isPrevNext) {
+          this.modalImage[prop as keyof ModalImage] = value ?? "";
         }
       }
       this.isModalOpen = true;
