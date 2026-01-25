@@ -18,7 +18,6 @@ js-build:
 # Build and normalize bundle outputs
 js-build-sync:
     just js-build
-    rm -f cast_vue/static/cast_vue/manifest.json
     sh -c 'test -f cast_vue/static/cast_vue/.vite/manifest.json && mv cast_vue/static/cast_vue/.vite/manifest.json cast_vue/static/cast_vue/manifest.json || true'
     python -c "from pathlib import Path; p=Path('cast_vue/static/cast_vue/manifest.json'); txt=p.read_text() if p.exists() else None; (p.write_text(txt.rstrip('\\n')+'\\n') if txt is not None else None)"
     rm -rf cast_vue/static/cast_vue/.vite
