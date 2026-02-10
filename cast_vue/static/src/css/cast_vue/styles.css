@@ -1,5 +1,17 @@
 /* Styles for vue theme */
 
+/* View transition for htmx pagination swaps */
+#paging-area {
+  view-transition-name: paging-area;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(paging-area),
+  ::view-transition-new(paging-area) {
+    animation-duration: 0s !important;
+  }
+}
+
 .cast-date-facet-container {
     display: flex;
     flex-wrap: wrap;
