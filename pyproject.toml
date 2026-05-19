@@ -7,7 +7,7 @@ name = "cast-vue"
 authors = [
     {name = "Jochen Wersdörfer", email = "jochen-castvue@wersdoerfer.de"},
 ]
-version = "0.0.27"
+version = "0.0.28"
 dynamic = ["description"]
 requires-python = ">=3.9"
 keywords = [
