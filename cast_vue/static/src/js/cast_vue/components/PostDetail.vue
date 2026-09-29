@@ -15,6 +15,7 @@ import PostItem from './PostItem.vue';
 import { useDataStore } from '../stores/dataStore';
 import { Post, PostsFromApi } from './types';
 import { ref, onMounted } from 'vue';
+import { contentReadyToken, notifyContentReady } from '../helpers/viewTransitions';
 
 export default {
   name: "PostDetail",
@@ -32,6 +33,7 @@ export default {
     const dataStore = useDataStore();
     const wagtailApiUrl = new URL(config.postListUrl.toString()); // make a copy to not modify the original url
 
+    const readyToken = contentReadyToken();
     const isLoading = ref(true);
     const post = ref({} as Post);
     const visibleDateStr = ref("");
@@ -59,6 +61,7 @@ export default {
         console.error('Error fetching data from API: ', error);
       } finally {
         isLoading.value = false;
+        notifyContentReady(readyToken);
       }
     }
 

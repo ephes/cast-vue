@@ -48,6 +48,25 @@ complete site or just one blog.
 That's it! You have successfully installed and set up the Vue.js theme
 for [`django-cast`](https://github.com/ephes/django-cast).
 
+## Route transitions
+
+In browsers with the View Transitions API, navigating between the post list and
+a post (including back/forward), paging through the list, and applying filters
+crossfade the page (`cast_vue/static/src/js/cast_vue/helpers/viewTransitions.ts`).
+Route components load their data after mounting, so the new state is captured
+once the destination reports its content as rendered, or after one second,
+whichever comes first. Readiness is tied to the navigation, so a request left
+running by the previous page cannot end the transition early. Paging and
+filtering capture the new state when the fetch finishes, or after one second.
+A slow API therefore shows the loading or previous state instead of freezing
+the page, and the content appears without animation once it arrives. The first page load does not animate, readers who prefer
+reduced motion get instant updates, and browsers without the API navigate as
+before.
+
+The server-rendered `pagination.html` and `_list_of_posts_and_paging_controls.html`
+keep their htmx transition markup: they are part of django-cast's theme template
+contract, even though the single-page app does not render them.
+
 ## Development
 
 ### Podlove player integration (Vue wrapper)

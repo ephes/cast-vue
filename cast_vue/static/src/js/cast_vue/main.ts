@@ -9,6 +9,7 @@ import config from './config';
 import LoadPostList from "./components/LoadPostList.vue";
 import PostDetail from "./components/PostDetail.vue";
 import Styleguide from "./components/Styleguide.vue";
+import { installRouteTransitions } from "./helpers/viewTransitions";
 
 import App from './App.vue';
 
@@ -39,6 +40,7 @@ const router = createRouter({
     history: createWebHistory(config.routerBase),
     routes,
   });
+installRouteTransitions(router);
 
 const app = createApp(App)
 app.use(router);

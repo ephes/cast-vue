@@ -27,6 +27,7 @@ import PaginationButtons from './PaginationButtons.vue';
 import SelectTheme from './SelectTheme.vue';
 import { useDataStore } from '../stores/dataStore';
 import { setUrlSearchParams, getUrlSearchParams } from '../helpers/url';
+import { contentReadyToken, notifyContentReady, withViewTransition } from '../helpers/viewTransitions';
 import { Form } from './types';
 
 
@@ -40,6 +41,7 @@ export default {
     setup() {
         const route = useRoute();
         const router = useRouter();
+        const readyToken = contentReadyToken();
         const isLoading = ref(true);
         const blog = ref({});
         const postsFromApi = ref({} as PostsFromApi);
@@ -89,22 +91,27 @@ export default {
                 console.error('Error fetching blog data from API: ', error);
             } finally {
                 isLoading.value = false;
+                notifyContentReady(readyToken);
             }
         };
 
         const handleSubmitFilterForm = async (data: Form) => {
-            currentPage.value = 1;
-            updateSearchParams(wagtailApiUrl, data);
-            updateSearchParams(facetCountsApiUrl, data);
-            await fetchData();
-            router.push({ query: data as unknown as LocationQueryRaw});
+            await withViewTransition(async () => {
+                currentPage.value = 1;
+                updateSearchParams(wagtailApiUrl, data);
+                updateSearchParams(facetCountsApiUrl, data);
+                await fetchData();
+                router.push({ query: data as unknown as LocationQueryRaw});
+            });
         };
 
         const changePage = async (delta: number) => {
-            currentPage.value += delta;
-            wagtailApiUrl.searchParams.set("offset", ((currentPage.value - 1) * itemsPerPage).toString());
-            router.push({ query: { ...route.query, page: currentPage.value } });
-            await fetchData();
+            await withViewTransition(async () => {
+                currentPage.value += delta;
+                wagtailApiUrl.searchParams.set("offset", ((currentPage.value - 1) * itemsPerPage).toString());
+                router.push({ query: { ...route.query, page: currentPage.value } });
+                await fetchData();
+            });
         };
 
         const totalPages = computed(() => {
