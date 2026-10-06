@@ -112,6 +112,9 @@ With coverage:
 npm run coverage
 ```
 
+GitHub Actions (`.github/workflows/ci.yml`) runs the tests and the production
+build on every push and pull request.
+
 ### Build
 
 Build the production bundle and normalize the manifest location:
