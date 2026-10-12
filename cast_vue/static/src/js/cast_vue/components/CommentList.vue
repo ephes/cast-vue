@@ -1,6 +1,5 @@
 <template>
     <div class="comment-list">
-        <div v-if="commentError">{{ commentError }}</div>
         <div v-for="comment in rootComments" :key="comment.id">
             <comment-item
                 @comment-submitted="submitComment"
@@ -40,7 +39,7 @@ export default defineComponent({
             props.comments.filter((comment) => comment.parent === null)
         );
 
-        const submitComment = (comment: CommentInputData) => {
+        const submitComment = (comment: CommentInputData, complete: (message?: string) => void = () => {}) => {
             console.log('Submit new comment - comment list:', comment);
             console.log("commentMeta: ", props.commentMeta)
             const newComment: CommentFormData = {
@@ -68,6 +67,7 @@ export default defineComponent({
             })
             .then(response => {
                 console.log("response start: ", response)
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return response.json() as Promise<CommentResponse>
             })
             .then(json => {
@@ -76,6 +76,7 @@ export default defineComponent({
                     // cache invalidate post detail + refetch
                     context.emit("comment-posted", true);
                     commentError.value = "";
+                    complete();
                 } else {
                     // comment not successfully saved
                     const errorMessage = JSON.stringify(json.errors);
@@ -84,11 +85,14 @@ export default defineComponent({
                     } else {
                         commentError.value = `Some other error occurred saving comment: ${errorMessage}`
                     }
-                    console.log("commentError: ", json)
+                    complete(commentError.value);
                 }
                 return json
             })
-            .catch(err => console.error('Error posting comment: ', err));
+            .catch(() => {
+                commentError.value = "Could not save your comment. Please retry.";
+                complete(commentError.value);
+            });
         };
 
         return {

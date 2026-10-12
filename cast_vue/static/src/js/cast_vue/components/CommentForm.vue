@@ -1,5 +1,6 @@
 <template>
     <div class="comment-form">
+      <p v-if="error" role="alert">{{ error }}</p>
       <div class="input-field">
         <label for="fname">Name: </label>
         <input id="fname" type="text" v-model="comment.name" placeholder="Your name">
@@ -16,13 +17,13 @@
         <textarea v-model="comment.comment" placeholder="Add a comment..."></textarea>
       </div>
       <div class="input-field">
-        <button @click="submitComment" :disabled="!isFormValid" class="submit-button">Submit</button>
+        <button @click="submitComment" :disabled="pending || !isFormValid" class="submit-button">Submit</button>
       </div>
     </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType, computed } from 'vue';
+import { defineComponent, reactive, PropType, computed, ref } from 'vue';
 import { CommentInputData } from './types';
 
 export default defineComponent({
@@ -40,16 +41,26 @@ export default defineComponent({
         }
         const comment = reactive({parent: parent, comment: "", name: "", email: "", title: ""} as CommentInputData)
 
+        const pending = ref(false);
+        const error = ref("");
         const submitComment = () => {
-            console.log('Submit new comment:', comment.comment);
-            context.emit("comment-submitted", comment);
-            comment.comment = "";
+            if (pending.value || !isFormValid.value) return;
+            const snapshot = Object.freeze({ ...comment });
+            pending.value = true;
+            error.value = "";
+            context.emit("comment-submitted", snapshot, (message?: string) => {
+                pending.value = false;
+                error.value = message || "";
+                if (!message && comment.comment === snapshot.comment) comment.comment = "";
+            });
         };
 
         const isFormValid = computed(() => comment.name !== '' && comment.comment !== '');
 
         return {
             comment,
+            pending,
+            error,
             isFormValid,
             submitComment,
 
