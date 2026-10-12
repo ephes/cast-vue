@@ -97,11 +97,13 @@ export default {
 
         const handleSubmitFilterForm = async (data: Form) => {
             await withViewTransition(async () => {
+                const firstPage = { ...data, page: "1" };
                 currentPage.value = 1;
-                updateSearchParams(wagtailApiUrl, data);
-                updateSearchParams(facetCountsApiUrl, data);
+                form.value = firstPage;
+                updateSearchParams(wagtailApiUrl, calculateFirstOffset(firstPage));
+                updateSearchParams(facetCountsApiUrl, calculateFirstOffset(firstPage));
                 await fetchData();
-                router.push({ query: data as unknown as LocationQueryRaw});
+                router.push({ query: firstPage as unknown as LocationQueryRaw});
             });
         };
 

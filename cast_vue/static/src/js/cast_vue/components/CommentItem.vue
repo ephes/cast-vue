@@ -11,7 +11,7 @@
         </div>
         <div class="comment-children" v-if="hasChildren">
             <div v-for="child in children" :key="child.id">
-                <comment-item :comment="child" :comments="comments" :comments-enabled="commentsEnabled"/>
+                <comment-item :comment="child" :comments="comments" :comments-enabled="commentsEnabled" @comment-submitted="forwardReply"/>
             </div>
         </div>
     </div>
@@ -50,12 +50,19 @@ export default defineComponent({
         );
         const hasChildren = computed(() => children.value.length > 0);
 
-        const submitReply = (comment: CommentInputData) => {
-            showReplyForm.value = false;
-            context.emit('comment-submitted', comment);
+        const submitReply = (comment: CommentInputData, complete: (message?: string) => void) => {
+            context.emit('comment-submitted', comment, (message?: string) => {
+                complete(message);
+                if (!message) showReplyForm.value = false;
+            });
+        };
+
+        const forwardReply = (comment: CommentInputData, complete: (message?: string) => void) => {
+            context.emit("comment-submitted", comment, complete);
         };
 
         return {
+            forwardReply,
             reply,
             showReplyForm,
             submitReply,

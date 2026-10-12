@@ -142,3 +142,10 @@ rm -rf cast_vue/static/cast_vue/.vite
 ```shell
 npx npm-check-updates -u
 ```
+
+### Comments and filtering
+
+Comment submissions retain their draft until the server confirms persistence.
+Validation, moderation and transport failures appear beside the form so readers
+can correct or retry it. Pending forms disable duplicate submission, including replies.
+Applying a filter in the blog list resets the displayed page, route and API offset to the first page.
