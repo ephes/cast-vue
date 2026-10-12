@@ -149,3 +149,8 @@ Comment submissions retain their draft until the server confirms persistence.
 Validation, moderation and transport failures appear beside the form so readers
 can correct or retry it. Pending forms disable duplicate submission, including replies.
 Applying a filter in the blog list resets the displayed page, route and API offset to the first page.
+
+The blog list follows filter and page query changes, including browser Back and
+Forward, updating its form and API requests together. Detail pages reload when
+the slug changes in the same mounted view; comment persistence still refreshes
+the current detail from the server.

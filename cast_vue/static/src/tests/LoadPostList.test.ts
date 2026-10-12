@@ -23,7 +23,7 @@ test('filter resets page and both API offsets', async () => {
   await flushPromises();
   expect(router.currentRoute.value.query.page).toBe('1');
   expect(wrapper.vm.currentPage).toBe(1);
-  expect(wrapper.findComponent(FilterForm).props('form').page).toBe('1');
+  expect(wrapper.findComponent(FilterForm).props('form').page).toBe(1);
   const urls = mocks.fetchJson.mock.calls.slice(-3).map(call => call[0] as URL);
   expect(urls[1].searchParams.get('offset')).toBe('0');
   expect(urls[2].searchParams.get('offset')).toBe('0');
