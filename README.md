@@ -154,3 +154,9 @@ The blog list follows filter and page query changes, including browser Back and
 Forward, updating its form and API requests together. Detail pages reload when
 the slug changes in the same mounted view; comment persistence still refreshes
 the current detail from the server.
+
+Only the latest list request may publish its blog, facets, posts or transition
+readiness. Overlapping navigations cannot replace newer results. Initial loading,
+API errors, empty lists and missing detail posts have explicit messages; errors
+include a Retry button that refreshes the server response. Empty results do not
+render a post or pagination. Detail requests also ignore obsolete slug responses.

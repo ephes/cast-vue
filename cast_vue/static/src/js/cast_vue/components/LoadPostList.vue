@@ -2,6 +2,11 @@
     <div>
         <p v-if="isLoading && !hasLoaded">Loading data...</p>
         <div v-else>
+          <div v-if="error" role="alert">
+            <p>{{ error }}</p>
+            <button @click="fetchData(true)">Retry</button>
+          </div>
+          <template v-if="hasLoaded">
             <select-theme></select-theme>
             <filter-form
                 @submit-filter-form="handleSubmitFilterForm"
@@ -9,9 +14,11 @@
                 :facetCounts="facetCounts"
             ></filter-form>
             <br />
-            <pagination-buttons :currentPage="currentPage" :totalPages="totalPages" @change-page="changePage">
+            <p v-if="!error && postsFromApi.items.length === 0">No posts found.</p>
+            <pagination-buttons v-if="!error && totalPages > 0" :currentPage="currentPage" :totalPages="totalPages" @change-page="changePage">
             </pagination-buttons>
-            <post-list :blog="blog" :posts="postsFromApi" />
+            <post-list v-if="!error" :blog="blog" :posts="postsFromApi" />
+          </template>
         </div>
     </div>
 </template>
@@ -19,7 +26,7 @@
 <script lang="ts">
 import config from '../config';
 import { FacetCounts, PostsFromApi } from './types';
-import { ref, watch, computed, Ref, nextTick } from 'vue';
+import { ref, watch, computed, Ref, nextTick, onBeforeUnmount } from 'vue';
 import { LocationQueryRaw, useRoute, useRouter } from 'vue-router';
 import FilterForm from './FilterForm.vue';
 import PostList from './PostList.vue';
@@ -43,8 +50,11 @@ export default {
         const router = useRouter();
         const isLoading = ref(true);
         const hasLoaded = ref(false);
+        const error = ref('');
+        let requestId = 0;
+        onBeforeUnmount(() => { requestId += 1; });
         const blog = ref({});
-        const postsFromApi = ref({} as PostsFromApi);
+        const postsFromApi = ref({ items: [], meta: { total_count: 0 } } as unknown as PostsFromApi);
         const facetCounts = ref({} as FacetCounts);
         const form = ref({}) as Ref<Form>;
         const currentPage = ref(1);
@@ -81,24 +91,40 @@ export default {
             setUrlSearchParams(facetCountsApiUrl, params);
         };
 
-        const fetchData = async () => {
+        const fetchData = async (invalidateCache: boolean = false) => {
+            const id = ++requestId;
             const readyToken = contentReadyToken();
+            const postUrl = new URL(wagtailApiUrl.href);
+            const facetUrl = new URL(facetCountsApiUrl.href);
+            const blogUrl = new URL(config.blogDetailUrl.toString());
             isLoading.value = true;
+            error.value = '';
             try {
                 const dataStore = useDataStore();
-                blog.value = await dataStore.fetchJson(config.blogDetailUrl);
-                const facetResult = await dataStore.fetchJson(facetCountsApiUrl);
-                facetCounts.value = facetResult.facet_counts as FacetCounts;
-                const posts = await dataStore.fetchJson(wagtailApiUrl) as unknown as PostsFromApi;
-                dataStore.setSlugToId(posts);
-                postsFromApi.value = posts;
-            } catch (error) {
-                console.error('Error fetching blog data from API: ', error);
-            } finally {
+                const [blogResult, facetResult, posts] = await Promise.all([
+                    dataStore.fetchJson(blogUrl, invalidateCache), dataStore.fetchJson(facetUrl, invalidateCache), dataStore.fetchJson(postUrl, invalidateCache)
+                ]);
+                if (id !== requestId) return;
+                const meta = posts.meta;
+                const count = meta && typeof meta === 'object' && 'total_count' in meta ? meta.total_count : undefined;
+                if (!Array.isArray(posts.items) || typeof count !== 'number' || !Number.isSafeInteger(count) || count < 0) {
+                    throw new Error('Invalid post list response');
+                }
+                dataStore.setSlugToId(posts as unknown as PostsFromApi);
+                blog.value = blogResult;
+                facetCounts.value = (facetResult.facet_counts || {}) as FacetCounts;
+                postsFromApi.value = posts as unknown as PostsFromApi;
                 hasLoaded.value = true;
-                isLoading.value = false;
-                await nextTick();
-                notifyContentReady(readyToken);
+            } catch (cause) {
+                if (id !== requestId) return;
+                console.error('Could not load posts:', cause);
+                error.value = 'Could not load posts. Please retry.';
+            } finally {
+                if (id === requestId) {
+                    isLoading.value = false;
+                    await nextTick();
+                    if (id === requestId) notifyContentReady(readyToken);
+                }
             }
         };
 
@@ -126,6 +152,8 @@ export default {
 
         return {
             isLoading,
+            error,
+            fetchData,
             hasLoaded,
             currentPage,
             totalPages,
