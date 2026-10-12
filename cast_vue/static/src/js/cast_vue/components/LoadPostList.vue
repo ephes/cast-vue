@@ -1,6 +1,6 @@
 <template>
     <div>
-        <p v-if="isLoading">Loading data...</p>
+        <p v-if="isLoading && !hasLoaded">Loading data...</p>
         <div v-else>
             <select-theme></select-theme>
             <filter-form
@@ -19,14 +19,14 @@
 <script lang="ts">
 import config from '../config';
 import { FacetCounts, PostsFromApi } from './types';
-import { ref, onMounted, computed, Ref } from 'vue';
+import { ref, watch, computed, Ref, nextTick } from 'vue';
 import { LocationQueryRaw, useRoute, useRouter } from 'vue-router';
 import FilterForm from './FilterForm.vue';
 import PostList from './PostList.vue';
 import PaginationButtons from './PaginationButtons.vue';
 import SelectTheme from './SelectTheme.vue';
 import { useDataStore } from '../stores/dataStore';
-import { setUrlSearchParams, getUrlSearchParams } from '../helpers/url';
+import { setUrlSearchParams } from '../helpers/url';
 import { contentReadyToken, notifyContentReady, withViewTransition } from '../helpers/viewTransitions';
 import { Form } from './types';
 
@@ -41,44 +41,49 @@ export default {
     setup() {
         const route = useRoute();
         const router = useRouter();
-        const readyToken = contentReadyToken();
         const isLoading = ref(true);
+        const hasLoaded = ref(false);
         const blog = ref({});
         const postsFromApi = ref({} as PostsFromApi);
         const facetCounts = ref({} as FacetCounts);
-        const form = ref(getUrlSearchParams(route.query)) as unknown as Ref<Form>;
-        const currentPage = ref(isNaN(Number(form.value.page)) ? 1 : Number(form.value.page));  // maybe page was already set in url
+        const form = ref({}) as Ref<Form>;
+        const currentPage = ref(1);
         const itemsPerPage = config.paginationPageSize;
-
-        const updateSearchParams = (wagtailApiUrl: URL, data: any) => {
-            const { page: _, ...params } = data;  // remove page from params
-            setUrlSearchParams(wagtailApiUrl, params);
-        };
-
-        const calculateFirstOffset = (data: any) => {
-            const { page: _, ...rest } = data;
-            const params = { ...rest, offset: "0" };
-            if (data.page) {
-                params["offset"] = ((Number(data.page) - 1) * itemsPerPage).toString();
+        const filterKeys = ['search', 'date_after', 'date_before', 'date_facets', 'category_facets', 'tag_facets', 'order'];
+        const normalizedQuery = computed(() => {
+            const query: Record<string, string> = {};
+            for (const key of filterKeys) {
+                const raw = route.query[key];
+                query[key] = (Array.isArray(raw) ? raw[0] : raw) || '';
             }
-            return params;
+            const rawPage = Number(route.query.page);
+            query.page = String(Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1);
+            return query;
+        });
+        let wagtailApiUrl: URL;
+        let facetCountsApiUrl: URL;
+        const applyQuery = () => {
+            const query = normalizedQuery.value;
+            currentPage.value = Number(query.page);
+            form.value = { ...query, page: currentPage.value } as unknown as Form;
+            wagtailApiUrl = new URL(config.postListUrl.toString());
+            wagtailApiUrl.searchParams.set('type', 'cast.Post');
+            wagtailApiUrl.searchParams.set('fields', 'html_overview,html_detail,visible_date,podlove_players');
+            wagtailApiUrl.searchParams.set('limit', itemsPerPage.toString());
+            wagtailApiUrl.searchParams.set('order', '-visible_date');
+            wagtailApiUrl.searchParams.set('use_post_filter', 'true');
+            facetCountsApiUrl = new URL(config.apiFacetCountsUrl.toString());
+            const { page, ...filters } = query;
+            // Empty ordering uses the configured descending default.
+            if (!filters.order) delete filters.order;
+            const params = { ...filters, offset: String((Number(page) - 1) * itemsPerPage) };
+            setUrlSearchParams(wagtailApiUrl, params);
+            setUrlSearchParams(facetCountsApiUrl, params);
         };
-
-        // init pages api url
-        const wagtailApiUrl = new URL(config.postListUrl.toString()); // make a copy to not modify the original url
-        wagtailApiUrl.searchParams.set("type", "cast.Post");
-        wagtailApiUrl.searchParams.set("fields", "html_overview,html_detail,visible_date,podlove_players");
-        wagtailApiUrl.searchParams.set("offset", "0");
-        wagtailApiUrl.searchParams.set("limit", itemsPerPage.toString());
-        wagtailApiUrl.searchParams.set("order", "-visible_date");
-        wagtailApiUrl.searchParams.set("use_post_filter", "true");
-        updateSearchParams(wagtailApiUrl, calculateFirstOffset(form.value));
-
-        // init blog facet counts api url
-        const facetCountsApiUrl = config.apiFacetCountsUrl;
-        updateSearchParams(facetCountsApiUrl, calculateFirstOffset(form.value));
 
         const fetchData = async () => {
+            const readyToken = contentReadyToken();
+            isLoading.value = true;
             try {
                 const dataStore = useDataStore();
                 blog.value = await dataStore.fetchJson(config.blogDetailUrl);
@@ -90,40 +95,38 @@ export default {
             } catch (error) {
                 console.error('Error fetching blog data from API: ', error);
             } finally {
+                hasLoaded.value = true;
                 isLoading.value = false;
+                await nextTick();
                 notifyContentReady(readyToken);
             }
         };
 
         const handleSubmitFilterForm = async (data: Form) => {
-            await withViewTransition(async () => {
-                const firstPage = { ...data, page: "1" };
-                currentPage.value = 1;
-                form.value = firstPage;
-                updateSearchParams(wagtailApiUrl, calculateFirstOffset(firstPage));
-                updateSearchParams(facetCountsApiUrl, calculateFirstOffset(firstPage));
-                await fetchData();
-                router.push({ query: firstPage as unknown as LocationQueryRaw});
-            });
+            await router.push({ query: { ...data, page: 1 } as unknown as LocationQueryRaw });
         };
-
         const changePage = async (delta: number) => {
-            await withViewTransition(async () => {
-                currentPage.value += delta;
-                wagtailApiUrl.searchParams.set("offset", ((currentPage.value - 1) * itemsPerPage).toString());
-                router.push({ query: { ...route.query, page: currentPage.value } });
-                await fetchData();
-            });
+            await router.push({ query: { ...route.query, page: Math.max(1, currentPage.value + delta) } });
         };
 
         const totalPages = computed(() => {
             return Math.ceil(postsFromApi.value.meta.total_count / itemsPerPage);
         });
 
-        onMounted(fetchData);
+        let initialLoad = true;
+        watch(() => JSON.stringify(normalizedQuery.value), () => {
+            applyQuery();
+            if (initialLoad) {
+                initialLoad = false;
+                void fetchData();
+            } else {
+                void withViewTransition(fetchData);
+            }
+        }, { immediate: true });
 
         return {
             isLoading,
+            hasLoaded,
             currentPage,
             totalPages,
             blog,

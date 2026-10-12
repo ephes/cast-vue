@@ -14,7 +14,7 @@ import { useRoute } from 'vue-router';
 import PostItem from './PostItem.vue';
 import { useDataStore } from '../stores/dataStore';
 import { Post, PostsFromApi } from './types';
-import { ref, onMounted } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { contentReadyToken, notifyContentReady } from '../helpers/viewTransitions';
 
 export default {
@@ -33,13 +33,18 @@ export default {
     const dataStore = useDataStore();
     const wagtailApiUrl = new URL(config.postListUrl.toString()); // make a copy to not modify the original url
 
-    const readyToken = contentReadyToken();
     const isLoading = ref(true);
     const post = ref({} as Post);
     const visibleDateStr = ref("");
 
+    let requestId = 0;
+    let currentSlug: string | undefined;
     const fetchPostFromAPI = async (invalidateCache: boolean = false) => {
+      const id = ++requestId;
+      const readyToken = contentReadyToken();
       const postSlug = route.params.slug as string;
+      isLoading.value = currentSlug !== postSlug || !post.value?.id;
+      currentSlug = postSlug;
       // FIXME maybe use clean detail url? But then we need to have
       // the page id instead of the slug and and either modify the API
       // to accept slugs or do a second request to get the page id. :/
@@ -56,16 +61,19 @@ export default {
 
       try {
         const posts = await dataStore.fetchJson(postDetailUrl, invalidateCache) as unknown as PostsFromApi;
-        post.value = posts.items[0];
+        if (id === requestId) post.value = posts.items[0];
       } catch (error) {
         console.error('Error fetching data from API: ', error);
       } finally {
-        isLoading.value = false;
-        notifyContentReady(readyToken);
+        if (id === requestId) {
+          isLoading.value = false;
+          await nextTick();
+          if (id === requestId) notifyContentReady(readyToken);
+        }
       }
     }
 
-    onMounted(fetchPostFromAPI);
+    watch(() => route.params.slug, () => { void fetchPostFromAPI(); }, { immediate: true });
     return { dataStore, isLoading, post, visibleDate: visibleDateStr, fetchPostFromAPI };
   },
 }
