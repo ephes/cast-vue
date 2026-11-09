@@ -28,11 +28,8 @@ Advisories, übrige transitiv):
 
 Regression: derselbe vollständige Lockfile-Audit schlägt vor dem Fix fehl und
 meldet danach 0 Advisories. `npm run audit` macht die Prüfung wiederholbar;
-Registry-/Scannerfehler bleiben Fehler. Vitest und Produktionsbuild laufen lokal
-mit Node 24, entsprechend CI. Das Audit betrifft auch Entwicklungsserver, nicht
+Registry-/Scannerfehler bleiben Fehler. Mit Node 24 (wie in CI) laufen
+`npm ci`, `npm run audit` (0 Advisories), Vitest (32 Tests) und der
+Produktionsbuild erfolgreich; das Theme hat keine Browser-Tests. Das Audit betrifft auch Entwicklungsserver, nicht
 nur ausgelieferten Browsercode. Der global von django-cast gelieferte Podlove
 Player und eigene Core-/Site-Templates sind durch diesen npm-Audit nicht erfasst.
-
-Review-Gate: Opus 5.5 / high angefordert; Harness vor Reviewer-Start mit
-`TypeError: sequence item 0: expected str instance, int found` abgestürzt
-(`CRASHED`, kein Urteil). Deshalb nur Feature-Branch geparkt, kein Merge.
