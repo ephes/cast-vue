@@ -122,8 +122,10 @@ export default {
     },
     setModalFromImage(clickedEl: HTMLImageElement) {
       const picture = clickedEl.parentNode as HTMLPictureElement;
-      const source = picture.querySelector('source') as HTMLSourceElement;
-      // console.log("setModalFromImage get picture and source?: ", picture, source);
+      const source = picture.querySelector('source');
+      // The sanitizer may have removed unsafe modal URLs: never keep the previous image's values.
+      this.modalImage = {} as ModalImage;
+      this.modalSource = {} as ModalSource;
 
       const sourceAttributes = [
         { attr: "data-modal-srcset", prop: "srcset" },
@@ -133,7 +135,7 @@ export default {
       ];
 
       for (const { attr, prop } of sourceAttributes) {
-        const value = source.getAttribute(attr);
+        const value = source?.getAttribute(attr);
         if (value) {
           this.modalSource[prop as keyof ModalSource] = value;
         }

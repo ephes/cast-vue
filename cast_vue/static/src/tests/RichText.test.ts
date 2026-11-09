@@ -65,7 +65,8 @@ function expectSafe(root: ParentNode) {
     }
     for (const attribute of element.attributes) {
       expect(attribute.name).not.toMatch(/^on|^style$|^data-unknown$/);
-      expect(attribute.value).not.toMatch(/(?:javascript|data):/i);
+      // Browsers ignore ASCII whitespace and control characters inside URL schemes.
+      expect(attribute.value.replace(/[\u0000-\u0020]/g, '')).not.toMatch(/(?:javascript|data):/i);
     }
   });
 }
@@ -136,6 +137,17 @@ test('unsafe gallery URLs cannot be copied into the modal', async () => {
   await wrapper.find('#gallery-image-1').trigger('click');
   expectSafe(wrapper.element);
   expect(wrapper.find('#modal-image').attributes('src')).toBeUndefined();
+});
+
+test('an unsafe gallery image does not reuse the previous modal image', async () => {
+  const wrapper = render('detail', markup + '<picture><source srcset="/media/b.avif 300w" data-modal-src="javascript:alert(1)" data-modal-srcset="data:image/png;base64,AAAA 1x"><img id="gallery-image-2" src="/media/b.jpg" data-fullsrc="javascript:alert(1)" data-modal-srcset="data:image/png;base64,AAAA 1x"></picture>');
+  await wrapper.find('#gallery-image-1').trigger('click');
+  expect(wrapper.find('#modal-image').attributes('src')).toBe('/media/full.jpg');
+  await wrapper.find('#gallery-image-2').trigger('click');
+  expect(wrapper.find('#modal-image').attributes('src')).toBeUndefined();
+  expect(wrapper.find('#modal-image').attributes('srcset')).toBeUndefined();
+  expect(wrapper.find('.modal source').attributes('src')).toBeUndefined();
+  expect(wrapper.find('.modal source').attributes('srcset')).toBeUndefined();
 });
 
 test.each(['overview', 'detail'])('keeps audio replacement and article metadata in %s', sink => {
