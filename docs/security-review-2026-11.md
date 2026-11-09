@@ -6,13 +6,13 @@ vollständige npm-Lockfile inklusive Entwicklung; keine produktiven Sites.
 
 | Befund / Stelle | Schwere | Fix / Status |
 | --- | --- | --- |
-| `components/PostList.vue:4`: `v-html="blog.description"` | Hoch, falls unvertrauenswürdiges HTML die API erreicht | Offen, größerer Folgepunkt: Beschreibung wird ohne clientseitige Bereinigung eingesetzt. Ereignisattribute und ausführbare Links bleiben HTML. Redaktionelle Schreibrechte und API-Vertrauen prüfen; zentrale Sanitizer-Policy für Richtext mit erlaubten Tags/Attributen festlegen. Kein anonymer Schreibpfad im Theme nachgewiesen. |
-| `components/PostItem.vue:24-25,202-208`: `v-html`, `stripAudioBlocks` | Hoch, falls unvertrauenswürdiges HTML die API erreicht | Offen, größerer Folgepunkt: DOMParser und Entfernen von Audio-Blöcken sind keine Bereinigung. Andere Ereignisattribute/gefährliche URLs bleiben erhalten. Sanitizer-Policy gemeinsam mit Core und Medien-/Embed-Vertrag entwickeln; keine pauschale Entfernung, die Galerien oder Embeds beschädigt. |
+| `components/PostList.vue`: Beschreibung per `v-html` | Hoch, falls unvertrauenswürdiges HTML die API erreicht | Behoben in `cast-vue-sanitizer`: berechnetes `descriptionHtml` verwendet die zentrale DOMPurify-Allowlist. |
+| `components/PostItem.vue`: Detail/Übersicht per `v-html`, `stripAudioBlocks` | Hoch, falls unvertrauenswürdiges HTML die API erreicht | Behoben in `cast-vue-sanitizer`: nach Entfernung der alten Audio-Blöcke wird jeder HTML-Ausgabepfad mit derselben Allowlist bereinigt. Galerie-URLs in Datenattributen werden ebenfalls geprüft, bevor Vue sie in das Modal kopiert. |
 | `package-lock.json`: Vitest/mocker und Formatierungsabhängigkeiten | Mittel | Behoben: Vitest und Coverage mindestens 4.1.12; Test-Utils 2.4.11 festgesetzt, `js-beautify` per npm-Override auf 1.14.8. Dessen glob-8-/editorconfig-0.15-Baum vermeidet die gemeldeten verwundbaren neueren Linien. Temporärer Kompatibilitäts-Pin: nach Upstream-Reparatur aktualisieren; glob 8/inflight sind deprecated. |
 
 Komponentenpfade liegen unter `cast_vue/static/src/js/cast_vue/`.
-Die HTML-Risiken sind bewusst nur dokumentiert; dieser Slice behebt die kleinen
-Abhängigkeitsprobleme. Vue kompiliert `v-html` nicht als Template. Kommentare
+Der ursprüngliche Slice behob die Abhängigkeitsprobleme; der Folgeslice
+`cast-vue-sanitizer` schließt die drei `v-html`-Senken. Vue kompiliert `v-html` nicht als Template. Kommentare
 (`CommentItem.vue`) verwenden escaped Textinterpolation. `PodlovePlayer.vue`
 setzt `innerHTML` nur auf den konstanten leeren String. In den eigenen
 Django-Templates kein `safe`, `mark_safe` oder `autoescape off`; Konfiguration
@@ -33,3 +33,30 @@ Registry-/Scannerfehler bleiben Fehler. Mit Node 24 (wie in CI) laufen
 Produktionsbuild erfolgreich; das Theme hat keine Browser-Tests. Das Audit betrifft auch Entwicklungsserver, nicht
 nur ausgelieferten Browsercode. Der global von django-cast gelieferte Podlove
 Player und eigene Core-/Site-Templates sind durch diesen npm-Audit nicht erfasst.
+
+## Richtext-Allowlist (`cast-vue-sanitizer`, 09.11.2026)
+
+DOMPurify ist exakt auf `3.4.17` festgesetzt (inklusive Lockfile). Die zentrale
+Policy in `helpers/sanitizeRichText.ts` erlaubt Absätze, Links, Listen,
+Überschriften, Code/pre, Figuren/Bildunterschriften, responsive Bilder und
+native Audio-/Video-Quellen. Galerie-IDs, Klassen und die vom Vue-Modal
+verwendeten Datenattribute bleiben erhalten. Beliebige Datenattribute, Skripte,
+Eventhandler, Inline-Styles, SVG/MathML, Frames und Objekte sind nicht erlaubt.
+HTTP(S) und relative URLs bleiben erhalten, bei Links zusätzlich mailto/tel.
+Ein DOMPurify-Hook prüft Medien-URLs und jeden srcset-Kandidaten, auch in den
+Galerie-Datenattributen. `javascript:` und sämtliche `data:`-URLs werden entfernt;
+die geprüften Cast-Bild-/Galerie-Templates benötigen keine eingebetteten Datenbilder.
+Neue aktive Embeds benötigen eine gesondert geprüfte Integration, keine pauschale
+Erweiterung dieser Policy. Servervalidierung, der globale Podlove-Player und
+eigene serverseitige Templates bleiben eigenständige Vertrauensgrenzen.
+
+Die Vitest-Fixture `fixtures/castRichText.html` bildet gerendertes Cast-Markup
+ab (Quellen siehe Fixture-README). Sie bleibt nach Bereinigung unverändert;
+Komponententests prüfen alle drei Senken, Prop-Updates, Galerie-Modal-Quellen
+und weiterhin funktionierende Audio-Ersetzung/Artikelmetadaten. Payloads decken
+Skripte, onerror, javascript-Links (auch mit Zeichenreferenzen), SVG-onload,
+Daten-URLs, gemischte srcsets und gefährliche Galerie-Datenattribute ab.
+Ohne Sanitizer-Aufrufe an den drei Senken schlagen 38 Regressionstests fehl.
+Mit Node 24: `npm ci`, `npm run audit` (0 Advisories), Vitest (93 Tests) und
+Produktionsbuild erfolgreich. Für die Manifest-Normalisierung wurde lokal
+`python3` verwendet, da das Just-Rezept den hier fehlenden Alias `python` aufruft.

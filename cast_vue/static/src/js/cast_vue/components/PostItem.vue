@@ -67,6 +67,7 @@ import config from '../config';
 import { Post, ModalImage, ModalSource, CommentMeta, ArticleData } from "./types";
 import CommentList from "./CommentList.vue";
 import PodlovePlayer from "./PodlovePlayer.vue";
+import { sanitizeRichText } from '../helpers/sanitizeRichText';
 
 
 export default {
@@ -252,10 +253,10 @@ export default {
       return config.apiPodlovePlayerConfigUrl;
     },
     detailHtml(): string {
-      return this.stripAudioBlocks(this.post.html_detail);
+      return sanitizeRichText(this.stripAudioBlocks(this.post.html_detail));
     },
     overviewHtml(): string {
-      return this.stripAudioBlocks(this.post.html_overview);
+      return sanitizeRichText(this.stripAudioBlocks(this.post.html_overview));
     },
     showPodlovePlayers(): boolean {
       if (config.pageType !== "styleguide") {

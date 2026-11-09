@@ -109,8 +109,28 @@ Vitest and coverage require at least 4.1.12. Test utilities are pinned to 2.4.11
 with a temporary `js-beautify` 1.14.8 override to avoid the vulnerable glob and
 minimatch dependency lines. Update the pin once upstream supplies a repaired
 dependency tree; the older glob/inflight dependencies are deprecated.
-See [the security review](docs/security-review-2026-11.md) for remaining HTML
-trust boundaries and scope.
+See [the security review](docs/security-review-2026-11.md) for HTML trust
+boundaries and scope.
+
+### Rich text from the API
+
+Blog descriptions and post overview/detail HTML pass through the shared
+`sanitizeRichText` helper immediately before `v-html`. DOMPurify is pinned to
+3.4.17; update the exact pin and lockfile together after checking advisories and
+running the rich-text regression tests. The explicit tag/attribute allowlist
+preserves Cast formatting, figures, responsive pictures, gallery modal metadata,
+and native audio/video sources. PostItem still removes server-rendered audio
+blocks before sanitizing because the Vue Podlove wrapper supplies those players.
+
+Links accept HTTP(S), relative URLs, fragments, mailto and tel; media and gallery
+URLs accept HTTP(S) and relative URLs. Every srcset candidate is checked, including
+gallery data attributes later copied into the modal. All data URLs are rejected:
+the Cast media templates use file URLs. Scripts, SVG/MathML, event handlers, inline
+styles, frames, objects and arbitrary data attributes are excluded. Custom
+executable embeds need a separately reviewed integration. Article metadata is
+read as text before sanitization and its script element is never inserted.
+This client boundary supplements server-side validation; the global Podlove
+script and server-rendered site templates remain separate trust boundaries.
 
 ### Run Tests
 
