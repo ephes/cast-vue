@@ -67,6 +67,7 @@ import config from '../config';
 import { Post, ModalImage, ModalSource, CommentMeta, ArticleData } from "./types";
 import CommentList from "./CommentList.vue";
 import PodlovePlayer from "./PodlovePlayer.vue";
+import { sanitizeRichText } from '../helpers/sanitizeRichText';
 
 
 export default {
@@ -121,8 +122,10 @@ export default {
     },
     setModalFromImage(clickedEl: HTMLImageElement) {
       const picture = clickedEl.parentNode as HTMLPictureElement;
-      const source = picture.querySelector('source') as HTMLSourceElement;
-      // console.log("setModalFromImage get picture and source?: ", picture, source);
+      const source = picture.querySelector('source');
+      // The sanitizer may have removed unsafe modal URLs: never keep the previous image's values.
+      this.modalImage = {} as ModalImage;
+      this.modalSource = {} as ModalSource;
 
       const sourceAttributes = [
         { attr: "data-modal-srcset", prop: "srcset" },
@@ -132,7 +135,7 @@ export default {
       ];
 
       for (const { attr, prop } of sourceAttributes) {
-        const value = source.getAttribute(attr);
+        const value = source?.getAttribute(attr);
         if (value) {
           this.modalSource[prop as keyof ModalSource] = value;
         }
@@ -252,10 +255,10 @@ export default {
       return config.apiPodlovePlayerConfigUrl;
     },
     detailHtml(): string {
-      return this.stripAudioBlocks(this.post.html_detail);
+      return sanitizeRichText(this.stripAudioBlocks(this.post.html_detail));
     },
     overviewHtml(): string {
-      return this.stripAudioBlocks(this.post.html_overview);
+      return sanitizeRichText(this.stripAudioBlocks(this.post.html_overview));
     },
     showPodlovePlayers(): boolean {
       if (config.pageType !== "styleguide") {
