@@ -22,7 +22,16 @@ const attacks = [
   '<img srcset="/safe.jpg 1x, data:image/png;base64,AAAA 2x">',
   '<img data-fullsrc="javascript:alert(1)" data-modal-src="data:text/html,evil" data-modal-srcset="/safe.jpg 1x, javascript:alert(1) 2x" data-srcset="data:image/png;base64,AAAA">',
   '<p style="background:url(javascript:alert(1))" onclick="alert(1)" data-unknown="evil">text</p>',
+  '<iframe src="https://evil.example/embed"></iframe><iframe src="javascript:alert(1)"></iframe>',
+  '<iframe src="https://www.youtube.com.evil.example/embed/x"></iframe><iframe src="http://www.youtube.com/embed/x"></iframe>',
+  '<iframe src="/same-origin/page"></iframe><iframe src="https://www.youtube.com:8443/embed/x"></iframe>',
+  '<iframe src="https://www.youtube.com/embed/x" srcdoc="<script>alert(1)</script>" onload="alert(1)" sandbox=""></iframe>',
+  '<div allow="camera" allowfullscreen referrerpolicy="unsafe-url">text</div>',
 ];
+
+const embed = '<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="315" src="https://www.youtube.com/embed/bD5dyePOjk0" width="560"></iframe>';
+const tableAndSemantics = '<section class="weeknote-links" aria-label="Articles"><ul><li><mark>new</mark> <q>quoted</q> <cite>Source</cite> <abbr title="HyperText">HTML</abbr> <small>s</small> <kbd>k</kbd> <ins>i</ins></li></ul></section><table border="1" class="dataframe"><caption>Results</caption><colgroup><col span="2"></colgroup><thead><tr><th scope="col">server</th><th colspan="2">elapsed</th></tr></thead><tbody><tr><td rowspan="2">a</td><td>1</td></tr></tbody><tfoot><tr><td>sum</td></tr></tfoot></table><span class="avatar" aria-hidden="true">J</span>';
+const EMBED_SRC = /^https:\/\/(?:(?:www\.)?youtube\.com|www\.youtube-nocookie\.com|player\.vimeo\.com)\//;
 
 const wrappers: ReturnType<typeof mount>[] = [];
 afterEach(() => { wrappers.splice(0).forEach(wrapper => wrapper.unmount()); });
@@ -43,8 +52,17 @@ function render(sink: string, html: string) {
 }
 
 function expectSafe(root: ParentNode) {
-  expect(root.querySelector('script, svg, math, iframe, object, embed, style')).toBeNull();
+  expect(root.querySelector('script, svg, math, object, embed, style')).toBeNull();
+  root.querySelectorAll('iframe').forEach(frame => {
+    expect(frame.getAttribute('src') ?? '').toMatch(EMBED_SRC);
+    expect(frame.hasAttribute('srcdoc')).toBe(false);
+  });
   root.querySelectorAll('*').forEach(element => {
+    if (element.tagName !== 'IFRAME') {
+      for (const name of ['allow', 'allowfullscreen', 'referrerpolicy']) {
+        expect(element.hasAttribute(name)).toBe(false);
+      }
+    }
     for (const attribute of element.attributes) {
       expect(attribute.name).not.toMatch(/^on|^style$|^data-unknown$/);
       expect(attribute.value).not.toMatch(/(?:javascript|data):/i);
@@ -61,6 +79,22 @@ describe('rich text policy', () => {
 
   test('preserves rendered cast formatting and media markup unchanged', () => {
     expect(sanitizeRichText(markup)).toBe(markup);
+  });
+
+  test('preserves video embeds from allowed providers unchanged', () => {
+    expect(sanitizeRichText(embed)).toBe(embed);
+    const nocookie = '<iframe src="https://www.youtube-nocookie.com/embed/x" title="Video"></iframe><iframe src="https://player.vimeo.com/video/1"></iframe>';
+    expect(sanitizeRichText(nocookie)).toBe(nocookie);
+  });
+
+  test('drops frames from other sources entirely', () => {
+    expect(sanitizeRichText('<p>a</p><iframe src="https://evil.example/"></iframe><p>b</p>')).toBe('<p>a</p><p>b</p>');
+    expect(sanitizeRichText('<iframe src="https://www.youtube.com/embed/x" sandbox="" srcdoc="x"></iframe>'))
+      .toBe('<iframe src="https://www.youtube.com/embed/x"></iframe>');
+  });
+
+  test('preserves tables, inline semantics and ARIA labels unchanged', () => {
+    expect(sanitizeRichText(tableAndSemantics)).toBe(tableAndSemantics);
   });
 
   test('empty descriptions are safe', () => {

@@ -46,6 +46,13 @@ HTTP(S) und relative URLs bleiben erhalten, bei Links zusätzlich mailto/tel.
 Ein DOMPurify-Hook prüft Medien-URLs und jeden srcset-Kandidaten, auch in den
 Galerie-Datenattributen. `javascript:` und sämtliche `data:`-URLs werden entfernt;
 die geprüften Cast-Bild-/Galerie-Templates benötigen keine eingebetteten Datenbilder.
+Tabellen, semantische Inline-Elemente (`mark`, `q`, `cite`, `abbr` u. a.) und
+ARIA-Attribute bleiben ebenfalls erhalten. Wagtail-Embed-iframes bleiben nur mit
+HTTPS-`src` auf den Video-Hosts `www.youtube.com`, `youtube.com`,
+`www.youtube-nocookie.com` und `player.vimeo.com` (Standardport) erhalten;
+`allow`, `allowfullscreen`, `frameborder` und `referrerpolicy` gelten nur für
+diese iframes. Andere iframes werden samt Element entfernt, `srcdoc` und
+`sandbox` immer.
 Neue aktive Embeds benötigen eine gesondert geprüfte Integration, keine pauschale
 Erweiterung dieser Policy. Servervalidierung, der globale Podlove-Player und
 eigene serverseitige Templates bleiben eigenständige Vertrauensgrenzen.
@@ -57,6 +64,21 @@ und weiterhin funktionierende Audio-Ersetzung/Artikelmetadaten. Payloads decken
 Skripte, onerror, javascript-Links (auch mit Zeichenreferenzen), SVG-onload,
 Daten-URLs, gemischte srcsets und gefährliche Galerie-Datenattribute ab.
 Ohne Sanitizer-Aufrufe an den drei Senken schlagen 38 Regressionstests fehl.
-Mit Node 24: `npm ci`, `npm run audit` (0 Advisories), Vitest (93 Tests) und
+Mit Node 24: `npm ci`, `npm run audit` (0 Advisories), Vitest (93 Tests; nach der Erweiterung im Merge-Review 116 Tests, lokal Node 26) und
 Produktionsbuild erfolgreich. Für die Manifest-Normalisierung wurde lokal
 `python3` verwendet, da das Just-Rezept den hier fehlenden Alias `python` aufruft.
+
+### Abgleich mit Live-Inhalten (Merge-Review, 09.11.2026)
+
+Alle öffentlichen Posts von python-podcast.de (68) und wersdoerfer.de (728) wurden
+über die Wagtail-API mit `template_base_dir=vue` geladen; Detail-, Übersichts- und
+Blogbeschreibungs-HTML liefen durch `stripAudioBlocks` und `sanitizeRichText`.
+Die erste Fassung der Policy verlor eine Datentabelle, `mark`/`q`/`cite`,
+ARIA-Labels der Weeknote-Abschnitte und ein YouTube-Embed; diese Fälle sind nun
+erlaubt und durch Tests abgedeckt. Danach bleibt der Text aller Dokumente bis auf
+einen Post unverändert. Dort entfallen ein altes Notebook-iframe von einem
+nicht freigegebenen Host und sein Inline-Skript (dessen `onload`-Handler im
+Vue-Theme ohnehin nicht funktionierte). Darüber hinaus entfallen nur
+Editor-Attribute (`data-block-key`), die nur emittierte Weeknote-Angabe
+`data-kind`, Inline-Styles an Links/Tabellenzellen und zwei fehlerhaft
+formatierte Legacy-`href`s mit Leerzeichen bzw. Zeilenumbruch in der URL (Linktext bleibt).
