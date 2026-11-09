@@ -100,6 +100,18 @@ url of the django app. If there's nothing to see, the actual port of vite
 dev server (5173, was 3000 some time ago) and the port `django-vite` uses
 (5173) might be different.
 
+### Dependency security checks
+
+Use Node.js 24 (as in CI) and install with `npm ci`. Run `npm run audit`
+locally before committing; it checks the full dependency tree including development
+packages and fails for moderate or higher advisories or scanner errors.
+Vitest and coverage require at least 4.1.12. Test utilities are pinned to 2.4.11
+with a temporary `js-beautify` 1.14.8 override to avoid the vulnerable glob and
+minimatch dependency lines. Update the pin once upstream supplies a repaired
+dependency tree; the older glob/inflight dependencies are deprecated.
+See [the security review](docs/security-review-2026-11.md) for remaining HTML
+trust boundaries and scope.
+
 ### Run Tests
 
 Just the tests:
