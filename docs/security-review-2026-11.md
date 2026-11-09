@@ -63,7 +63,7 @@ Komponententests prüfen alle drei Senken, Prop-Updates, Galerie-Modal-Quellen
 und weiterhin funktionierende Audio-Ersetzung/Artikelmetadaten. Payloads decken
 Skripte, onerror, javascript-Links (auch mit Zeichenreferenzen), SVG-onload,
 Daten-URLs, gemischte srcsets und gefährliche Galerie-Datenattribute ab.
-Ohne Sanitizer-Aufrufe an den drei Senken schlugen in der ursprünglichen Suite 38 Regressionstests fehl, in der erweiterten Suite (117 Tests) 57.
+Ohne Sanitizer-Aufrufe an den drei Senken schlugen in der ursprünglichen Suite 38 Regressionstests fehl, in der erweiterten Suite (117 Tests) 57: 52 Senken-Payloads, 3 Prop-Update- und 2 Galerie-Tests. Die zwei reinen `<script>`-Payloads für Übersicht/Detail bestehen auch ohne Sanitizer, weil `stripAudioBlocks` per DOMParser ein führendes Skript in `<head>` verschiebt.
 Mit Node 24: `npm ci`, `npm run audit` (0 Advisories), Vitest (93 Tests; nach der Erweiterung im Merge-Review 117 Tests, lokal Node 26) und
 Produktionsbuild erfolgreich. Für die Manifest-Normalisierung wurde lokal
 `python3` verwendet, da das Just-Rezept den hier fehlenden Alias `python` aufruft.
