@@ -1,5 +1,6 @@
 <template>
     <div class="comment-list" :key="targetIdentity">
+        <p v-if="commentTree.error" role="alert">Comments could not be displayed.</p>
         <div v-for="comment in rootComments" :key="comment.id">
             <comment-item
                 @comment-submitted="submitComment"
@@ -13,8 +14,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed, watch, onBeforeUnmount } from 'vue';
+import { defineComponent, PropType, ref, computed, watch, onBeforeUnmount, provide } from 'vue';
 import CommentItem from './CommentItem.vue';
+import { buildCommentTree, commentTreeKey } from '../helpers/commentTree';
 import CommentForm from './CommentForm.vue';
 import { Comment, CommentMeta, CommentFormData, CommentInputData, CommentResponse } from './types';
 
@@ -42,9 +44,9 @@ export default defineComponent({
         let generation = 0;
         watch(targetIdentity, () => { generation += 1; commentError.value = ''; }, { flush: 'sync' });
         onBeforeUnmount(() => { generation += 1; });
-        const rootComments = computed(() =>
-            props.comments.filter((comment) => comment.parent === null)
-        );
+        const commentTree = computed(() => buildCommentTree(props.comments));
+        provide(commentTreeKey, commentTree);
+        const rootComments = computed(() => commentTree.value.children.get(null) ?? []);
 
         const submitComment = (comment: CommentInputData, complete: (message?: string) => void = () => {}) => {
             const owner = generation;
@@ -121,6 +123,7 @@ export default defineComponent({
             commentError,
             submitComment,
             rootComments,
+            commentTree,
 
         }
     }

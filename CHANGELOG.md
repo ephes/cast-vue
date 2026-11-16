@@ -8,3 +8,4 @@
 - Bind comment completion and refresh events to the submitted post lifecycle.
 - Restrict comment submissions to same-origin credential-free HTTP(S) URLs and refuse redirects.
 - Remove private comment, credential and moderation payloads from console output.
+- Validate bounded acyclic comment trees once and render replies through a shared parent index.
