@@ -218,3 +218,9 @@ detail components abort their owned requests on navigation, retry or unmount;
 retired work cannot repopulate the cache. Concurrent consumers use independent
 requests, so retiring one does not cancel another. Deadline failures settle the
 normal error/Retry state.
+
+Comment submissions snapshot their target post. Changing the target or unmounting
+retires local completion callbacks; late success/failure cannot refresh or reset
+the next post's form. The target's forms are recreated when its identity changes.
+A retired POST is never automatically replayed, since the server may already have
+accepted it. Comment persistence events carry the submitted post identity.

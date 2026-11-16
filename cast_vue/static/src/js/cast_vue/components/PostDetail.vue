@@ -27,8 +27,8 @@ export default {
     PostItem,
   },
   methods: {
-    async handleCommentPosted() {
-      console.log("handleCommentPosted in PostDetail");
+    async handleCommentPosted(postId?: number) {
+      if (postId !== undefined && postId !== this.post?.id) return;
       await this.fetchPostFromAPI(true);
     }
   },
