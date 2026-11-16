@@ -1,3 +1,5 @@
+import { throwIfAborted } from './abort';
+
 // Count actual UTF-8 bytes before parsing; Content-Length alone is not trusted.
 export const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 
@@ -8,7 +10,7 @@ export async function readJsonResponse(response: Response, signal?: AbortSignal)
   signal?.addEventListener('abort', cancel, { once: true });
   let finished = false;
   try {
-    signal?.throwIfAborted();
+    throwIfAborted(signal);
     if (!response.ok) throw new Error('JSON request failed');
     if (Number(response.headers.get('Content-Length')) > MAX_RESPONSE_BYTES) {
       throw new Error('JSON response too large');
@@ -17,7 +19,7 @@ export async function readJsonResponse(response: Response, signal?: AbortSignal)
     const chunks: Uint8Array[] = [];
     while (true) {
       const { done, value } = await reader.read();
-      signal?.throwIfAborted();
+      throwIfAborted(signal);
       if (done) { finished = true; break; }
       bytes += value.byteLength;
       if (bytes > MAX_RESPONSE_BYTES) throw new Error('JSON response too large');

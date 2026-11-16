@@ -1,10 +1,11 @@
 import { readJsonResponse } from './readJsonResponse';
+import { throwIfAborted } from './abort';
 
 export const REQUEST_DEADLINE_MS = 15000;
 
 // Each call owns its transport. Cancelling it cannot abort another consumer.
 export async function fetchJson(url: URL, init: RequestInit = {}, signal?: AbortSignal): Promise<any> {
-  signal?.throwIfAborted();
+  throwIfAborted(signal);
   const controller = new AbortController();
   const retire = () => controller.abort(new Error('JSON request cancelled'));
   let rejectCancelled!: (reason: Error) => void;
