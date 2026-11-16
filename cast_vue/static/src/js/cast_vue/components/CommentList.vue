@@ -1,5 +1,6 @@
 <template>
-    <div class="comment-list">
+    <div class="comment-list" :key="targetIdentity">
+        <p v-if="commentTree.error" role="alert">Comments could not be displayed.</p>
         <div v-for="comment in rootComments" :key="comment.id">
             <comment-item
                 @comment-submitted="submitComment"
@@ -13,8 +14,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed, onMounted } from 'vue';
+import { defineComponent, PropType, ref, computed, watch, onBeforeUnmount, provide } from 'vue';
 import CommentItem from './CommentItem.vue';
+import { buildCommentTree, commentTreeKey } from '../helpers/commentTree';
 import CommentForm from './CommentForm.vue';
 import { Comment, CommentMeta, CommentFormData, CommentInputData, CommentResponse } from './types';
 
@@ -35,48 +37,68 @@ export default defineComponent({
     },
     setup(props, context) {
         const commentError = ref("");
-        const rootComments = computed(() =>
-            props.comments.filter((comment) => comment.parent === null)
-        );
+        const targetIdentity = computed(() => JSON.stringify([
+            props.commentMeta.content_type, props.commentMeta.object_pk,
+            props.commentMeta.postCommentUrl.toString(),
+        ]));
+        let generation = 0;
+        watch(targetIdentity, () => { generation += 1; commentError.value = ''; }, { flush: 'sync' });
+        onBeforeUnmount(() => { generation += 1; });
+        const commentTree = computed(() => buildCommentTree(props.comments));
+        provide(commentTreeKey, commentTree);
+        const rootComments = computed(() => commentTree.value.children.get(null) ?? []);
 
         const submitComment = (comment: CommentInputData, complete: (message?: string) => void = () => {}) => {
-            console.log('Submit new comment - comment list:', comment);
-            console.log("commentMeta: ", props.commentMeta)
+            const owner = generation;
+            const target = { ...props.commentMeta };
+            let destination: URL;
+            try {
+                destination = new URL(target.postCommentUrl.toString(), window.location.href);
+                if (!['http:', 'https:'].includes(destination.protocol) ||
+                    destination.origin !== window.location.origin || destination.username || destination.password) {
+                    throw new Error('Invalid comment destination');
+                }
+            } catch {
+                commentError.value = "Could not save your comment. Please retry.";
+                complete(commentError.value);
+                return;
+            }
             const newComment: CommentFormData = {
-                content_type: props.commentMeta.content_type,
-                object_pk: props.commentMeta.object_pk,
+                content_type: target.content_type,
+                object_pk: target.object_pk,
                 comment: comment.comment,
                 name: comment.name,
                 email: comment.email,
                 title: comment.title,
-                security_hash: props.commentMeta.security_hash,
-                timestamp: props.commentMeta.timestamp,
+                security_hash: target.security_hash,
+                timestamp: target.timestamp,
                 parent: comment.parent ?? "",
             }
             const newCommentData = new URLSearchParams();
             Object.keys(newComment).forEach(key => newCommentData.append(key, newComment[key]));
 
-            fetch(props.commentMeta.postCommentUrl, {
+            fetch(destination, {
+                redirect: "error",
+                credentials: "same-origin",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": props.commentMeta.csrfToken,
+                    "X-CSRFToken": target.csrfToken,
                     "X-Requested-With": "XMLHttpRequest",
                 },
                 body: newCommentData
             })
             .then(response => {
-                console.log("response start: ", response)
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return response.json() as Promise<CommentResponse>
             })
             .then(json => {
-                console.log("response json: ", json)
+                if (owner !== generation) return;
                 if (json.success) {
                     // cache invalidate post detail + refetch
-                    context.emit("comment-posted", true);
                     commentError.value = "";
                     complete();
+                    if (owner === generation) context.emit("comment-posted", { content_type: target.content_type, object_pk: target.object_pk });
                 } else {
                     // comment not successfully saved
                     const errorMessage = JSON.stringify(json.errors);
@@ -90,15 +112,18 @@ export default defineComponent({
                 return json
             })
             .catch(() => {
+                if (owner !== generation) return;
                 commentError.value = "Could not save your comment. Please retry.";
                 complete(commentError.value);
             });
         };
 
         return {
+            targetIdentity,
             commentError,
             submitComment,
             rootComments,
+            commentTree,
 
         }
     }

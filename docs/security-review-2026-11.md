@@ -14,7 +14,8 @@ Komponentenpfade liegen unter `cast_vue/static/src/js/cast_vue/`.
 Der ursprüngliche Slice behob die Abhängigkeitsprobleme; der Folgeslice
 `cast-vue-sanitizer` schließt die drei `v-html`-Senken. Vue kompiliert `v-html` nicht als Template. Kommentare
 (`CommentItem.vue`) verwenden escaped Textinterpolation. `PodlovePlayer.vue`
-setzt `innerHTML` nur auf den konstanten leeren String. In den eigenen
+verwendet eigene Container und entfernt alte Player-Frames bei Quellenwechsel
+oder Unmount. In den eigenen
 Django-Templates kein `safe`, `mark_safe` oder `autoescape off`; Konfiguration
 steht in quoted, escaped Datenattributen bzw. `json_script`. Includes/extends
 verwenden feste Pfade, keine Request-gesteuerten Dateileser gefunden.
@@ -82,3 +83,16 @@ Vue-Theme ohnehin nicht funktionierte). Darüber hinaus entfallen nur
 Editor-Attribute (`data-block-key`), die nur emittierte Weeknote-Angabe
 `data-kind`, Inline-Styles an Links/Tabellenzellen und zwei fehlerhaft
 formatierte Legacy-`href`s mit Leerzeichen bzw. Zeilenumbruch in der URL (Linktext bleibt).
+
+## Request- und Kommentargrenzen (16.11.2026)
+
+API-GETs haben Größen-/Cachegrenzen und eine Gesamtdauer; ausscheidende Views
+brechen ihre eigenen Requests ab. Kommentar-POSTs prüfen vor dem Versand eine
+gleichursprüngliche HTTP(S)-Adresse ohne URL-Zugangsdaten und folgen keinen
+Redirects. Kommentar-, Sicherheits- und Moderationsdaten werden nicht mehr in
+die Konsole geschrieben. Späte Abschlüsse gehören ausschließlich zum ursprünglichen
+Post. Kommentarlisten validieren IDs, Eltern und begrenzte Tiefe vor der Rekursion;
+Podlove-Versuche besitzen eigene, ablösbare Container und einen Fehler-/Retry-Zustand.
+Die genauen Grenzen und Komponentenverträge stehen in der README. Regressionen
+verwenden ausschließlich synthetische Daten und kontrollierte Antworten; der globale
+Podlove-Code und produktive Sites wurden dabei nicht geprüft.

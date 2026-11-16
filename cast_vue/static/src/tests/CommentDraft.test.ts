@@ -9,7 +9,7 @@ test.each(['rejected', 'moderated', 'network', 'http', 'success'])('draft surviv
   const fetch = vi.fn(() => new Promise((yes, no) => { resolve = yes; reject = no; }));
   vi.stubGlobal('fetch', fetch);
   const wrapper = mount(CommentList, { props: { comments: [], commentMeta: {
-    commentsAreEnabled: true, postCommentUrl: new URL('http://localhost/comments'),
+    commentsAreEnabled: true, postCommentUrl: new URL('/comments', window.location.href),
     content_type: 'cast.post', object_pk: '1', timestamp: '0', security_hash: 'hash', csrfToken: 'csrf'
   } } });
   const form = wrapper.findComponent(CommentForm);
@@ -38,7 +38,7 @@ test('nested reply preserves ancestor drafts and closes only its own successful 
     { id: 1, parent: null, user: 'A', date: '', comment: 'root' },
     { id: 2, parent: 1, user: 'B', date: '', comment: 'child' }
   ], commentMeta: {
-    commentsAreEnabled: true, postCommentUrl: new URL('http://localhost/comments'),
+    commentsAreEnabled: true, postCommentUrl: new URL('/comments', window.location.href),
     content_type: 'cast.post', object_pk: '1', timestamp: '0', security_hash: 'hash', csrfToken: 'csrf'
   } } });
   const items = wrapper.findAllComponents({ name: 'CommentItem' });

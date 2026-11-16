@@ -18,9 +18,10 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref, reactive } from 'vue';
+import { computed, defineComponent, PropType, ref, reactive, inject, provide } from 'vue';
 import { Comment, CommentInputData } from './types';
 import CommentForm from './CommentForm.vue';
+import { buildCommentTree, commentTreeKey } from '../helpers/commentTree';
 
 export default defineComponent({
     name: 'CommentItem',
@@ -45,9 +46,10 @@ export default defineComponent({
     setup(props, context) {
         const reply = reactive({parent: props.comment.id.toString(), comment: "", name: "", email: "", title: ""} as CommentInputData);
         const showReplyForm = ref(false);
-        const children = computed(() =>
-            props.comments.filter((c) => c.parent === props.comment.id)
-        );
+        // Standalone CommentItem callers retain the same public props contract.
+        const tree = inject(commentTreeKey, null) ?? computed(() => buildCommentTree(props.comments));
+        provide(commentTreeKey, tree);
+        const children = computed(() => tree.value.children.get(props.comment.id) ?? []);
         const hasChildren = computed(() => children.value.length > 0);
 
         const submitReply = (comment: CommentInputData, complete: (message?: string) => void) => {

@@ -57,7 +57,10 @@ test('detail follows slug navigation, history and comment invalidation', async (
   expect(wrapper.find('article').text()).toBe('a');
   router.forward(); await vi.waitFor(() => expect(router.currentRoute.value.params.slug).toBe('b')); await flushPromises();
   expect(wrapper.find('article').text()).toBe('b');
-  await instance.handleCommentPosted();
+  const beforeRetiredEvent = mocks.fetchJson.mock.calls.length;
+  await instance.handleCommentPosted(999);
+  expect(mocks.fetchJson).toHaveBeenCalledTimes(beforeRetiredEvent);
+  await instance.handleCommentPosted(1);
   expect(mocks.fetchJson.mock.calls.at(-1)![1]).toBe(true);
   expect(mocks.fetchJson.mock.calls.map(call => call[0].searchParams.get('slug'))).toEqual(['a', 'b', 'a', 'b', 'b']);
   wrapper.unmount();

@@ -102,9 +102,9 @@ export default {
     };
   },
   methods: {
-    handleCommentPosted() {
-      console.log("handleCommentPosted");
-      this.$emit("comment-posted");
+    handleCommentPosted(target: Pick<CommentMeta, 'content_type' | 'object_pk'>) {
+      if (target.content_type !== this.commentMeta.content_type || target.object_pk !== this.commentMeta.object_pk) return;
+      this.$emit("comment-posted", this.post.id);
     },
     handleClick(e: Event) {
       // console.log("handleClick: ", e);

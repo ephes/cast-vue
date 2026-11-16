@@ -153,8 +153,15 @@ With coverage:
 npm run coverage
 ```
 
-GitHub Actions (`.github/workflows/ci.yml`) runs the tests and the production
-build on every push and pull request.
+Run the full local gates before handoff:
+```shell
+npx vitest run -r cast_vue/static/src/tests/
+npm run coverage
+npm run build
+npm run audit
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) is manual-only.
 
 ### Build
 
@@ -201,3 +208,50 @@ readiness. Overlapping navigations cannot replace newer results. Initial loading
 API errors, empty lists and missing detail posts have explicit messages; errors
 include a Retry button that refreshes the server response. Empty results do not
 render a post or pagination. Detail requests also ignore obsolete slug responses.
+
+Shared JSON cache publication belongs to the newest network request for each URL.
+An older load completing after an explicit refresh cannot overwrite that refresh;
+component request IDs separately protect visible state.
+
+API JSON responses are limited to 2 MiB of actual streamed bytes before parsing.
+Oversized responses are cancelled and never cached. The JSON cache retains at most
+32 entries and the slug cache at most 128, each with an 8 MiB serialized UTF-8
+budget (including keys). Oldest inserted entries are evicted first; refreshing an
+entry moves it to the end. Eviction does not alter data already displayed by a
+component. These are serialized-size budgets, not measurements of JS heap overhead.
+
+Every API GET has a 15-second total deadline covering headers and body. List and
+detail components abort their owned requests on navigation, retry or unmount;
+retired work cannot repopulate the cache. Concurrent consumers use independent
+requests, so retiring one does not cancel another. Deadline failures settle the
+normal error/Retry state.
+
+Comment submissions snapshot their target post. Changing the target or unmounting
+retires local completion callbacks; late success/failure cannot refresh or reset
+the next post's form. The target's forms are recreated when its identity changes.
+A retired POST is never automatically replayed, since the server may already have
+accepted it. Comment persistence events carry the submitted post identity.
+
+Comment POST destinations must resolve to a same-origin HTTP(S) URL without URL
+credentials. Redirects are rejected rather than followed. Invalid destinations
+use the normal submit error and preserve the draft; CSRF tokens, email and comment
+contents are only sent to an admitted endpoint.
+
+Comment input, security metadata, response bodies and exception contents are not
+logged to the browser console. Server validation/moderation messages remain
+visible beside the submitting form.
+
+Comment lists build one parent index per response and preserve sibling order.
+They admit at most 10,000 comments with unique positive safe-integer IDs, no
+cycles and at most 32 levels (including roots). Invalid lists display an explicit
+unavailable message instead of rendering a partial/recursive tree. Replies whose
+parent is missing from the response (removed or unpublished) are hidden together
+with their own replies; the remaining comments still render.
+Parent indexing and validation take linear work; nested replies share the index
+and retain their existing submission callbacks.
+
+The Podlove wrapper reinitializes when the episode URL, configuration URL or
+identity prop changes. Each attempt has a separate host; previous iframes are
+removed on replacement/unmount and late completion cannot attach to the current
+player. Missing, throwing, rejected or stalled initialization exposes a Retry
+button (15-second total initialization deadline). Retry creates a fresh instance.

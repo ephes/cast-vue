@@ -27,8 +27,8 @@ export default {
     PostItem,
   },
   methods: {
-    async handleCommentPosted() {
-      console.log("handleCommentPosted in PostDetail");
+    async handleCommentPosted(postId?: number) {
+      if (postId !== undefined && postId !== this.post?.id) return;
       await this.fetchPostFromAPI(true);
     }
   },
@@ -43,10 +43,14 @@ export default {
 
     const error = ref('');
     let requestId = 0;
-    onBeforeUnmount(() => { requestId += 1; });
+    let requestOwner: AbortController | undefined;
+    onBeforeUnmount(() => { requestId += 1; requestOwner?.abort(); });
     let currentSlug: string | undefined;
     const fetchPostFromAPI = async (invalidateCache: boolean = false) => {
       const id = ++requestId;
+      requestOwner?.abort();
+      const owner = new AbortController();
+      requestOwner = owner;
       const readyToken = contentReadyToken();
       const postSlug = route.params.slug as string;
       isLoading.value = currentSlug !== postSlug || !post.value?.id;
@@ -68,7 +72,7 @@ export default {
       postDetailUrl.searchParams.set("render_for_feed", "false");
 
       try {
-        const posts = await dataStore.fetchJson(postDetailUrl, invalidateCache) as unknown as PostsFromApi;
+        const posts = await dataStore.fetchJson(postDetailUrl, invalidateCache, owner.signal) as unknown as PostsFromApi;
         if (id !== requestId) return;
         if (!Array.isArray(posts.items)) throw new Error('Invalid detail response');
         const item = posts.items[0];
@@ -82,6 +86,7 @@ export default {
           error.value = 'Could not load post. Please retry.';
         }
       } finally {
+        owner.abort();
         if (id === requestId) {
           isLoading.value = false;
           await nextTick();
