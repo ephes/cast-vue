@@ -16,10 +16,10 @@ test.each(['list', 'detail'])('stable %s error, empty and retry states', async k
     if (url.pathname === '/posts') {
       if (outcome === 'pending') return new Promise(resolve => { finishRetry = resolve; });
       if (outcome === 'network') throw new Error('offline');
-      if (outcome === 'http') return { ok: false, status: 500 };
-      return { ok: true, json: async () => outcome === 'malformed' ? { items: [] } : { items: outcome === 'empty' ? [] : [post], meta: { total_count: outcome === 'empty' ? 0 : 1 } } };
+      if (outcome === 'http') return new Response('unavailable', { status: 500 });
+      return new Response(JSON.stringify(outcome === 'malformed' ? { items: [] } : { items: outcome === 'empty' ? [] : [post], meta: { total_count: outcome === 'empty' ? 0 : 1 } }));
     }
-    return { ok: true, json: async () => url.pathname === '/facets' ? { facet_counts: {} } : { title: 'Blog' } };
+    return new Response(JSON.stringify(url.pathname === '/facets' ? { facet_counts: {} } : { title: 'Blog' }));
   }));
   const component = kind === 'list' ? LoadPostList : PostDetail;
   const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/:slug?', name: 'PostDetail', component }] });
@@ -32,7 +32,7 @@ test.each(['list', 'detail'])('stable %s error, empty and retry states', async k
   expect(wrapper.text()).toContain('Loading data...');
   expect(wrapper.text()).not.toContain('No posts found.');
   expect(wrapper.text()).not.toContain('Post not found.');
-  finishRetry({ ok: false, status: 500 }); await flushPromises();
+  finishRetry(new Response('unavailable', { status: 500 })); await flushPromises();
   outcome = 'network'; await wrapper.find('button').trigger('click'); await flushPromises();
   expect(wrapper.find('[role="alert"]').exists()).toBe(true);
   if (kind === 'list') {

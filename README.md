@@ -153,8 +153,15 @@ With coverage:
 npm run coverage
 ```
 
-GitHub Actions (`.github/workflows/ci.yml`) runs the tests and the production
-build on every push and pull request.
+Run the full local gates before handoff:
+```shell
+npx vitest run -r cast_vue/static/src/tests/
+npm run coverage
+npm run build
+npm run audit
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) is manual-only.
 
 ### Build
 
@@ -240,3 +247,9 @@ parents, no cycles and at most 32 levels (including roots). Invalid lists displa
 an explicit unavailable message instead of rendering a partial/recursive tree.
 Parent indexing and validation take linear work; nested replies share the index
 and retain their existing submission callbacks.
+
+The Podlove wrapper reinitializes when the episode URL, configuration URL or
+identity prop changes. Each attempt has a separate host; previous iframes are
+removed on replacement/unmount and late completion cannot attach to the current
+player. Missing, throwing, rejected or stalled initialization exposes a Retry
+button (15-second total initialization deadline). Retry creates a fresh instance.

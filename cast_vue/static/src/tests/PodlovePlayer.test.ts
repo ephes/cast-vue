@@ -29,7 +29,7 @@ describe("PodlovePlayer.vue", () => {
     const podlovePlayerMock = (window as unknown as { podlovePlayer: ReturnType<typeof vi.fn> }).podlovePlayer;
     expect(podlovePlayerMock).toHaveBeenCalledTimes(1);
     const callArgs = podlovePlayerMock.mock.calls[0];
-    expect(callArgs[0]).toBe(wrapper.find("div").element);
+    expect(callArgs[0].parentElement).toBe(wrapper.find("div").element);
     expect(callArgs[1]).toBe(apiUrl);
     expect(callArgs[2]).toBe(playerConfig.toString());
   });
@@ -44,7 +44,8 @@ describe("PodlovePlayer.vue", () => {
     });
 
     const container = wrapper.find("div").element as HTMLDivElement;
-    container.innerHTML = "<iframe></iframe>";
+    const host = container.firstElementChild!;
+    host.innerHTML = "<iframe></iframe>";
 
     await nextTick();
     wrapper.unmount();
