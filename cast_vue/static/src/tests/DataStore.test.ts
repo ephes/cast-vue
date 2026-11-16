@@ -64,3 +64,42 @@ test('serialized byte budgets evict large entries and admit an exact-limit respo
   for (let i = 0; i < 5; i++) store.setSlugToId({ items: [{ body: text, meta: { slug: `large${i}` } }] } as any);
   expect(Object.keys(store.slugToPost).length).toBeLessThan(5);
 });
+
+test.each(['headers', 'body'])('a stalled %s operation expires after the total deadline', async stage => {
+  vi.useFakeTimers();
+  const cancel = vi.fn();
+  const fetch = vi.fn(stage === 'headers' ? () => new Promise(() => {}) : async () => new Response(new ReadableStream({ cancel })));
+  vi.stubGlobal('fetch', fetch);
+  try {
+    const result = useDataStore().fetchJson(new URL('http://localhost/stalled'));
+    const check = expect(result).rejects.toThrow();
+    await vi.advanceTimersByTimeAsync(15000);
+    await check;
+    expect(fetch.mock.calls[0][1].signal.aborted).toBe(true);
+    if (stage === 'body') expect(cancel).toHaveBeenCalledOnce();
+    expect(Object.keys(useDataStore().jsonCache)).toHaveLength(0);
+  } finally { vi.useRealTimers(); }
+});
+
+test('retiring one consumer leaves another request alive and fences late headers', async () => {
+  const old = deferred<Response>();
+  const next = deferred<Response>();
+  const fetch = vi.fn().mockReturnValueOnce(old.promise).mockReturnValueOnce(next.promise);
+  vi.stubGlobal('fetch', fetch);
+  const store = useDataStore();
+  const url = new URL('http://localhost/shared');
+  const owner = new AbortController();
+  const retired = store.fetchJson(url, false, owner.signal);
+  const check = expect(retired).rejects.toThrow();
+  const live = store.fetchJson(url);
+  owner.abort();
+  await check;
+  expect(fetch.mock.calls[1][1].signal.aborted).toBe(false);
+  next.resolve(new Response('{"title":"current"}'));
+  await live;
+  const cancel = vi.fn();
+  old.resolve(new Response(new ReadableStream({ cancel })));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(cancel).toHaveBeenCalledOnce();
+  expect(await store.fetchJson(url)).toEqual({ title: 'current' });
+});

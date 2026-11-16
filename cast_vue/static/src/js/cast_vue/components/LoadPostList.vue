@@ -52,7 +52,8 @@ export default {
         const hasLoaded = ref(false);
         const error = ref('');
         let requestId = 0;
-        onBeforeUnmount(() => { requestId += 1; });
+        let requestOwner: AbortController | undefined;
+        onBeforeUnmount(() => { requestId += 1; requestOwner?.abort(); });
         const blog = ref({});
         const postsFromApi = ref({ items: [], meta: { total_count: 0 } } as unknown as PostsFromApi);
         const facetCounts = ref({} as FacetCounts);
@@ -93,6 +94,9 @@ export default {
 
         const fetchData = async (invalidateCache: boolean = false) => {
             const id = ++requestId;
+            requestOwner?.abort();
+            const owner = new AbortController();
+            requestOwner = owner;
             const readyToken = contentReadyToken();
             const postUrl = new URL(wagtailApiUrl.href);
             const facetUrl = new URL(facetCountsApiUrl.href);
@@ -102,7 +106,7 @@ export default {
             try {
                 const dataStore = useDataStore();
                 const [blogResult, facetResult, posts] = await Promise.all([
-                    dataStore.fetchJson(blogUrl, invalidateCache), dataStore.fetchJson(facetUrl, invalidateCache), dataStore.fetchJson(postUrl, invalidateCache)
+                    dataStore.fetchJson(blogUrl, invalidateCache, owner.signal), dataStore.fetchJson(facetUrl, invalidateCache, owner.signal), dataStore.fetchJson(postUrl, invalidateCache, owner.signal)
                 ]);
                 if (id !== requestId) return;
                 const meta = posts.meta;
@@ -120,6 +124,7 @@ export default {
                 console.error('Could not load posts:', cause);
                 error.value = 'Could not load posts. Please retry.';
             } finally {
+                owner.abort();
                 if (id === requestId) {
                     isLoading.value = false;
                     await nextTick();

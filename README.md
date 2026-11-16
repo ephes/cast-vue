@@ -212,3 +212,9 @@ Oversized responses are cancelled and never cached. The JSON cache retains at mo
 budget (including keys). Oldest inserted entries are evicted first; refreshing an
 entry moves it to the end. Eviction does not alter data already displayed by a
 component. These are serialized-size budgets, not measurements of JS heap overhead.
+
+Every API GET has a 15-second total deadline covering headers and body. List and
+detail components abort their owned requests on navigation, retry or unmount;
+retired work cannot repopulate the cache. Concurrent consumers use independent
+requests, so retiring one does not cancel another. Deadline failures settle the
+normal error/Retry state.

@@ -1,12 +1,15 @@
 // Count actual UTF-8 bytes before parsing; Content-Length alone is not trusted.
 export const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 
-export async function readJsonResponse(response: Response): Promise<any> {
-  if (!response.ok) throw new Error('JSON request failed');
+export async function readJsonResponse(response: Response, signal?: AbortSignal): Promise<any> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error('Missing JSON body');
+  const cancel = () => { void reader.cancel().catch(() => {}); };
+  signal?.addEventListener('abort', cancel, { once: true });
   let finished = false;
   try {
+    signal?.throwIfAborted();
+    if (!response.ok) throw new Error('JSON request failed');
     if (Number(response.headers.get('Content-Length')) > MAX_RESPONSE_BYTES) {
       throw new Error('JSON response too large');
     }
@@ -14,6 +17,7 @@ export async function readJsonResponse(response: Response): Promise<any> {
     const chunks: Uint8Array[] = [];
     while (true) {
       const { done, value } = await reader.read();
+      signal?.throwIfAborted();
       if (done) { finished = true; break; }
       bytes += value.byteLength;
       if (bytes > MAX_RESPONSE_BYTES) throw new Error('JSON response too large');
@@ -24,7 +28,8 @@ export async function readJsonResponse(response: Response): Promise<any> {
     for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength; }
     return JSON.parse(new TextDecoder().decode(body));
   } finally {
-    if (!finished) void reader.cancel().catch(() => {});
+    signal?.removeEventListener('abort', cancel);
+    if (!finished) cancel();
     reader.releaseLock();
   }
 }

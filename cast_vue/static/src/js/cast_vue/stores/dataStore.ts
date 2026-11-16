@@ -1,6 +1,6 @@
 import { PostsFromApi, Post } from './../components/types';
 import { defineStore } from 'pinia';
-import { readJsonResponse } from '../helpers/readJsonResponse';
+import { fetchJson } from '../helpers/fetchJson';
 
 // Tokens live only while a URL has current work; retired requests never publish.
 const generations = new WeakMap<object, Map<string, symbol>>();
@@ -40,7 +40,8 @@ export const useDataStore = defineStore("main", {
     slugToPost: Object.create(null),
   }),
   actions: {
-    async fetchJson(url: URL, invalidateCache: boolean = false): Promise<Record<string, unknown>> {
+    async fetchJson(url: URL, invalidateCache: boolean = false, signal?: AbortSignal): Promise<Record<string, unknown>> {
+      signal?.throwIfAborted();
       // Check if the URL is in the cache.
       const urlStr = url.toString();
       // console.log("fetchJson: ", urlStr)
@@ -54,15 +55,12 @@ export const useDataStore = defineStore("main", {
       requests.set(urlStr, generation);
       // Fetch the JSON if it's not in the cache.
       try {
-        const response = await fetch(url);
-        const data = await readJsonResponse(response);
+        const data = await fetchJson(url, {}, signal);
 
+        signal?.throwIfAborted();
         // Store the result in the cache.
         if (requests.get(urlStr) === generation) cacheValue(this.jsonCache, urlStr, data, 32);
         return data;
-      } catch (error) {
-        console.error("Failed to fetch JSON", error);
-        throw error;
       } finally {
         if (requests.get(urlStr) === generation) requests.delete(urlStr);
       }
