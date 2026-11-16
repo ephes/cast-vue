@@ -29,13 +29,15 @@ export function buildCommentTree(comments: readonly Comment[]): CommentTree {
       let cursor: number | null = id;
       const path: number[] = [];
       const seen = new Set<number>();
-      while (cursor !== null && !depths.has(cursor)) {
-        if (!parents.has(cursor) || seen.has(cursor) || path.length >= MAX_COMMENT_DEPTH) throw new Error();
+      // A parent missing from the response (removed or unpublished) ends the chain:
+      // its replies stay unreachable from the roots and are not rendered.
+      while (cursor !== null && parents.has(cursor) && !depths.has(cursor)) {
+        if (seen.has(cursor) || path.length >= MAX_COMMENT_DEPTH) throw new Error();
         seen.add(cursor);
         path.push(cursor);
         cursor = parents.get(cursor)!;
       }
-      let depth = cursor === null ? 0 : depths.get(cursor)!;
+      let depth = cursor !== null && depths.has(cursor) ? depths.get(cursor)! : 0;
       for (const item of path.reverse()) {
         if (++depth > MAX_COMMENT_DEPTH) throw new Error();
         depths.set(item, depth);

@@ -16,7 +16,7 @@ test('recursive rendering uses linear parent-lookup work', () => {
 test.each([
   ['duplicate', [comment(1, null), comment(1, null)]],
   ['cycle', [comment(1, 2), comment(2, 1)]],
-  ['orphan', [comment(1, 999)]],
+  ['orphan cycle', [comment(1, 2), comment(2, 1), comment(3, 999)]],
   ['deep', Array.from({ length: 33 }, (_, i) => comment(i + 1, i || null))],
   ['too many', Array.from({ length: 10001 }, (_, i) => comment(i + 1, null))],
 ])('%s comments refuse as a whole without recursive rendering', (_name, comments) => {
@@ -36,4 +36,12 @@ test('10k comments need only one parent read each and preserve sibling order', a
   expect(reads).toBe(10000);
   expect(tree.children.get(1)?.map(item => item.id)).toEqual(comments.slice(1).map(item => item.id));
   expect(buildCommentTree(Array.from({ length: 32 }, (_, i) => comment(i + 1, i || null))).error).toBe(false);
+});
+
+test('replies to a removed or unpublished parent are hidden without hiding other comments', () => {
+  const comments = [comment(1, null), comment(2, 1), comment(3, 999), comment(4, 3), comment(5, null)];
+  const wrapper = mount(CommentList, { props: { comments, commentMeta: meta } });
+  expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+  expect(wrapper.findAllComponents({ name: 'CommentItem' }).map(item => item.props('comment').id)).toEqual([1, 2, 5]);
+  wrapper.unmount();
 });

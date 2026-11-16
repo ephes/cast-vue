@@ -8,5 +8,5 @@
 - Bind comment completion and refresh events to the submitted post lifecycle.
 - Restrict comment submissions to same-origin credential-free HTTP(S) URLs and refuse redirects.
 - Remove private comment, credential and moderation payloads from console output.
-- Validate bounded acyclic comment trees once and render replies through a shared parent index.
+- Validate bounded acyclic comment trees once, render replies through a shared parent index and hide only replies whose parent is missing.
 - Retire obsolete Podlove instances on source/config changes and offer bounded, retryable initialization failures.

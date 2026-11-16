@@ -242,9 +242,11 @@ logged to the browser console. Server validation/moderation messages remain
 visible beside the submitting form.
 
 Comment lists build one parent index per response and preserve sibling order.
-They admit at most 10,000 comments with unique positive safe-integer IDs, existing
-parents, no cycles and at most 32 levels (including roots). Invalid lists display
-an explicit unavailable message instead of rendering a partial/recursive tree.
+They admit at most 10,000 comments with unique positive safe-integer IDs, no
+cycles and at most 32 levels (including roots). Invalid lists display an explicit
+unavailable message instead of rendering a partial/recursive tree. Replies whose
+parent is missing from the response (removed or unpublished) are hidden together
+with their own replies; the remaining comments still render.
 Parent indexing and validation take linear work; nested replies share the index
 and retain their existing submission callbacks.
 
