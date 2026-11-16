@@ -1,8 +1,31 @@
 import { PostsFromApi, Post } from './../components/types';
 import { defineStore } from 'pinia';
+import { readJsonResponse } from '../helpers/readJsonResponse';
 
 // Tokens live only while a URL has current work; retired requests never publish.
 const generations = new WeakMap<object, Map<string, symbol>>();
+
+const cacheSizes = new WeakMap<object, Map<string, number>>();
+const MAX_CACHE_BYTES = 8 * 1024 * 1024;
+
+// Insertion order gives deterministic FIFO eviction, including refreshed entries.
+function cacheValue(cache: Record<string, any>, key: string, value: any, limit: number) {
+  const sizes = cacheSizes.get(cache) ?? new Map<string, number>();
+  cacheSizes.set(cache, sizes);
+  const bytes = new TextEncoder().encode(key + JSON.stringify(value)).byteLength;
+  sizes.delete(key);
+  delete cache[key];
+  if (bytes > MAX_CACHE_BYTES) return;
+  sizes.set(key, bytes);
+  cache[key] = value;
+  let total = [...sizes.values()].reduce((sum, size) => sum + size, 0);
+  while (sizes.size > limit || total > MAX_CACHE_BYTES) {
+    const oldest = sizes.keys().next().value!;
+    total -= sizes.get(oldest)!;
+    sizes.delete(oldest);
+    delete cache[oldest];
+  }
+}
 
 // Define the store type
 interface DataStoreState {
@@ -13,8 +36,8 @@ interface DataStoreState {
 // Define and export the store
 export const useDataStore = defineStore("main", {
   state: (): DataStoreState => ({
-    jsonCache: {},
-    slugToPost: {},
+    jsonCache: Object.create(null),
+    slugToPost: Object.create(null),
   }),
   actions: {
     async fetchJson(url: URL, invalidateCache: boolean = false): Promise<Record<string, unknown>> {
@@ -32,13 +55,10 @@ export const useDataStore = defineStore("main", {
       // Fetch the JSON if it's not in the cache.
       try {
         const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        const data = await readJsonResponse(response);
 
         // Store the result in the cache.
-        if (requests.get(urlStr) === generation) this.jsonCache[urlStr] = data;
+        if (requests.get(urlStr) === generation) cacheValue(this.jsonCache, urlStr, data, 32);
         return data;
       } catch (error) {
         console.error("Failed to fetch JSON", error);
@@ -49,7 +69,7 @@ export const useDataStore = defineStore("main", {
     },
     setSlugToId(posts: PostsFromApi) {
       for (const post of posts.items) {
-        this.slugToPost[post.meta.slug] = post;
+        cacheValue(this.slugToPost, post.meta.slug, post, 128);
       }
     }
   },

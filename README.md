@@ -205,3 +205,10 @@ render a post or pagination. Detail requests also ignore obsolete slug responses
 Shared JSON cache publication belongs to the newest network request for each URL.
 An older load completing after an explicit refresh cannot overwrite that refresh;
 component request IDs separately protect visible state.
+
+API JSON responses are limited to 2 MiB of actual streamed bytes before parsing.
+Oversized responses are cancelled and never cached. The JSON cache retains at most
+32 entries and the slug cache at most 128, each with an 8 MiB serialized UTF-8
+budget (including keys). Oldest inserted entries are evicted first; refreshing an
+entry moves it to the end. Eviction does not alter data already displayed by a
+component. These are serialized-size budgets, not measurements of JS heap overhead.
