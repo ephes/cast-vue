@@ -224,3 +224,8 @@ retires local completion callbacks; late success/failure cannot refresh or reset
 the next post's form. The target's forms are recreated when its identity changes.
 A retired POST is never automatically replayed, since the server may already have
 accepted it. Comment persistence events carry the submitted post identity.
+
+Comment POST destinations must resolve to a same-origin HTTP(S) URL without URL
+credentials. Redirects are rejected rather than followed. Invalid destinations
+use the normal submit error and preserve the draft; CSRF tokens, email and comment
+contents are only sent to an admitted endpoint.

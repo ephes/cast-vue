@@ -51,6 +51,18 @@ export default defineComponent({
             const target = { ...props.commentMeta };
             console.log('Submit new comment - comment list:', comment);
             console.log("commentMeta: ", props.commentMeta)
+            let destination: URL;
+            try {
+                destination = new URL(target.postCommentUrl.toString(), window.location.href);
+                if (!['http:', 'https:'].includes(destination.protocol) ||
+                    destination.origin !== window.location.origin || destination.username || destination.password) {
+                    throw new Error('Invalid comment destination');
+                }
+            } catch {
+                commentError.value = "Could not save your comment. Please retry.";
+                complete(commentError.value);
+                return;
+            }
             const newComment: CommentFormData = {
                 content_type: target.content_type,
                 object_pk: target.object_pk,
@@ -65,7 +77,9 @@ export default defineComponent({
             const newCommentData = new URLSearchParams();
             Object.keys(newComment).forEach(key => newCommentData.append(key, newComment[key]));
 
-            fetch(target.postCommentUrl, {
+            fetch(destination, {
+                redirect: "error",
+                credentials: "same-origin",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",

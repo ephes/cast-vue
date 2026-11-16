@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import CommentList from '@/components/CommentList.vue';
 import CommentForm from '@/components/CommentForm.vue';
-const meta = { content_type: 'cast.post', object_pk: '1', timestamp: '0', security_hash: 'synthetic-hash', csrfToken: 'synthetic-csrf', postCommentUrl: new URL('http://localhost/comments'), commentsAreEnabled: true };
+const meta = { content_type: 'cast.post', object_pk: '1', timestamp: '0', security_hash: 'synthetic-hash', csrfToken: 'synthetic-csrf', postCommentUrl: new URL('/comments', window.location.href), commentsAreEnabled: true };
 const draft = { comment: 'Synthetic draft', name: 'Reader', email: 'reader@example.invalid', title: '', parent: '' };
 afterEach(() => vi.unstubAllGlobals());
 
