@@ -229,3 +229,7 @@ Comment POST destinations must resolve to a same-origin HTTP(S) URL without URL
 credentials. Redirects are rejected rather than followed. Invalid destinations
 use the normal submit error and preserve the draft; CSRF tokens, email and comment
 contents are only sent to an admitted endpoint.
+
+Comment input, security metadata, response bodies and exception contents are not
+logged to the browser console. Server validation/moderation messages remain
+visible beside the submitting form.

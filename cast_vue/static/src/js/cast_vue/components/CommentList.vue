@@ -49,8 +49,6 @@ export default defineComponent({
         const submitComment = (comment: CommentInputData, complete: (message?: string) => void = () => {}) => {
             const owner = generation;
             const target = { ...props.commentMeta };
-            console.log('Submit new comment - comment list:', comment);
-            console.log("commentMeta: ", props.commentMeta)
             let destination: URL;
             try {
                 destination = new URL(target.postCommentUrl.toString(), window.location.href);
@@ -89,12 +87,10 @@ export default defineComponent({
                 body: newCommentData
             })
             .then(response => {
-                console.log("response start: ", response)
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return response.json() as Promise<CommentResponse>
             })
             .then(json => {
-                console.log("response json: ", json)
                 if (owner !== generation) return;
                 if (json.success) {
                     // cache invalidate post detail + refetch

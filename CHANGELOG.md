@@ -7,3 +7,4 @@
 - Give API reads a total deadline and cancel work owned by retired views.
 - Bind comment completion and refresh events to the submitted post lifecycle.
 - Restrict comment submissions to same-origin credential-free HTTP(S) URLs and refuse redirects.
+- Remove private comment, credential and moderation payloads from console output.
