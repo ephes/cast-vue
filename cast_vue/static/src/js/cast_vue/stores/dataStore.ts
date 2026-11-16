@@ -1,6 +1,9 @@
 import { PostsFromApi, Post } from './../components/types';
 import { defineStore } from 'pinia';
 
+// Tokens live only while a URL has current work; retired requests never publish.
+const generations = new WeakMap<object, Map<string, symbol>>();
+
 // Define the store type
 interface DataStoreState {
   jsonCache: Record<string, any>;
@@ -22,6 +25,10 @@ export const useDataStore = defineStore("main", {
         return this.jsonCache[urlStr];
       }
 
+      const requests = generations.get(this) ?? new Map<string, symbol>();
+      generations.set(this, requests);
+      const generation = Symbol();
+      requests.set(urlStr, generation);
       // Fetch the JSON if it's not in the cache.
       try {
         const response = await fetch(url);
@@ -31,11 +38,13 @@ export const useDataStore = defineStore("main", {
         const data = await response.json();
 
         // Store the result in the cache.
-        this.jsonCache[urlStr] = data;
+        if (requests.get(urlStr) === generation) this.jsonCache[urlStr] = data;
         return data;
       } catch (error) {
         console.error("Failed to fetch JSON", error);
         throw error;
+      } finally {
+        if (requests.get(urlStr) === generation) requests.delete(urlStr);
       }
     },
     setSlugToId(posts: PostsFromApi) {

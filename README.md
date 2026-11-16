@@ -201,3 +201,7 @@ readiness. Overlapping navigations cannot replace newer results. Initial loading
 API errors, empty lists and missing detail posts have explicit messages; errors
 include a Retry button that refreshes the server response. Empty results do not
 render a post or pagination. Detail requests also ignore obsolete slug responses.
+
+Shared JSON cache publication belongs to the newest network request for each URL.
+An older load completing after an explicit refresh cannot overwrite that refresh;
+component request IDs separately protect visible state.
