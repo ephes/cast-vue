@@ -105,13 +105,16 @@ Podlove-Code und produktive Sites wurden dabei nicht geprüft.
 
 Entscheidung des Betreibers: zusätzliche Schutzschichten, die neue Abhängigkeiten
 mitbringen, sind riskanter als nützlich (Supply-Chain-Risiko). Das HTML der drei
-`v-html`-Senken stammt aus der django-cast-API derselben Site: redaktionell
-erstellte Wagtail-Inhalte, die Wagtail beim Speichern filtert und die das
-serverseitig gerenderte Theme (cast-bootstrap5) ebenfalls unbereinigt ausgibt.
-Der Client-Sanitizer war daher nur eine zusätzliche Schicht ohne konkret
-ausnutzbaren Fehler. `dompurify`, `helpers/sanitizeRichText.ts`, die
+`v-html`-Senken ist die gerenderte Ausgabe der django-cast-API derselben Site:
+redaktionell erstellter Wagtail-Richtext, die eigenen Body-Blöcke der Site (auch
+per `CAST_POST_BODY_BLOCKS` konfigurierte) und das Embed-HTML der konfigurierten
+Embed-Provider. Das serverseitig gerenderte Theme (cast-bootstrap5) gibt dieselbe
+Ausgabe ebenfalls unbereinigt aus. Der Client-Sanitizer war daher nur eine
+zusätzliche Schicht ohne konkret ausnutzbaren Fehler. `dompurify`, `helpers/sanitizeRichText.ts`, die
 Richtext-Tests und ihre Fixture sind entfernt; die Senken rendern wieder wie vor
 `cast-vue-sanitizer` (`PostList.vue` wieder `<p v-html="blog.description">`).
-Unverändert bleiben das Entfernen der alten Audio-Blöcke (`PostItemPodlove`-Tests)
-und das Zurücksetzen des Galerie-Modals vor jedem Klick. Vertrauensgrenze ist
-damit die redaktionelle Schreibberechtigung in Wagtail.
+Unverändert bleiben das Entfernen der alten Audio-Blöcke, das Lesen der
+Artikelmetadaten und das Zurücksetzen des Galerie-Modals vor jedem Klick; die
+gerenderten Pfade prüfen nun Komponententests in `PostItemPodlove.test.ts`.
+Vertrauensgrenze ist damit die redaktionelle Schreibberechtigung in Wagtail
+sowie die Block- und Embed-Konfiguration der Site.

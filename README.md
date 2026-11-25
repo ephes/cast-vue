@@ -115,12 +115,14 @@ boundaries and scope.
 ### Rich text from the API
 
 Blog descriptions and post overview/detail HTML are inserted with `v-html` as
-delivered by the site's own django-cast API. This is editor-authored Wagtail
-content that Wagtail filters when it is saved, and the server-rendered themes
-output the same HTML without further sanitizing, so the Vue theme adds no
-client-side sanitizer (and no dependency for one). PostItem removes
-server-rendered audio blocks before rendering because the Vue Podlove wrapper
-supplies those players.
+delivered by the site's own django-cast API. The Vue theme trusts that rendered
+output the same way the server-rendered themes do: editor-authored Wagtail rich
+text, the site's own body blocks (including blocks configured through
+`CAST_POST_BODY_BLOCKS`) and the embed HTML of the configured embed providers.
+The trust boundary is therefore the site's editor permissions and block/embed
+configuration; the Vue theme adds no client-side sanitizer (and no dependency
+for one). PostItem removes server-rendered audio blocks before rendering
+because the Vue Podlove wrapper supplies those players.
 
 ### Run Tests
 

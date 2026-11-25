@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from "vitest";
+import { afterEach, describe, test, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
 vi.mock("@/config", () => ({
@@ -64,5 +64,44 @@ describe("PostItem.vue podlove stripping", () => {
     expect(stripped).toContain("keep-me");
     expect(stripped).not.toContain("block-audio");
     expect(stripped).not.toContain("podlove-player");
+  });
+});
+
+const mounted: ReturnType<typeof mount>[] = [];
+afterEach(() => { mounted.splice(0).forEach(wrapper => wrapper.unmount()); });
+
+function render(html: string, detail: boolean) {
+  const wrapper = mount(PostItem, {
+    props: { post: { ...buildPost(), html_detail: html, html_overview: html }, detail },
+    global: { stubs: { "router-link": { template: "<a><slot /></a>" } } },
+  });
+  mounted.push(wrapper);
+  return wrapper;
+}
+
+describe("PostItem.vue rendered rich text", () => {
+  test.each([false, true])("keeps article metadata and strips audio blocks (detail: %s)", detail => {
+    const html = '<script id="vue-article-data" data-article-author="Editor" data-article-date="Nov. 9" data-article-date-time="2026-11-09"></script><section class="block-audio"><p>old player</p></section><podlove-player></podlove-player><p>keep</p>';
+    const wrapper = render(html, detail);
+    expect(wrapper.text()).toContain("Editor");
+    expect(wrapper.text()).toContain("keep");
+    expect(wrapper.text()).not.toContain("old player");
+    expect(wrapper.find(".block-audio, podlove-player, script").exists()).toBe(false);
+  });
+
+  test("gallery modal does not reuse the previous image's sources", async () => {
+    const first = '<picture><source type="image/avif" srcset="/a.avif 300w" data-modal-src="/full-a.avif" data-modal-srcset="/full-a.avif 1200w"><img id="gallery-image-1" src="/a.jpg" data-fullsrc="/full-a.jpg" data-modal-srcset="/full-a.jpg 1200w"></picture>';
+    const second = '<picture><img id="gallery-image-2" src="/b.jpg"></picture>';
+    const wrapper = render(first + second, true);
+    await wrapper.find("#gallery-image-1").trigger("click");
+    expect(wrapper.find("#modal-image").attributes("src")).toBe("/full-a.jpg");
+    expect(wrapper.find("#modal-image").attributes("srcset")).toBe("/full-a.jpg 1200w");
+    expect(wrapper.find(".modal source").attributes("src")).toBe("/full-a.avif");
+    expect(wrapper.find(".modal source").attributes("srcset")).toBe("/full-a.avif 1200w");
+    await wrapper.find("#gallery-image-2").trigger("click");
+    expect(wrapper.find("#modal-image").attributes("src")).toBeUndefined();
+    expect(wrapper.find("#modal-image").attributes("srcset")).toBeUndefined();
+    expect(wrapper.find(".modal source").attributes("src")).toBeUndefined();
+    expect(wrapper.find(".modal source").attributes("srcset")).toBeUndefined();
   });
 });
