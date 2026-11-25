@@ -70,23 +70,27 @@ describe("PostItem.vue podlove stripping", () => {
 const mounted: ReturnType<typeof mount>[] = [];
 afterEach(() => { mounted.splice(0).forEach(wrapper => wrapper.unmount()); });
 
-function render(html: string, detail: boolean) {
+function render(html: string, detail: boolean, overview = html) {
   const wrapper = mount(PostItem, {
-    props: { post: { ...buildPost(), html_detail: html, html_overview: html }, detail },
+    props: { post: { ...buildPost(), html_detail: html, html_overview: overview }, detail },
     global: { stubs: { "router-link": { template: "<a><slot /></a>" } } },
   });
   mounted.push(wrapper);
   return wrapper;
 }
 
+// Shaped like cast_vue/templates/cast/vue/post_body.html.
+const body = (text: string) => `<article><script id="vue-article-data" data-article-date="Nov. 9" data-article-date-time="2026-11-09" data-article-author="Editor"></script><section class="block-audio"><p>old player</p><podlove-player></podlove-player></section><section class="block-paragraph"><p>${text}</p></section></article>`;
+
 describe("PostItem.vue rendered rich text", () => {
-  test.each([false, true])("keeps article metadata and strips audio blocks (detail: %s)", detail => {
-    const html = '<script id="vue-article-data" data-article-author="Editor" data-article-date="Nov. 9" data-article-date-time="2026-11-09"></script><section class="block-audio"><p>old player</p></section><podlove-player></podlove-player><p>keep</p>';
-    const wrapper = render(html, detail);
+  test.each([false, true])("renders its own body with article metadata and without audio blocks (detail: %s)", detail => {
+    const wrapper = render(body("detail body"), detail, body("overview body"));
     expect(wrapper.text()).toContain("Editor");
-    expect(wrapper.text()).toContain("keep");
+    expect(wrapper.find("time").attributes("date-time")).toBe("2026-11-09");
+    expect(wrapper.text()).toContain(detail ? "detail body" : "overview body");
+    expect(wrapper.text()).not.toContain(detail ? "overview body" : "detail body");
     expect(wrapper.text()).not.toContain("old player");
-    expect(wrapper.find(".block-audio, podlove-player, script").exists()).toBe(false);
+    expect(wrapper.find(".block-audio, podlove-player").exists()).toBe(false);
   });
 
   test("gallery modal does not reuse the previous image's sources", async () => {
