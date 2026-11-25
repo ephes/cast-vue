@@ -67,7 +67,6 @@ import config from '../config';
 import { Post, ModalImage, ModalSource, CommentMeta, ArticleData } from "./types";
 import CommentList from "./CommentList.vue";
 import PodlovePlayer from "./PodlovePlayer.vue";
-import { sanitizeRichText } from '../helpers/sanitizeRichText';
 
 
 export default {
@@ -123,7 +122,7 @@ export default {
     setModalFromImage(clickedEl: HTMLImageElement) {
       const picture = clickedEl.parentNode as HTMLPictureElement;
       const source = picture.querySelector('source');
-      // The sanitizer may have removed unsafe modal URLs: never keep the previous image's values.
+      // An image may lack some modal attributes: never keep the previous image's values.
       this.modalImage = {} as ModalImage;
       this.modalSource = {} as ModalSource;
 
@@ -255,10 +254,10 @@ export default {
       return config.apiPodlovePlayerConfigUrl;
     },
     detailHtml(): string {
-      return sanitizeRichText(this.stripAudioBlocks(this.post.html_detail));
+      return this.stripAudioBlocks(this.post.html_detail);
     },
     overviewHtml(): string {
-      return sanitizeRichText(this.stripAudioBlocks(this.post.html_overview));
+      return this.stripAudioBlocks(this.post.html_overview);
     },
     showPodlovePlayers(): boolean {
       if (config.pageType !== "styleguide") {

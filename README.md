@@ -114,32 +114,13 @@ boundaries and scope.
 
 ### Rich text from the API
 
-Blog descriptions and post overview/detail HTML pass through the shared
-`sanitizeRichText` helper immediately before `v-html`. DOMPurify is pinned to
-3.4.17; update the exact pin and lockfile together after checking advisories and
-running the rich-text regression tests. The explicit tag/attribute allowlist
-preserves Cast formatting, figures, responsive pictures, gallery modal metadata,
-native audio/video sources, tables, inline semantics (`mark`, `q`, `cite`, `abbr`,
-...) and ARIA attributes. PostItem still removes server-rendered audio blocks
-before sanitizing because the Vue Podlove wrapper supplies those players.
-
-Wagtail embed iframes are kept only when their `src` is an HTTPS URL on an
-allowlisted video host (`www.youtube.com`, `youtube.com`,
-`www.youtube-nocookie.com`, `player.vimeo.com`, default port). Such frames keep
-`allow`, `allowfullscreen`, `frameborder` and `referrerpolicy`; those attributes
-are removed from every other element. Frames from any other source are removed
-completely, as are `srcdoc` and `sandbox`. Extend the host list in
-`sanitizeRichText.ts` only after reviewing the provider.
-
-Links accept HTTP(S), relative URLs, fragments, mailto and tel; media and gallery
-URLs accept HTTP(S) and relative URLs. Every srcset candidate is checked, including
-gallery data attributes later copied into the modal. All data URLs are rejected:
-the Cast media templates use file URLs. Scripts, SVG/MathML, event handlers, inline
-styles, other frames, objects and arbitrary data attributes are excluded. Custom
-executable embeds need a separately reviewed integration. Article metadata is
-read as text before sanitization and its script element is never inserted.
-This client boundary supplements server-side validation; the global Podlove
-script and server-rendered site templates remain separate trust boundaries.
+Blog descriptions and post overview/detail HTML are inserted with `v-html` as
+delivered by the site's own django-cast API. This is editor-authored Wagtail
+content that Wagtail filters when it is saved, and the server-rendered themes
+output the same HTML without further sanitizing, so the Vue theme adds no
+client-side sanitizer (and no dependency for one). PostItem removes
+server-rendered audio blocks before rendering because the Vue Podlove wrapper
+supplies those players.
 
 ### Run Tests
 

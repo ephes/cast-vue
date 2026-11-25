@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Remove the client-side DOMPurify rich-text sanitizer and its `dompurify` dependency; API HTML is rendered as delivered again.
 - Fence shared JSON cache publication against responses older than a refresh.
 - Bound streamed JSON bodies and both shared caches with deterministic eviction.
 - Give API reads a total deadline and cancel work owned by retired views.

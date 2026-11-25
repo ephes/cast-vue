@@ -6,13 +6,14 @@ vollständige npm-Lockfile inklusive Entwicklung; keine produktiven Sites.
 
 | Befund / Stelle | Schwere | Fix / Status |
 | --- | --- | --- |
-| `components/PostList.vue`: Beschreibung per `v-html` | Hoch, falls unvertrauenswürdiges HTML die API erreicht | Behoben in `cast-vue-sanitizer`: berechnetes `descriptionHtml` verwendet die zentrale DOMPurify-Allowlist. |
-| `components/PostItem.vue`: Detail/Übersicht per `v-html`, `stripAudioBlocks` | Hoch, falls unvertrauenswürdiges HTML die API erreicht | Behoben in `cast-vue-sanitizer`: nach Entfernung der alten Audio-Blöcke wird jeder HTML-Ausgabepfad mit derselben Allowlist bereinigt. Galerie-URLs in Datenattributen werden ebenfalls geprüft, bevor Vue sie in das Modal kopiert. |
+| `components/PostList.vue`: Beschreibung per `v-html` | Hoch, falls unvertrauenswürdiges HTML die API erreicht | In `cast-vue-sanitizer` mit einer DOMPurify-Allowlist bereinigt; am 25.11.2026 wieder entfernt (siehe unten): vertrauenswürdiger, redaktioneller Inhalt der eigenen API. |
+| `components/PostItem.vue`: Detail/Übersicht per `v-html`, `stripAudioBlocks` | Hoch, falls unvertrauenswürdiges HTML die API erreicht | In `cast-vue-sanitizer` mit derselben Allowlist bereinigt (inklusive Galerie-URLs in Datenattributen); am 25.11.2026 wieder entfernt (siehe unten). |
 | `package-lock.json`: Vitest/mocker und Formatierungsabhängigkeiten | Mittel | Behoben: Vitest und Coverage mindestens 4.1.12; Test-Utils 2.4.11 festgesetzt, `js-beautify` per npm-Override auf 1.14.8. Dessen glob-8-/editorconfig-0.15-Baum vermeidet die gemeldeten verwundbaren neueren Linien. Temporärer Kompatibilitäts-Pin: nach Upstream-Reparatur aktualisieren; glob 8/inflight sind deprecated. |
 
 Komponentenpfade liegen unter `cast_vue/static/src/js/cast_vue/`.
 Der ursprüngliche Slice behob die Abhängigkeitsprobleme; der Folgeslice
-`cast-vue-sanitizer` schließt die drei `v-html`-Senken. Vue kompiliert `v-html` nicht als Template. Kommentare
+`cast-vue-sanitizer` bereinigte die drei `v-html`-Senken, was am 25.11.2026
+wieder entfernt wurde (siehe letzter Abschnitt). Vue kompiliert `v-html` nicht als Template. Kommentare
 (`CommentItem.vue`) verwenden escaped Textinterpolation. `PodlovePlayer.vue`
 verwendet eigene Container und entfernt alte Player-Frames bei Quellenwechsel
 oder Unmount. In den eigenen
@@ -35,7 +36,10 @@ Produktionsbuild erfolgreich; das Theme hat keine Browser-Tests. Das Audit betri
 nur ausgelieferten Browsercode. Der global von django-cast gelieferte Podlove
 Player und eigene Core-/Site-Templates sind durch diesen npm-Audit nicht erfasst.
 
-## Richtext-Allowlist (`cast-vue-sanitizer`, 09.11.2026)
+## Richtext-Allowlist (`cast-vue-sanitizer`, 09.11.2026; entfernt 25.11.2026)
+
+Historischer Stand; Allowlist, DOMPurify, Fixture und Tests wurden am
+25.11.2026 entfernt (siehe letzter Abschnitt).
 
 DOMPurify ist exakt auf `3.4.17` festgesetzt (inklusive Lockfile). Die zentrale
 Policy in `helpers/sanitizeRichText.ts` erlaubt Absätze, Links, Listen,
@@ -96,3 +100,18 @@ Podlove-Versuche besitzen eigene, ablösbare Container und einen Fehler-/Retry-Z
 Die genauen Grenzen und Komponentenverträge stehen in der README. Regressionen
 verwenden ausschließlich synthetische Daten und kontrollierte Antworten; der globale
 Podlove-Code und produktive Sites wurden dabei nicht geprüft.
+
+## Client-Sanitizer entfernt (25.11.2026)
+
+Entscheidung des Betreibers: zusätzliche Schutzschichten, die neue Abhängigkeiten
+mitbringen, sind riskanter als nützlich (Supply-Chain-Risiko). Das HTML der drei
+`v-html`-Senken stammt aus der django-cast-API derselben Site: redaktionell
+erstellte Wagtail-Inhalte, die Wagtail beim Speichern filtert und die das
+serverseitig gerenderte Theme (cast-bootstrap5) ebenfalls unbereinigt ausgibt.
+Der Client-Sanitizer war daher nur eine zusätzliche Schicht ohne konkret
+ausnutzbaren Fehler. `dompurify`, `helpers/sanitizeRichText.ts`, die
+Richtext-Tests und ihre Fixture sind entfernt; die Senken rendern wieder wie vor
+`cast-vue-sanitizer` (`PostList.vue` wieder `<p v-html="blog.description">`).
+Unverändert bleiben das Entfernen der alten Audio-Blöcke (`PostItemPodlove`-Tests)
+und das Zurücksetzen des Galerie-Modals vor jedem Klick. Vertrauensgrenze ist
+damit die redaktionelle Schreibberechtigung in Wagtail.
