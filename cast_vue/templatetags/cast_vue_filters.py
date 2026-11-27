@@ -2,9 +2,20 @@ import re
 from urllib.parse import urlsplit
 
 from cast import appsettings
+from cast.models import Blog, Episode
+from cast.site_lookup import get_site_specific_page_or_404
 from django import template
+from django.db.models import Count, Q
+from django.http import Http404
 from django.urls import NoReverseMatch, reverse
 from django.utils.translation import gettext, gettext_noop
+
+try:
+    from cast.blog_index import public_posts
+except ImportError:
+    # Older django-cast releases used Wagtail's public() queryset method.
+    def public_posts(queryset):
+        return queryset.public()
 
 try:
     from cast.follow_links import get_follow_links
@@ -15,6 +26,7 @@ except ModuleNotFoundError as exc:
 
 register = template.Library()
 
+PODCAST_FORMATS = ("mp3", "m4a", "oga", "opus")
 PLATFORMS = (
     ("apple_podcasts", "Apple Podcasts", "podcast"),
     ("overcast", "Overcast", "headphones"),
@@ -62,11 +74,44 @@ def feed_url(name, slug, **kwargs):
         return ""
 
 
+def site_feed_blog(blog, request):
+    if request is None or not getattr(blog, "slug", ""):
+        return None
+    try:
+        page = get_site_specific_page_or_404(Blog, request, slug=blog.slug)
+    except Http404:
+        return None
+    return page if page.pk == getattr(blog, "pk", None) else None
+
+
+def published_podcast_formats(blog):
+    episodes = public_posts(Episode.objects.using(blog._state.db).live()).descendant_of(blog)
+    # A feed enclosure needs an uploaded file. Count skips NULL and the filter skips empty filenames.
+    counts_by_format = {}
+    for audio_format in PODCAST_FORMATS:
+        field = f"podcast_audio__{audio_format}"
+        counts_by_format[audio_format] = Count(field, filter=~Q(**{field: ""}))
+    counts = episodes.filter(podcast_audio__isnull=False).aggregate(**counts_by_format)
+    return [audio_format for audio_format in PODCAST_FORMATS if counts[audio_format]]
+
+
+def configured_feed_page(context, request, unavailable_url):
+    unavailable = urlsplit(safe_link(unavailable_url, request))
+    for key in ("follow_links", "default_follow_links"):
+        candidate = safe_link((context.get(key) or {}).get("feed_detail"), request)
+        # django-cast's follow_links may contain the same generated route.
+        if candidate and urlsplit(candidate)._replace(query="", fragment="") != unavailable:
+            return candidate
+    return ""
+
+
 @register.simple_tag(takes_context=True)
 def cast_vue_subscribe(context):
     blog = context.get("blog")
     # Post contexts can hold the base Blog page instead of its Podcast subtype.
-    blog = getattr(blog, "specific", blog)
+    # Repository projections already have the correct subtype and can omit the content type.
+    if getattr(blog, "content_type_id", None):
+        blog = blog.specific
     request = context.get("request")
     slug = getattr(blog, "slug", "")
     is_podcast = bool(getattr(blog, "is_podcast", False))
@@ -74,11 +119,26 @@ def cast_vue_subscribe(context):
     if follow_links is None:
         follow_links = get_follow_links(blog) if slug and get_follow_links else context.get("default_follow_links") or {}
 
-    feed_page = feed_url("feed_detail", slug) if slug else ""
-    blog_rss = feed_url("latest_entries_feed", slug) if slug else follow_links.get("rss")
-    podcast_rss = feed_url("podcast_feed_rss", slug, audio_format="mp3") if slug and is_podcast else ""
-    if feed_page and request and (request.GET.get("template_base_dir") or request.GET.get("theme")) == "vue":
+    feed_path = feed_url("feed_detail", slug) if slug else ""
+    feed_blog = site_feed_blog(blog, request)
+    # feed_detail requires a live site-scoped blog with no direct or inherited restrictions.
+    restricted = feed_blog is not None and feed_blog.get_view_restrictions().exists()
+    public_blog = feed_blog if not restricted else None
+    feed_page = feed_path if public_blog is not None else ""
+    if feed_page and (request.GET.get("template_base_dir") or request.GET.get("theme")) == "vue":
         feed_page += "?theme=vue"
+    if not feed_page and not restricted:
+        feed_page = configured_feed_page(context, request, feed_path)
+
+    blog_rss = follow_links.get("rss") if not slug else ""
+    podcast_rss = ""
+    podcast_formats = []
+    if public_blog is not None:
+        blog_rss = feed_url("latest_entries_feed", slug)
+        if is_podcast:
+            podcast_formats = published_podcast_formats(public_blog)
+            recommended_format = next(iter(podcast_formats), "mp3")
+            podcast_rss = feed_url("podcast_feed_rss", slug, audio_format=recommended_format)
 
     platform_urls = {}
     if is_podcast:
@@ -98,6 +158,7 @@ def cast_vue_subscribe(context):
     return {
         "feedPageUrl": safe_link(feed_page, request),
         "isPodcast": is_podcast,
+        "podcastFormats": podcast_formats,
         "podcastRssUrl": safe_link(podcast_rss, request),
         "blogRssUrl": safe_link(blog_rss, request),
         "platformLinks": [

@@ -68,15 +68,16 @@ restyle the theme by overriding them in its own stylesheet, for example
   On small screens, search stays visible and the other controls open from the
   "Filters" button. Removable chips above the posts show the applied filters
   and provide a "Clear all" action at any width.
-- The **Subscribe** link in the header opens the Django subscribe page. The
+- For public blogs, the **Subscribe** link in the header opens the Django subscribe page. The
   footer shows configured follow links. Podcast archives and episodes offer
   direct app links. When more than three apps are available, phones show the
   first three alongside "More options". Written blogs offer a feed link.
   The subscribe page shows all available apps, including Castro, and recommends
-  MP3 with a single-line, selectable RSS URL. Other formats appear in a compact
-  list. RSS and Atom links for every format and for written posts work without
-  JavaScript. The copy buttons copy RSS URLs and select the URL for manual copying
-  if clipboard access is unavailable.
+  the first format with audio in a published, public episode, in the order MP3,
+  M4A, Ogg (OGA), and Opus. Its RSS URL is selectable on a single line. Other
+  available formats appear in a compact list. RSS and Atom links for available
+  formats and written posts work without JavaScript. The copy buttons copy RSS
+  URLs and select the URL for manual copying if clipboard access is unavailable.
 - **Theme switching:** the footer's native "Site theme" select shows Vue when
   it renders the page, including during a request-only preview. Use "Keep this
   theme" to save Vue when the session or site default selects a different theme.
@@ -124,8 +125,11 @@ helper. That helper uses `CAST_FOLLOW_LINKS` and the blog email. Configure
 `mastodon`, `linkedin`, `github`, `bluesky` and `email` for the footer.
 An Apple Podcasts URL with an `/id<digits>` path segment also enables Overcast,
 Pocket Casts and Castro. The theme accepts HTTP(S) links and mailto links for
-email. Feed URLs come from django-cast's routes. Django embeds the subscription
-data as JSON in the SPA template, so rendering the links needs no API request.
+email. Feed URLs come from django-cast's routes. Standalone pages can supply
+a feed-page URL through `follow_links.feed_detail` or `default_follow_links.feed_detail`.
+Django embeds the subscription data as JSON in the SPA template, so rendering
+the links needs no API request. The SPA's podcast RSS URL uses the same format
+preference and defaults to MP3 when no published audio format is available.
 Sites can still fill the feed template's `podlove_subscribe_button` block.
 
 ## Route transitions

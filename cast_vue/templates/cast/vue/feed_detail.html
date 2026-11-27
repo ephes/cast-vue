@@ -31,33 +31,37 @@
     {% endif %}
     {% block podlove_subscribe_button %}{% endblock podlove_subscribe_button %}
 
-    {% if podcast_feeds %}
-      <section class="cv-feed-formats">
-        <h2>{% translate "Use the feed in any other app" %}</h2>
-        <p>{% translate "Copy the RSS URL into your podcast app to subscribe directly." %}</p>
-        {% for feed in podcast_feeds %}
-          {% if feed.format == "mp3" %}
-            <div class="cv-feed-recommended">
-              <h3>Recommended: {{ feed.format_label }}</h3>
-              <div class="cv-feed-recommended__copy" data-cv-feed-copy>
-                {% include "./feed_copy.html" with show_url=True %}
-              </div>
-              <div class="cv-feed-format__links">
-                <a href="{{ feed.rss_url }}" aria-label="{{ feed.format_label }} RSS">RSS</a>
-                <a href="{{ feed.atom_url }}" aria-label="{{ feed.format_label }} Atom">Atom</a>
-              </div>
-            </div>
-          {% endif %}
-        {% endfor %}
-        <h3 class="cv-feed-other-heading">Other formats</h3>
-        <ul class="cv-feed-format-list" role="list">
+    {% if podcast_feeds and cv_subscribe.podcastFormats %}
+      {% with recommended=cv_subscribe.podcastFormats.0 %}
+        <section class="cv-feed-formats">
+          <h2>{% translate "Use the feed in any other app" %}</h2>
+          <p>{% translate "Copy the RSS URL into your podcast app to subscribe directly." %}</p>
           {% for feed in podcast_feeds %}
-            {% if feed.format != "mp3" %}
-              {% include "./podcast_feed_format.html" %}
+            {% if feed.format == recommended %}
+              <div class="cv-feed-recommended">
+                <h3>Recommended: {{ feed.format_label }}</h3>
+                <div class="cv-feed-recommended__copy" data-cv-feed-copy>
+                  {% include "./feed_copy.html" with show_url=True %}
+                </div>
+                <div class="cv-feed-format__links">
+                  <a href="{{ feed.rss_url }}" aria-label="{{ feed.format_label }} RSS">RSS</a>
+                  <a href="{{ feed.atom_url }}" aria-label="{{ feed.format_label }} Atom">Atom</a>
+                </div>
+              </div>
             {% endif %}
           {% endfor %}
-        </ul>
-      </section>
+          {% if cv_subscribe.podcastFormats|length > 1 %}
+            <h3 class="cv-feed-other-heading">Other formats</h3>
+            <ul class="cv-feed-format-list" role="list">
+              {% for feed in podcast_feeds %}
+                {% if feed.format != recommended and feed.format in cv_subscribe.podcastFormats %}
+                  {% include "./podcast_feed_format.html" %}
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </section>
+      {% endwith %}
     {% endif %}
   {% endif %}
 
