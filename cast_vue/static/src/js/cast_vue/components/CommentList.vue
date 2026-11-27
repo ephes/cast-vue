@@ -1,14 +1,19 @@
 <template>
     <div class="comment-list" :key="targetIdentity">
-        <p v-if="commentTree.error" role="alert">Comments could not be displayed.</p>
-        <div v-for="comment in rootComments" :key="comment.id">
-            <comment-item
-                @comment-submitted="submitComment"
-                :comment="comment"
-                :comments="comments"
-                :comments-enabled="commentMeta.commentsAreEnabled"
-            />
-        </div>
+        <p v-if="commentTree.error" class="cv-form-error" role="alert">Comments could not be displayed.</p>
+        <ul v-if="rootComments.length > 0" class="cv-comment-list">
+            <li v-for="comment in rootComments" :key="comment.id">
+                <comment-item
+                    @comment-submitted="submitComment"
+                    :comment="comment"
+                    :comments="comments"
+                    :comments-enabled="commentMeta.commentsAreEnabled"
+                />
+            </li>
+        </ul>
+        <p v-else-if="!commentTree.error" class="cv-comments__notice">
+            {{ commentMeta.commentsAreEnabled ? 'No comments yet. Start the conversation.' : 'No comments.' }}
+        </p>
         <comment-form v-if="commentMeta.commentsAreEnabled" @comment-submitted="submitComment"></comment-form>
     </div>
 </template>
@@ -129,10 +134,3 @@ export default defineComponent({
     }
 });
 </script>
-<style scoped>
-.comment-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-</style>

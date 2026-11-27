@@ -1,16 +1,15 @@
 {% load static %}
 {% load django_vite %}
-
-{% vite_hmr_client app="cast_vue" %}
-{% vite_asset 'js/cast_vue/main.ts' app="cast_vue" %}
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="{{ LANGUAGE_CODE|default:"en" }}">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width">
-    <title>Cast Vue Template!</title>
-    <meta name="description" content="Description of Cast Vue Template">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>{% block title %}{% if page.title %}{{ page.seo_title|default:page.title }}{% if blog.title and blog.title != page.title %} · {{ blog.title }}{% endif %}{% else %}{{ blog.title }}{% endif %}{% endblock title %}</title>
+    {% block meta %}
+      {% if page.search_description %}<meta name="description" content="{{ page.search_description }}">{% endif %}
+    {% endblock meta %}
 
     <!-- Try to set all vue configuration values in one go / script tag -->
     <script id="vue-configuration"
@@ -25,7 +24,7 @@
               data-api-facet-counts-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.facet_counts_api_url }}"
             {# Used for posting comments #}
               data-post-comment-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.comment_post_url }}"
-            {# Used for podlove player config #}
+            {# Kept for sites that read it; the theme's own audio player needs no configuration #}
               data-api-podlove-player-config-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.podlove_player_config_url }}"
             {# Used for theme selection #}
               data-api-theme-list-url="{{ request.scheme }}://{{ request.get_host }}{{ blog.theme_list_api_url }}"
@@ -33,12 +32,15 @@
             {% endblock vuejs-data %}
     >
     </script>
-    <script src={% static 'cast/js/web-player/embed.5.js' %}></script>
+    {% vite_hmr_client app="cast_vue" %}
+    {% vite_asset 'js/cast_vue/main.ts' app="cast_vue" %}
+    {% block head %}{% endblock head %}
   </head>
   <body>
     {% block main %}
-      <div id="app">
-      </div>
+      {# The Vue app replaces this content; pages without blog data (errors) keep it. #}
+      <div id="app"><div class="cv-static">{% block content %}{% endblock content %}</div></div>
     {% endblock main %}
+    <noscript><p class="cv-static">This theme needs JavaScript to show its content.</p></noscript>
   </body>
 </html>

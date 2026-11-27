@@ -223,10 +223,10 @@ export default {
     if (templateBaseDir) {
       wagtailApiUrl.searchParams.set('template_base_dir', templateBaseDir);
     }
-    updateSearchParams(wagtailApiUrl, calculateFirstOffset(form.value));
+    updateSearchParams(wagtailApiUrl, calculateFirstOffset(form.value) as unknown as Form);
 
     const facetCountsApiUrl = new URL(config.apiFacetCountsUrl.toString());
-    updateSearchParams(facetCountsApiUrl, calculateFirstOffset(form.value));
+    updateSearchParams(facetCountsApiUrl, calculateFirstOffset(form.value) as unknown as Form);
 
     const fetchListData = async () => {
       try {

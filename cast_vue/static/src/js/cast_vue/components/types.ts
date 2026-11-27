@@ -1,6 +1,3 @@
-import { AnymatchFn } from "vite";
-import { Comment } from "vue";
-
 export interface Comment {
   id: number;
   parent: number | null;
@@ -63,10 +60,12 @@ export interface Post {
   id: number;
   title: string;
   visible_date: string;
+  cover_image_poster_url?: string | null;
+  cover_alt_text?: string;
   html_overview: string;
   html_detail: string;
   comments_are_enabled: boolean;
-  comments: [Comment];
+  comments: Comment[];
   comments_security_data: CommentSecurityData,
   podlove_players: [string, string][]; // [elementId, apiUrl]
   meta: {
@@ -82,7 +81,7 @@ export interface PostsFromApi {
   meta: {
     total_count: number;
   };
-  items: [Post];
+  items: Post[];
 }
 
 export interface ModalSource {
@@ -127,9 +126,9 @@ interface Facet {
 }
 
 export interface FacetCounts {
-  date_facets: [Facet];
-  category_facets: [Facet];
-  tag_facets: [Facet];
+  date_facets: Facet[];
+  category_facets: Facet[];
+  tag_facets: Facet[];
 }
 
 

@@ -118,3 +118,17 @@ Artikelmetadaten und das Zurücksetzen des Galerie-Modals vor jedem Klick; die
 gerenderten Pfade prüfen nun Komponententests in `PostItemPodlove.test.ts`.
 Vertrauensgrenze ist damit die redaktionelle Schreibberechtigung in Wagtail
 sowie die Block- und Embed-Konfiguration der Site.
+
+## Nachtrag 2026-11-27: Redesign und eigener Audio-Player
+
+`PodlovePlayer.vue` und das global geladene `embed.5.js` sind entfallen. Der
+theme-eigene Player (`AudioPlayer.vue`, `player/episode.ts`, `player/engine.ts`)
+liest die Episodendaten über denselben begrenzten JSON-Leser wie die übrigen
+API-Abrufe aus dem Podlove-Format-Endpunkt der eigenen Site. Titel, Kapitel,
+Sprechernamen und Transkripttext werden ausschließlich per escaped
+Textinterpolation gerendert; Audio-, Cover- und Link-URLs werden nur mit
+`http:`/`https:` übernommen. Im `localStorage` liegen nur Wiedergabeposition,
+Geschwindigkeit und die Farbschema-Wahl. Die `v-html`-Senken sind unverändert
+die API-Ausgaben `html_overview`/`html_detail` (`PostItem.vue`) und
+`blog.description` (jetzt in `LoadPostList.vue`); die Vertrauensgrenze bleibt
+dieselbe.

@@ -38,17 +38,17 @@ test.each(['list', 'detail'])('stable %s error, empty and retry states', async k
   if (kind === 'list') {
     outcome = 'malformed'; await wrapper.find('button').trigger('click'); await flushPromises();
     expect(wrapper.find('[role="alert"]').exists()).toBe(true);
-    expect(wrapper.vm.totalPages).toBe(0);
+    expect((wrapper.vm as any).totalPages).toBe(0);
   }
   outcome = 'empty'; await wrapper.find('button').trigger('click'); await flushPromises();
   expect(wrapper.text()).toContain(kind === 'list' ? 'No posts found.' : 'Post not found.');
   expect(wrapper.findComponent({ name: 'PostItem' }).exists()).toBe(false);
   outcome = 'success';
-  if (kind === 'list') await wrapper.vm.fetchData(true); else await wrapper.vm.fetchPostFromAPI(true);
+  if (kind === 'list') await (wrapper.vm as any).fetchData(true); else await (wrapper.vm as any).fetchPostFromAPI(true);
   await flushPromises();
   expect(wrapper.text()).toContain('Recovered post');
   if (kind === 'list') {
-    outcome = 'network'; await wrapper.vm.fetchData(true); await flushPromises();
+    outcome = 'network'; await (wrapper.vm as any).fetchData(true); await flushPromises();
     expect(wrapper.find('[role="alert"]').exists()).toBe(true);
     expect(wrapper.find('form').exists()).toBe(true);
     expect(wrapper.findComponent({ name: 'PostItem' }).exists()).toBe(false);
@@ -56,7 +56,7 @@ test.each(['list', 'detail'])('stable %s error, empty and retry states', async k
   }
   if (kind === 'detail') {
     const uid = wrapper.findComponent({ name: 'PostItem' }).vm.$.uid;
-    outcome = 'network'; await wrapper.vm.fetchPostFromAPI(true); await flushPromises();
+    outcome = 'network'; await (wrapper.vm as any).fetchPostFromAPI(true); await flushPromises();
     expect(wrapper.find('[role="alert"]').exists()).toBe(true);
     expect(wrapper.findComponent({ name: 'PostItem' }).vm.$.uid).toBe(uid);
   }

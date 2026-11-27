@@ -1,23 +1,52 @@
 <template>
-    <div>
-        <p v-if="isLoading && !hasLoaded">Loading data...</p>
+    <div class="cv-list">
+        <div v-if="isLoading && !hasLoaded" class="cv-skeleton" role="status">
+          <span class="cv-sr-only">Loading data...</span>
+          <div class="cv-skeleton__item" aria-hidden="true">
+            <div class="cv-skeleton__line cv-skeleton__line--title"></div>
+            <div class="cv-skeleton__line cv-skeleton__line--medium"></div>
+          </div>
+          <div v-for="n in 3" :key="n" class="cv-skeleton__item" aria-hidden="true">
+            <div class="cv-skeleton__line cv-skeleton__line--short"></div>
+            <div class="cv-skeleton__line cv-skeleton__line--title"></div>
+            <div class="cv-skeleton__line"></div>
+            <div class="cv-skeleton__line cv-skeleton__line--medium"></div>
+          </div>
+        </div>
         <div v-else>
-          <div v-if="error" role="alert">
+          <div v-if="error" class="cv-alert" role="alert">
             <p>{{ error }}</p>
-            <button @click="fetchData(true)">Retry</button>
+            <button type="button" class="cv-button" @click="fetchData(true)">Retry</button>
           </div>
           <template v-if="hasLoaded">
-            <select-theme></select-theme>
-            <filter-form
-                @submit-filter-form="handleSubmitFilterForm"
-                :form="form"
-                :facetCounts="facetCounts"
-            ></filter-form>
-            <br />
-            <p v-if="!error && postsFromApi.items.length === 0">No posts found.</p>
-            <pagination-buttons v-if="!error && totalPages > 0" :currentPage="currentPage" :totalPages="totalPages" @change-page="changePage">
-            </pagination-buttons>
-            <post-list v-if="!error" :blog="blog" :posts="postsFromApi" />
+            <header class="cv-hero">
+              <h1 class="cv-hero__title">{{ blog.title }}</h1>
+              <div v-if="blog.description" class="cv-hero__description cv-prose" v-html="blog.description"></div>
+            </header>
+            <div class="cv-list-layout">
+              <aside class="cv-list-layout__aside" aria-label="Search and filters">
+                <filter-form
+                    @submit-filter-form="handleSubmitFilterForm"
+                    :form="form"
+                    :facetCounts="facetCounts"
+                ></filter-form>
+              </aside>
+              <div class="cv-list-layout__main" :class="{ 'is-refreshing': isLoading }" :aria-busy="isLoading">
+                <div v-if="!error" class="cv-list-summary">
+                  <p class="cv-eyebrow" role="status">{{ summary }}</p>
+                  <button v-if="isFiltered" type="button" class="cv-button cv-button--ghost cv-button--small" @click="clearFilters">
+                    Clear filters
+                  </button>
+                </div>
+                <div v-if="!error && postsFromApi.items.length === 0" class="cv-empty">
+                  <strong>No posts found.</strong>
+                  <span v-if="isFiltered">Try a different search or remove a filter.</span>
+                </div>
+                <post-list v-if="!error" :blog="blog" :posts="postsFromApi" />
+                <pagination-buttons v-if="!error && totalPages > 0" :currentPage="currentPage" :totalPages="totalPages" @change-page="changePage">
+                </pagination-buttons>
+              </div>
+            </div>
           </template>
         </div>
     </div>
@@ -36,6 +65,7 @@ import { useDataStore } from '../stores/dataStore';
 import { setUrlSearchParams } from '../helpers/url';
 import { contentReadyToken, notifyContentReady, withViewTransition } from '../helpers/viewTransitions';
 import { Form } from './types';
+import { setBlogTitle, setPageTitle } from '../helpers/site';
 
 
 export default {
@@ -54,7 +84,7 @@ export default {
         let requestId = 0;
         let requestOwner: AbortController | undefined;
         onBeforeUnmount(() => { requestId += 1; requestOwner?.abort(); });
-        const blog = ref({});
+        const blog = ref({} as { title?: string; description?: string });
         const postsFromApi = ref({ items: [], meta: { total_count: 0 } } as unknown as PostsFromApi);
         const facetCounts = ref({} as FacetCounts);
         const form = ref({}) as Ref<Form>;
@@ -79,7 +109,7 @@ export default {
             form.value = { ...query, page: currentPage.value } as unknown as Form;
             wagtailApiUrl = new URL(config.postListUrl.toString());
             wagtailApiUrl.searchParams.set('type', 'cast.Post');
-            wagtailApiUrl.searchParams.set('fields', 'html_overview,html_detail,visible_date,podlove_players');
+            wagtailApiUrl.searchParams.set('fields', 'html_overview,html_detail,visible_date,podlove_players,cover_image_poster_url,cover_alt_text');
             wagtailApiUrl.searchParams.set('limit', itemsPerPage.toString());
             wagtailApiUrl.searchParams.set('order', '-visible_date');
             wagtailApiUrl.searchParams.set('use_post_filter', 'true');
@@ -116,6 +146,8 @@ export default {
                 }
                 dataStore.setSlugToId(posts as unknown as PostsFromApi);
                 blog.value = blogResult;
+                setBlogTitle(blogResult.title);
+                setPageTitle();
                 facetCounts.value = (facetResult.facet_counts || {}) as FacetCounts;
                 postsFromApi.value = posts as unknown as PostsFromApi;
                 hasLoaded.value = true;
@@ -134,7 +166,15 @@ export default {
         };
 
         const handleSubmitFilterForm = async (data: Form) => {
-            await router.push({ query: { ...data, page: 1 } as unknown as LocationQueryRaw });
+            // Empty values are the defaults: keep them out of the address.
+            const query: Record<string, string> = {};
+            for (const [key, value] of Object.entries({ ...data, page: 1 })) {
+                if (value !== '' && value !== null && value !== undefined) query[key] = String(value);
+            }
+            await router.push({ query: query as LocationQueryRaw });
+        };
+        const clearFilters = async () => {
+            await router.push({ query: {} });
         };
         const changePage = async (delta: number) => {
             await router.push({ query: { ...route.query, page: Math.max(1, currentPage.value + delta) } });
@@ -142,6 +182,14 @@ export default {
 
         const totalPages = computed(() => {
             return Math.ceil(postsFromApi.value.meta.total_count / itemsPerPage);
+        });
+
+        const isFiltered = computed(() => filterKeys.some((key) => normalizedQuery.value[key] !== ''));
+        const summary = computed(() => {
+            const count = postsFromApi.value.meta.total_count;
+            const noun = count === 1 ? 'post' : 'posts';
+            const page = totalPages.value > 1 ? ` · page ${currentPage.value} of ${totalPages.value}` : '';
+            return `${count} ${noun}${isFiltered.value ? ' found' : ''}${page}`;
         });
 
         let initialLoad = true;
@@ -167,6 +215,9 @@ export default {
             facetCounts,
             form,
             handleSubmitFilterForm,
+            clearFilters,
+            isFiltered,
+            summary,
             changePage
         };
     }

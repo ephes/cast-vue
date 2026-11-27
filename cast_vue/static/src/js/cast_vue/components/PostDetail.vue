@@ -1,12 +1,24 @@
 <template>
-  <div>
-    <p v-if="isLoading">Loading data...</p>
-    <div v-else>
-      <div v-if="error" role="alert">
-        <p>{{ error }}</p><button @click="fetchPostFromAPI(true)">Retry</button>
+  <div class="cv-detail">
+    <div v-if="isLoading" class="cv-skeleton" role="status">
+      <span class="cv-sr-only">Loading data...</span>
+      <div class="cv-skeleton__item" aria-hidden="true">
+        <div class="cv-skeleton__line cv-skeleton__line--short"></div>
+        <div class="cv-skeleton__line cv-skeleton__line--title"></div>
+        <div class="cv-skeleton__line"></div>
+        <div class="cv-skeleton__line cv-skeleton__line--medium"></div>
+        <div class="cv-skeleton__line"></div>
       </div>
-      <p v-if="!post && !error">Post not found.</p>
-      <router-link to="/">Back to Blog</router-link>
+    </div>
+    <div v-else>
+      <div v-if="error" class="cv-alert" role="alert">
+        <p>{{ error }}</p><button type="button" class="cv-button" @click="fetchPostFromAPI(true)">Retry</button>
+      </div>
+      <router-link class="cv-back" to="/"><cv-icon name="arrowLeft" /> {{ blogTitle || 'Back to Blog' }}</router-link>
+      <div v-if="!post && !error" class="cv-empty">
+        <strong>Post not found.</strong>
+        <span>It may have been moved or unpublished.</span>
+      </div>
       <post-item v-if="post" :post="post" :detail="true" @comment-posted="handleCommentPosted"></post-item>
     </div>
   </div>
@@ -16,6 +28,8 @@
 import config from '../config';
 import { useRoute } from 'vue-router';
 import PostItem from './PostItem.vue';
+import CvIcon from './CvIcon.vue';
+import { blogTitle, setPageTitle } from '../helpers/site';
 import { useDataStore } from '../stores/dataStore';
 import { Post, PostsFromApi } from './types';
 import { ref, watch, nextTick, onBeforeUnmount } from 'vue';
@@ -25,6 +39,7 @@ export default {
   name: "PostDetail",
   components: {
     PostItem,
+    CvIcon,
   },
   methods: {
     async handleCommentPosted(postId?: number) {
@@ -68,7 +83,7 @@ export default {
       }
       postDetailUrl.searchParams.set("type", pageType);
       postDetailUrl.searchParams.set("slug", postSlug);
-      postDetailUrl.searchParams.set("fields", "html_detail,comments,comments_security_data,comments_are_enabled,podlove_players");
+      postDetailUrl.searchParams.set("fields", "html_detail,visible_date,comments,comments_security_data,comments_are_enabled,podlove_players,cover_image_poster_url,cover_alt_text");
       postDetailUrl.searchParams.set("render_for_feed", "false");
 
       try {
@@ -80,6 +95,7 @@ export default {
           throw new Error('Invalid post');
         }
         post.value = item || null;
+        if (item) setPageTitle(item.title);
       } catch (cause) {
         if (id === requestId) {
           console.error('Could not load post:', cause);
@@ -96,7 +112,7 @@ export default {
     }
 
     watch(() => route.params.slug, () => { void fetchPostFromAPI(); }, { immediate: true });
-    return { dataStore, isLoading, error, post, visibleDate: visibleDateStr, fetchPostFromAPI };
+    return { dataStore, isLoading, error, post, visibleDate: visibleDateStr, fetchPostFromAPI, blogTitle };
   },
 }
 </script>

@@ -12,6 +12,9 @@ To install the Vue.js theme, you will need to run the following command in your 
 pip install cast-vue
 ```
 
+The theme needs django-cast 0.2.52 or newer (it reads the cover image URL of
+posts from the API).
+
 ### 2. Add entries to INSTALLED_APPS
 
 You will need to add `django_vite` and `cast_vue.apps.CastVueConfig`
@@ -48,6 +51,32 @@ complete site or just one blog.
 That's it! You have successfully installed and set up the Vue.js theme
 for [`django-cast`](https://github.com/ephes/django-cast).
 
+## Design
+
+The theme is plain Vue with its own CSS, no component or CSS framework and no
+web fonts. All colours, fonts, radii and widths are custom properties at the
+top of `cast_vue/static/src/css/cast_vue/styles.css` (`--cv-*`); a site can
+restyle the theme by overriding them in its own stylesheet, for example
+`:root { --cv-accent: #0b6e4f; }`.
+
+- **Light and dark:** the theme follows the device setting. The button in the
+  header switches between system, light and dark; the choice is kept in
+  `localStorage` (`cast-vue:color-scheme`) and applied as `data-theme` on
+  `<html>`.
+- **Layout:** one reading column; on wide screens the post list gets a sticky
+  column with search, category/tag/month filters, date range and sort order,
+  on small screens the same controls open from a "Filters" button.
+- **States:** loading placeholders, error messages with Retry, and empty
+  results are styled; the image viewer for galleries is a keyboard-operable
+  dialog.
+- **Accessibility:** skip link, visible focus, labelled controls, text contrast
+  of at least 4.5:1 in both colour schemes, and no motion for readers who
+  prefer reduced motion.
+
+The base template now sets the page `<title>` from the page and blog titles,
+offers `title`, `meta` and `head` blocks, and renders the theme's error pages
+(`400.html`, `403.html`, `404.html`, `500.html`) inside the same design.
+
 ## Route transitions
 
 In browsers with the View Transitions API, navigating between the post list and
@@ -69,25 +98,36 @@ contract, even though the single-page app does not render them.
 
 ## Development
 
-### Podlove player integration (Vue wrapper)
+### Audio player
 
-The Podlove Web Player is **not installed via npm** in `cast-vue`. Instead, it
-is provided by `django-cast` as a static asset and loaded globally in the
-Vue base template:
+The theme plays audio with its own small player
+(`cast_vue/static/src/js/cast_vue/components/AudioPlayer.vue`); the Podlove Web
+Player is no longer loaded. A post's `podlove_players` API field still names
+the audio: each entry's URL is django-cast's Podlove-format audio endpoint, and
+the player reads title, cover, audio files, chapters and transcript from it
+(`player/episode.ts`). No player library and no extra request for a player
+configuration are involved. Server-rendered audio blocks in the post HTML
+(Podlove or django-cast's custom player, whichever `CAST_AUDIO_PLAYER` selects)
+are removed before rendering, as before.
 
-```html
-<script src="{% static 'cast/js/web-player/embed.5.js' %}"></script>
-```
+- **Post page:** a full player below the title: play/pause, back 15 s and
+  forward 30 s, seek bar with chapter marks, playback speed, mute, the chapter
+  list, a searchable transcript that follows playback, and a download link.
+  Players of posts with several audio files are listed together there.
+- **Post list:** one play button per post. The episode data is fetched when
+  the reader points at or presses the button, not for every list entry.
+- **Player bar:** one audio element serves the whole single-page app
+  (`player/engine.ts`), so playback continues while the reader browses. A bar
+  at the bottom of the window shows the running episode whenever its full
+  player is not on screen.
+- Playback speed and the position per episode are remembered in
+  `localStorage` (`cast-vue:player`); an episode resumes where it stopped.
+- Keyboard, while the focus is inside the player: `K` play/pause, `J`/`L`
+  back/forward, `←`/`→` 5 seconds, `M` mute. Lock-screen and headset controls
+  work through the Media Session API.
 
-This script exposes a global `podlovePlayer(...)` function. The Vue wrapper
-component (`cast_vue/static/src/js/cast_vue/components/PodlovePlayer.vue`)
-mounts the player into a local `<div>` and passes:
-
-- the API URL for the episode (`apiUrl`)
-- the player config URL (`playerConfig`)
-
-No server-rendered `<podlove-player>` markup is required; the wrapper renders
-the player purely via JS.
+Seeking needs a media host that answers HTTP range requests (any production
+web server or object store does; Django's `runserver` does not).
 
 ### Run Vite Development Server
 
@@ -122,7 +162,15 @@ text, the site's own body blocks (including blocks configured through
 The trust boundary is therefore the site's editor permissions and block/embed
 configuration; the Vue theme adds no client-side sanitizer (and no dependency
 for one). PostItem removes server-rendered audio blocks before rendering
-because the Vue Podlove wrapper supplies those players.
+because the theme's own audio player supplies those players.
+
+### Type check
+
+TypeScript and `vue-tsc` are not project dependencies. Run the check on demand:
+
+```shell
+npx -p typescript@5 -p vue-tsc@2 vue-tsc --noEmit -p tsconfig.json
+```
 
 ### Run Tests
 
@@ -233,8 +281,10 @@ with their own replies; the remaining comments still render.
 Parent indexing and validation take linear work; nested replies share the index
 and retain their existing submission callbacks.
 
-The Podlove wrapper reinitializes when the episode URL, configuration URL or
-identity prop changes. Each attempt has a separate host; previous iframes are
-removed on replacement/unmount and late completion cannot attach to the current
-player. Missing, throwing, rejected or stalled initialization exposes a Retry
-button (15-second total initialization deadline). Retry creates a fresh instance.
+The audio player reloads its episode data when the episode URL changes; a
+response for a previous URL is ignored. The episode asked for last is the one
+that plays, even when an earlier request finishes later. A failed episode
+request or an audio error shows a message with Retry. Episode data is read
+through the same bounded JSON reader as the other API reads (15-second
+deadline, 2 MiB), only `http(s)` audio, cover and link URLs are used, and
+titles, chapters and transcript text are rendered as text, never as HTML.

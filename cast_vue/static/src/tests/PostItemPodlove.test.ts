@@ -86,7 +86,7 @@ describe("PostItem.vue rendered rich text", () => {
   test.each([false, true])("renders its own body with article metadata and without audio blocks (detail: %s)", detail => {
     const wrapper = render(body("detail body"), detail, body("overview body"));
     expect(wrapper.text()).toContain("Editor");
-    expect(wrapper.find("time").attributes("date-time")).toBe("2026-11-09");
+    expect(wrapper.find("time").attributes("datetime")).toBe("2026-11-09");
     expect(wrapper.text()).toContain(detail ? "detail body" : "overview body");
     expect(wrapper.text()).not.toContain(detail ? "overview body" : "detail body");
     expect(wrapper.text()).not.toContain("old player");
@@ -107,5 +107,61 @@ describe("PostItem.vue rendered rich text", () => {
     expect(wrapper.find("#modal-image").attributes("srcset")).toBeUndefined();
     expect(wrapper.find(".modal source").attributes("src")).toBeUndefined();
     expect(wrapper.find(".modal source").attributes("srcset")).toBeUndefined();
+  });
+});
+
+describe("PostItem.vue players, cover and image viewer", () => {
+  const gallery = '<picture><img id="gallery-image-1" alt="First" src="/a.jpg" data-fullsrc="/full-a.jpg" data-next="img-2"></picture><picture><img id="gallery-image-2" alt="Second" src="/b.jpg" data-fullsrc="/full-b.jpg" data-prev="img-1"></picture>';
+  const mountPost = (detail: boolean, extra: Record<string, unknown> = {}) => {
+    const wrapper = mount(PostItem, {
+      props: { post: { ...buildPost(), html_detail: gallery, html_overview: gallery, ...extra }, detail },
+      global: { stubs: { "router-link": { template: "<a><slot /></a>" }, AudioPlayer: { name: "AudioPlayer", props: ["apiUrl", "variant", "title", "slug"], template: "<div class='player-stub'></div>" } } },
+      attachTo: document.body,
+    });
+    mounted.push(wrapper);
+    return wrapper;
+  };
+
+  test("renders a full player on the post page and none in the styleguide list", () => {
+    const players = { podlove_players: [["#audio_1", "/api/audios/podlove/1/post/1/"]] };
+    const detail = mountPost(true, players).findComponent({ name: "AudioPlayer" });
+    expect(detail.props()).toMatchObject({ apiUrl: "/api/audios/podlove/1/post/1/", variant: undefined, title: "Test Post", slug: "test-post" });
+    expect(mountPost(false, players).findComponent({ name: "AudioPlayer" }).exists()).toBe(false);
+    expect(mountPost(true, { podlove_players: null }).findComponent({ name: "AudioPlayer" }).exists()).toBe(false);
+  });
+
+  test("shows only http(s) cover images", () => {
+    expect(mountPost(true, { cover_image_poster_url: "/media/cover.webp", cover_alt_text: "Cover" }).find(".cv-post__cover").attributes()).toMatchObject({ src: "http://localhost:3000/media/cover.webp", alt: "Cover" });
+    expect(mountPost(true, { cover_image_poster_url: "javascript:alert(1)" }).find(".cv-post__cover").exists()).toBe(false);
+    expect(mountPost(true, { cover_image_poster_url: null }).find(".cv-post__cover").exists()).toBe(false);
+  });
+
+  test("the image viewer works from the keyboard and returns focus", async () => {
+    const wrapper = mountPost(true);
+    const thumbnail = wrapper.find("#gallery-image-1");
+    expect(thumbnail.attributes()).toMatchObject({ tabindex: "0", role: "button", "aria-label": "View image: First" });
+    (thumbnail.element as HTMLElement).focus();
+    const enter = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    thumbnail.element.dispatchEvent(enter);
+    await wrapper.vm.$nextTick();
+    // The key must not go on to press the close button that receives the focus.
+    expect(enter.defaultPrevented).toBe(true);
+    const modal = wrapper.find('[role="dialog"]');
+    expect(modal.attributes("aria-modal")).toBe("true");
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("Close image viewer");
+    expect(document.documentElement.style.overflow).toBe("hidden");
+
+    await modal.find('[aria-label="Next image"]').trigger("click");
+    expect(wrapper.find("#modal-image").attributes("src")).toBe("/full-b.jpg");
+    expect(wrapper.find("#modal-image").attributes("alt")).toBe("Second");
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("#modal-image").attributes("src")).toBe("/full-a.jpg");
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+    expect(document.activeElement).toBe(thumbnail.element);
+    expect(document.documentElement.style.overflow).toBe("");
   });
 });

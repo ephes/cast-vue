@@ -75,7 +75,7 @@ test.each(['headers', 'body'])('a stalled %s operation expires after the total d
     const check = expect(result).rejects.toThrow();
     await vi.advanceTimersByTimeAsync(15000);
     await check;
-    expect(fetch.mock.calls[0][1].signal.aborted).toBe(true);
+    expect((fetch.mock.calls[0] as any[])[1].signal.aborted).toBe(true);
     if (stage === 'body') expect(cancel).toHaveBeenCalledOnce();
     expect(Object.keys(useDataStore().jsonCache)).toHaveLength(0);
   } finally { vi.useRealTimers(); }

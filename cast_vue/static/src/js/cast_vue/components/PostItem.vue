@@ -1,45 +1,103 @@
 <template>
-  <div class="post-item">
-    <h2>{{ post.title }}</h2>
-    <div v-if="detail">
-      <p>
-        <time :date-time="articleData.articleDateTime">{{ articleData.articleDate }}</time>, by
-        <span class="author">{{ articleData.articleAuthor }}</span>
+  <article class="post-item cv-post" :class="detail ? 'cv-post--detail' : 'cv-post--card'">
+    <header class="cv-post__header" :class="{ 'cv-post__header--cover': coverUrl }">
+      <img
+        v-if="coverUrl"
+        class="cv-post__cover"
+        :src="coverUrl"
+        :alt="detail ? (post.cover_alt_text || '') : ''"
+        width="512"
+        height="512"
+        :loading="detail ? 'eager' : 'lazy'"
+        decoding="async"
+      />
+      <p class="cv-post__meta cv-eyebrow">
+        <time v-if="dateLabel" :datetime="articleData.articleDateTime || post.visible_date">{{ dateLabel }}</time>
+        <template v-if="articleData.articleAuthor">
+          <span aria-hidden="true"> · </span>by <span class="author">{{ articleData.articleAuthor }}</span>
+        </template>
       </p>
-    </div>
-    <div v-else>
-      <p>
+      <h1 v-if="detail" class="cv-post__title">{{ post.title }}</h1>
+      <h2 v-else class="cv-post__title">
         <router-link
           v-if="useRouterLink"
           :to="{ name: 'PostDetail', params: { slug: post.meta.slug } }"
-        >
-          <time :date-time="articleData.articleDateTime">{{ articleData.articleDate }}</time>
-        </router-link>
-        <a v-else :href="postLink">
-          <time :date-time="articleData.articleDateTime">{{ articleData.articleDate }}</time>
-        </a>,
-        by <span class="author">{{ articleData.articleAuthor }}</span>
-      </p>
+        >{{ post.title }}</router-link>
+        <a v-else :href="postLink">{{ post.title }}</a>
+      </h2>
+    </header>
+    <!-- Audio players: full on the post page, a play button in lists -->
+    <div v-if="detail && showPodlovePlayers && podlovePlayers.length > 0" class="cv-post__players">
+      <audio-player
+        v-for="([elementId, apiUrl]) in podlovePlayers"
+        :key="elementId"
+        :element-id="elementId"
+        :api-url="apiUrl"
+        :player-config="apiPodlovePlayerConfigUrl"
+        :title="post.title"
+        :slug="post.meta.slug"
+      ></audio-player>
     </div>
-    <div v-if="detail" v-html="detailHtml" @click="handleClick"></div>
-    <div v-else v-html="overviewHtml" @click="handleClick"></div>
-    <!-- Podlove Players -->
-    <div v-if="showPodlovePlayers">
-      <div v-for="([elementId, apiUrl]) in podlovePlayers" :key="elementId">
-        <podlove-player :element-id="elementId" :api-url="apiUrl" :player-config="apiPodlovePlayerConfigUrl"></podlove-player>
-      </div>
+    <div
+      ref="body"
+      class="cv-post__body cv-prose"
+      v-html="detail ? detailHtml : overviewHtml"
+      @click="handleClick"
+      @keydown.enter="handleActivationKey"
+      @keydown.space="handleActivationKey"
+    ></div>
+    <div v-if="!detail && showPodlovePlayers && podlovePlayers.length > 0" class="cv-post__players">
+      <audio-player
+        v-for="([elementId, apiUrl]) in podlovePlayers"
+        :key="elementId"
+        variant="compact"
+        :element-id="elementId"
+        :api-url="apiUrl"
+        :player-config="apiPodlovePlayerConfigUrl"
+        :title="post.title"
+        :slug="post.meta.slug"
+      ></audio-player>
     </div>
+    <template v-if="!detail">
+      <router-link
+        v-if="useRouterLink"
+        class="cv-post__more"
+        :to="{ name: 'PostDetail', params: { slug: post.meta.slug } }"
+        :aria-label="`${moreLabel}: ${post.title}`"
+      >{{ moreLabel }} <cv-icon name="arrowRight" /></router-link>
+    </template>
     <!-- Comments -->
-    <div v-if="post.comments" class="comments">
+    <section v-if="post.comments" class="comments cv-comments" aria-labelledby="cv-comments-title">
+      <h2 id="cv-comments-title" class="cv-comments__title">
+        Comments<template v-if="post.comments.length > 0"> ({{ post.comments.length }})</template>
+      </h2>
       <comment-list
         :comments="post.comments"
         :commentMeta="commentMeta"
         @comment-posted="handleCommentPosted">
       </comment-list>
-    </div>
+    </section>
     <!-- Modal for Images / Galleries -->
-    <div v-if="isModalOpen" id="modal-div" class="modal" @click="handleModalClick">
-      <span class="close" @click="closeModal">&times;</span>
+    <div
+      v-if="isModalOpen"
+      id="modal-div"
+      ref="modal"
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image viewer"
+      @click="handleModalClick"
+      @keydown.tab="trapFocus"
+    >
+      <button type="button" class="close modal__button modal__button--close" aria-label="Close image viewer" @click.stop="closeModal">
+        <cv-icon name="close" />
+      </button>
+      <button v-if="modalImage.prev" type="button" class="modal__button modal__button--prev" aria-label="Previous image" @click.stop="showNeighbour('prev')">
+        <cv-icon name="left" />
+      </button>
+      <button v-if="modalImage.next" type="button" class="modal__button modal__button--next" aria-label="Next image" @click.stop="showNeighbour('next')">
+        <cv-icon name="right" />
+      </button>
       <picture>
         <source
           :srcset="modalSource.srcset"
@@ -55,33 +113,44 @@
           :sizes="modalImage.sizes"
           :next="modalImage.next"
           :prev="modalImage.prev"
-          alt="Full-sized image"
+          :alt="modalImage.alt || 'Full-sized image'"
+          title="Open the full-sized image in a new tab"
         />
       </picture>
+      <p v-if="modalImage.alt" class="modal__caption">{{ modalImage.alt }}</p>
     </div>
-  </div>
+  </article>
 </template>
 
 <script lang="ts">
 import config from '../config';
 import { Post, ModalImage, ModalSource, CommentMeta, ArticleData } from "./types";
 import CommentList from "./CommentList.vue";
-import PodlovePlayer from "./PodlovePlayer.vue";
+import { resolveHttpUrl } from "../player/episode";
+import AudioPlayer from "./AudioPlayer.vue";
+import CvIcon from "./CvIcon.vue";
 
 
 export default {
   mounted() {
     // Add event listener when the component is mounted
     window.addEventListener("keydown", this.handleKeyDown);
+    this.enhanceGalleryImages();
+  },
+  updated() {
+    this.enhanceGalleryImages();
   },
   beforeUnmount() {
     // Remove event listener when the component is unmounted
     window.removeEventListener("keydown", this.handleKeyDown);
+    this.lockScroll(false);
   },
+  emits: ["comment-posted"],
   name: "PostItem",
   components: {
     CommentList,
-    PodlovePlayer,
+    AudioPlayer,
+    CvIcon,
   },
   props: {
     post: {
@@ -98,6 +167,8 @@ export default {
       isModalOpen: false,
       modalImage: {} as ModalImage,
       modalSource: {} as ModalSource,
+      // Thumbnail that opened the viewer; focus returns to it on close.
+      modalOpener: null as HTMLElement | null,
     };
   },
   methods: {
@@ -118,6 +189,43 @@ export default {
         return;
       }
       this.setModalFromImage(clickedEl);
+    },
+    // Enter or Space on a gallery thumbnail opens the viewer.
+    handleActivationKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target?.id?.startsWith("gallery-image")) {
+        // No page scroll, and the key must not also press the focused close button.
+        e.preventDefault();
+        this.handleClick(e);
+      }
+    },
+    // Gallery thumbnails arrive as plain images: make them keyboard operable.
+    enhanceGalleryImages() {
+      const body = this.$refs.body as HTMLElement | undefined;
+      body?.querySelectorAll<HTMLImageElement>('img[id^="gallery-image"]').forEach((image) => {
+        if (image.tabIndex === 0) return;
+        image.tabIndex = 0;
+        image.setAttribute("role", "button");
+        image.setAttribute("aria-label", `View image${image.alt ? ": " + image.alt : ""}`);
+      });
+    },
+    lockScroll(locked: boolean) {
+      document.documentElement.style.overflow = locked ? "hidden" : "";
+    },
+    showNeighbour(direction: "prev" | "next") {
+      const target = this.modalImage[direction];
+      if (!target) return;
+      const image = document.getElementById("gallery-image-" + target.split("-")[1]) as HTMLImageElement | null;
+      if (image) this.setModalFromImage(image);
+    },
+    trapFocus(event: KeyboardEvent) {
+      const modal = this.$refs.modal as HTMLElement | undefined;
+      const buttons = Array.from(modal?.querySelectorAll<HTMLElement>("button") ?? []);
+      if (buttons.length === 0) return;
+      const index = buttons.indexOf(document.activeElement as HTMLElement);
+      const next = event.shiftKey ? (index <= 0 ? buttons.length - 1 : index - 1) : (index === buttons.length - 1 ? 0 : index + 1);
+      event.preventDefault();
+      buttons[next].focus();
     },
     setModalFromImage(clickedEl: HTMLImageElement) {
       const picture = clickedEl.parentNode as HTMLPictureElement;
@@ -158,12 +266,23 @@ export default {
           this.modalImage[prop as keyof ModalImage] = value ?? "";
         }
       }
-      this.isModalOpen = true;
+      if (!this.isModalOpen) {
+        this.isModalOpen = true;
+        this.modalOpener = clickedEl;
+        this.lockScroll(true);
+        this.$nextTick(() => (this.$refs.modal as HTMLElement | undefined)?.querySelector<HTMLElement>("button")?.focus());
+      }
     },
     closeModal() {
+      if (!this.isModalOpen) return;
       this.isModalOpen = false;
+      this.lockScroll(false);
+      const opener = this.modalOpener;
+      this.modalOpener = null;
+      if (opener?.isConnected) opener.focus();
     },
     handleKeyDown(event: KeyboardEvent) {
+      if (!this.isModalOpen) return;
       if (event.key === "Escape") {
         this.closeModal();
       } else if (event.key === "ArrowLeft") {
@@ -206,7 +325,7 @@ export default {
         return "";
       }
       const doc = new DOMParser().parseFromString(html, "text/html");
-      doc.querySelectorAll(".block-audio, podlove-player").forEach((node) => node.remove());
+      doc.querySelectorAll(".block-audio, podlove-player, cast-audio-player, cast-transcript, cast-chapters, .cast-player__panels").forEach((node) => node.remove());
       return doc.body.innerHTML;
     },
   },
@@ -248,7 +367,20 @@ export default {
       return commentMeta;
     },
     podlovePlayers(): [string, string][] {
-      return this.post.podlove_players;
+      return Array.isArray(this.post.podlove_players) ? this.post.podlove_players : [];
+    },
+    coverUrl(): string {
+      return resolveHttpUrl(this.post.cover_image_poster_url, window.location.href);
+    },
+    // The server formats the date in the site's language and time zone.
+    dateLabel(): string {
+      if (this.articleData.articleDate) return this.articleData.articleDate;
+      const date = new Date(this.post.visible_date);
+      if (Number.isNaN(date.getTime())) return "";
+      return new Intl.DateTimeFormat(document.documentElement.lang || undefined, { dateStyle: "medium" }).format(date);
+    },
+    moreLabel(): string {
+      return this.podlovePlayers.length > 0 ? "Show notes" : "Read more";
     },
     apiPodlovePlayerConfigUrl() {
       return config.apiPodlovePlayerConfigUrl;
@@ -268,45 +400,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.modal {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.6);
-}
-
-.modal-content {
-  margin: auto;
-  display: block;
-  width: 80%;
-  max-width: 900px;
-  max-height: 740px;
-  object-fit: contain;
-}
-
-.close {
-  position: absolute;
-  top: 15px;
-  right: 35px;
-  color: #f1f1f1;
-  font-size: 40px;
-  font-weight: bold;
-  transition: 0.3s;
-}
-
-.close:hover,
-.close:focus {
-  color: #bbb;
-  text-decoration: none;
-  cursor: pointer;
-}
-</style>

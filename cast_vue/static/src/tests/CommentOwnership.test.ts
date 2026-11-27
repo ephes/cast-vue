@@ -23,7 +23,7 @@ test.each(['success', 'failure'])('retired post %s cannot complete or refresh th
   expect(form.find('textarea').element.value).toBe('B draft');
   expect(form.find('[role="alert"]').exists()).toBe(false);
   expect(fetch).toHaveBeenCalledOnce();
-  expect(fetch.mock.calls[0][1].body.get('object_pk')).toBe('1');
+  expect((fetch.mock.calls[0] as any[])[1].body.get('object_pk')).toBe('1');
   wrapper.unmount();
 });
 

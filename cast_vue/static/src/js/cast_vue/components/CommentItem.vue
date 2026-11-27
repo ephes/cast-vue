@@ -1,19 +1,27 @@
 <template>
-    <div class="comment">
-        <div class="comment-user">{{ comment.user }}</div>
-        <div class="comment-date">{{ comment.date }}</div>
-        <div class="comment-body">{{ comment.comment }}</div>
+    <div class="comment cv-comment">
+        <div class="cv-comment__head">
+            <span class="cv-avatar" aria-hidden="true">{{ (comment.user || '?').charAt(0) }}</span>
+            <span class="comment-user cv-comment__user">{{ comment.user }}</span>
+            <time class="comment-date cv-comment__date" :datetime="comment.date">{{ dateLabel }}</time>
+        </div>
+        <div class="comment-body cv-comment__body">{{ comment.comment }}</div>
         <div v-if="commentsEnabled">
-            <button @click="showReplyForm = !showReplyForm">Reply</button>
+            <button
+                type="button"
+                class="cv-button cv-button--ghost cv-button--small cv-comment__reply"
+                :aria-expanded="showReplyForm"
+                @click="showReplyForm = !showReplyForm"
+            ><cv-icon name="reply" /> Reply</button>
             <div v-if="showReplyForm">
                 <comment-form :parent="comment.id" @comment-submitted="submitReply"></comment-form>
             </div>
         </div>
-        <div class="comment-children" v-if="hasChildren">
-            <div v-for="child in children" :key="child.id">
+        <ul class="comment-children cv-comment__children" v-if="hasChildren">
+            <li v-for="child in children" :key="child.id">
                 <comment-item :comment="child" :comments="comments" :comments-enabled="commentsEnabled" @comment-submitted="forwardReply"/>
-            </div>
-        </div>
+            </li>
+        </ul>
     </div>
 </template>
 
@@ -21,12 +29,14 @@
 import { computed, defineComponent, PropType, ref, reactive, inject, provide } from 'vue';
 import { Comment, CommentInputData } from './types';
 import CommentForm from './CommentForm.vue';
+import CvIcon from './CvIcon.vue';
 import { buildCommentTree, commentTreeKey } from '../helpers/commentTree';
 
 export default defineComponent({
     name: 'CommentItem',
     components: {
         CommentForm,
+        CvIcon,
     },
     props: {
         comment: {
@@ -52,6 +62,12 @@ export default defineComponent({
         const children = computed(() => tree.value.children.get(props.comment.id) ?? []);
         const hasChildren = computed(() => children.value.length > 0);
 
+        const dateLabel = computed(() => {
+            const date = new Date(props.comment.date);
+            if (Number.isNaN(date.getTime())) return props.comment.date;
+            return new Intl.DateTimeFormat(document.documentElement.lang || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+        });
+
         const submitReply = (comment: CommentInputData, complete: (message?: string) => void) => {
             context.emit('comment-submitted', comment, (message?: string) => {
                 complete(message);
@@ -64,6 +80,7 @@ export default defineComponent({
         };
 
         return {
+            dateLabel,
             forwardReply,
             reply,
             showReplyForm,
@@ -74,27 +91,3 @@ export default defineComponent({
     },
 });
 </script>
-<style scoped>
-.comment {
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-.comment-children {
-    margin-top: 10px;
-}
-
-.comment-user {
-    font-weight: bold;
-}
-
-.comment-date {
-    color: #888;
-    font-size: 0.8em;
-}
-
-.comment-children {
-    margin-left: 20px;
-}
-</style>

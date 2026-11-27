@@ -1,11 +1,9 @@
 <template>
-  <div>
-    <h1>{{ blog.title }}</h1>
-    <p v-html="blog.description"></p>
-    <div v-for="post in posts.items" :key="post.id">
+  <ol v-if="posts.items && posts.items.length > 0" class="cv-post-list">
+    <li v-for="post in posts.items" :key="post.id">
       <post-item :post="post" :detail="false"></post-item>
-    </div>
-  </div>
+    </li>
+  </ol>
 </template>
 
 <script lang="ts">

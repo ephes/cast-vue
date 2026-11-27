@@ -34,11 +34,11 @@ test.each(['success', 'error'])('obsolete %s cannot replace the latest posts, fa
   }
   finish('new'); await flushPromises(); finish('new'); await flushPromises();
   expect(wrapper.text()).toContain('new blog new');
-  expect(wrapper.findComponent(FilterForm).props('facetCounts').tag_facets[0].name).toBe('new');
+  expect(wrapper.findComponent(FilterForm).props('facetCounts')!.tag_facets[0].name).toBe('new');
   const readyCount = ready.mock.calls.length;
   finish('old', outcome === 'error'); await flushPromises(); finish('old', outcome === 'error'); await flushPromises();
   expect(wrapper.text()).toContain('new blog new');
-  expect(wrapper.findComponent(FilterForm).props('facetCounts').tag_facets[0].name).toBe('new');
+  expect(wrapper.findComponent(FilterForm).props('facetCounts')!.tag_facets[0].name).toBe('new');
   expect(wrapper.find('[role="alert"]').exists()).toBe(false);
   expect(ready).toHaveBeenCalledTimes(readyCount);
   expect(readyCount).toBe(1);

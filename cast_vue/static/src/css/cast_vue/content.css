@@ -1,0 +1,352 @@
+/* Rich text delivered by the django-cast API (post overview/detail, blog
+ * description) plus the server-rendered blocks inside it. */
+
+.cv-prose {
+  color: var(--cv-ink);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+
+.cv-prose > article > section > * + *,
+.cv-prose > article > section + section,
+.cv-prose > article > section > .block-paragraph > * + *,
+.cv-prose > * + * {
+  margin-top: 1.15em;
+}
+
+.cv-prose p,
+.cv-prose ul,
+.cv-prose ol,
+.cv-prose blockquote,
+.cv-prose pre,
+.cv-prose figure {
+  margin-block: 0;
+}
+
+.cv-prose * + p,
+.cv-prose * + ul,
+.cv-prose * + ol,
+.cv-prose * + blockquote,
+.cv-prose * + figure {
+  margin-top: 1.15em;
+}
+
+.cv-prose h2,
+.cv-prose h3,
+.cv-prose h4 {
+  margin-top: 2em;
+  margin-bottom: 0;
+}
+
+.cv-prose h2 {
+  font-size: 1.6rem;
+}
+
+.cv-prose h3 {
+  font-size: 1.3rem;
+}
+
+.cv-prose h4 {
+  font-family: var(--cv-font-sans);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.cv-prose section:first-of-type > .block-paragraph:first-child > :first-child,
+.cv-prose > :first-child {
+  margin-top: 0;
+}
+
+.cv-prose ul,
+.cv-prose ol {
+  padding-left: 1.4em;
+}
+
+.cv-prose li + li {
+  margin-top: 0.35em;
+}
+
+.cv-prose li::marker {
+  color: var(--cv-muted);
+}
+
+.cv-prose blockquote {
+  padding: 0.2em 0 0.2em 1.2em;
+  border-left: 3px solid var(--cv-accent);
+  color: var(--cv-ink-2);
+  font-family: var(--cv-font-serif);
+  font-size: 1.2em;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.cv-prose hr {
+  margin-block: 2.5em;
+  border: 0;
+  border-top: 1px solid var(--cv-line);
+}
+
+.cv-prose code {
+  padding: 0.12em 0.36em;
+  border-radius: 4px;
+  background: var(--cv-surface-2);
+  font-family: var(--cv-font-mono);
+  font-size: 0.875em;
+}
+
+.cv-prose pre {
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  border: 1px solid var(--cv-line);
+  border-radius: var(--cv-radius);
+  background: var(--cv-surface);
+  font-family: var(--cv-font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  tab-size: 4;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cv-prose pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+.cv-prose .highlight {
+  background: none;
+}
+
+/* Pygments token colours on theme tokens, so code is readable in both schemes. */
+.cv-prose .highlight :is(.c, .ch, .cm, .cpf, .c1, .cs) { color: var(--cv-code-comment); }
+.cv-prose .highlight :is(.k, .kc, .kd, .kn, .kr, .ow, .nt) { color: var(--cv-code-keyword); }
+.cv-prose .highlight :is(.s, .sa, .sb, .sc, .dl, .s2, .sh, .s1, .sx, .sr, .ss, .se) { color: var(--cv-code-string); }
+.cv-prose .highlight :is(.nc, .nn, .nf, .fm, .gh, .gp, .gt, .ne) { color: var(--cv-code-name); }
+.cv-prose .highlight :is(.nb, .bp, .kp, .kt, .gi) { color: var(--cv-code-builtin); }
+.cv-prose .highlight :is(.m, .mb, .mf, .mh, .mi, .mo, .il, .o, .go) { color: var(--cv-code-number); }
+.cv-prose .highlight :is(.nv, .vc, .vg, .vi, .vm, .no, .na, .nd, .ni, .gu) { color: var(--cv-code-variable); }
+.cv-prose .highlight :is(.cp, .nl, .sd, .si) { color: var(--cv-code-meta); }
+.cv-prose .highlight :is(.gd, .gr) { color: var(--cv-danger); }
+.cv-prose .highlight .hll { background-color: var(--cv-mark); }
+
+.cv-prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.cv-prose th,
+.cv-prose td {
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--cv-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.cv-prose th {
+  color: var(--cv-ink-2);
+  font-weight: 650;
+}
+
+/* media blocks */
+
+.cv-prose .block-image a {
+  display: block;
+}
+
+.cv-prose .cast-image,
+.cv-prose .block-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--cv-radius);
+  background: var(--cv-surface-2);
+}
+
+.cv-prose .cast-video,
+.cast-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--cv-radius);
+  background: #000;
+}
+
+.cv-prose iframe {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+  border-radius: var(--cv-radius);
+}
+
+.cast-gallery-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(8.5rem, 45%), 1fr));
+  gap: 0.5rem;
+}
+
+.cast-gallery-container picture {
+  display: block;
+  overflow: hidden;
+  border-radius: var(--cv-radius-s);
+  background: var(--cv-surface-2);
+}
+
+.cast-gallery-thumbnail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  cursor: zoom-in;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.cast-gallery-thumbnail:hover,
+.cast-gallery-thumbnail:focus-visible {
+  transform: scale(1.04);
+  filter: brightness(1.06);
+}
+
+.cast-gallery-thumbnail:focus-visible {
+  outline-offset: -3px;
+}
+
+/* empty server-side audio wrappers: the Vue player renders the audio */
+.cv-prose .block-audio:empty {
+  display: none;
+}
+
+/* facets rendered by server-side fragments */
+.cast-date-facet-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  height: auto;
+}
+
+/* ---------------------------------------------------------------- contributors */
+
+.episode-contributors {
+  margin: 0 0 1.75rem;
+  padding: 1.1rem 0 1.25rem;
+  border-top: 1px solid var(--cv-line);
+  border-bottom: 1px solid var(--cv-line);
+}
+
+.cv-prose .episode-contributors__heading,
+.episode-contributors__heading {
+  margin: 0 0 0.8rem;
+  color: var(--cv-muted);
+  font-family: var(--cv-font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.cv-prose .episode-contributors__list,
+.episode-contributors__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cv-prose .episode-contributors__item,
+.episode-contributors__item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.episode-contributors__identity {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.episode-contributors__identity--link:hover .episode-contributors__name,
+.episode-contributors__identity--link:focus-visible .episode-contributors__name {
+  color: var(--cv-accent);
+  text-decoration: underline;
+}
+
+.episode-contributors__avatar {
+  display: inline-flex;
+  flex: 0 0 2.5rem;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--cv-accent-soft);
+  color: var(--cv-accent);
+  font-size: 1rem;
+  font-weight: 700;
+  object-fit: cover;
+  text-transform: uppercase;
+}
+
+.episode-contributors__name {
+  min-width: 0;
+  font-weight: 650;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.episode-contributors__role {
+  flex: 0 0 auto;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--cv-radius-pill);
+  background: var(--cv-surface-2);
+  color: var(--cv-ink-2);
+  font-family: var(--cv-font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- static pages */
+
+.cv-static {
+  max-width: var(--cv-measure);
+  margin: 0 auto;
+  padding: clamp(3rem, 12vh, 8rem) var(--cv-gutter);
+}
+
+.cv-static h1 {
+  margin-bottom: 1rem;
+  font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
+}
+
+.cv-static h3 {
+  margin-bottom: 0.75rem;
+  color: var(--cv-ink-2);
+  font-family: var(--cv-font-sans);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.cv-static p {
+  color: var(--cv-ink-2);
+}

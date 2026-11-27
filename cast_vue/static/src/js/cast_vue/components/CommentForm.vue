@@ -1,29 +1,36 @@
 <template>
-    <div class="comment-form">
-      <p v-if="error" role="alert">{{ error }}</p>
-      <div class="input-field">
-        <label for="fname">Name: </label>
-        <input id="fname" type="text" v-model="comment.name" placeholder="Your name">
+    <form class="comment-form cv-comment-form" :aria-label="parent ? 'Reply' : 'Leave a comment'" novalidate @submit.prevent>
+      <h3 class="cv-comment-form__title">{{ parent ? 'Reply' : 'Leave a comment' }}</h3>
+      <p v-if="error" class="cv-form-error" role="alert">{{ error }}</p>
+      <div class="cv-comment-form__row">
+        <div class="input-field cv-field">
+          <label class="cv-label" :for="ids.name">Name</label>
+          <input :id="ids.name" class="cv-input" type="text" v-model="comment.name" autocomplete="name" required>
+        </div>
+        <div class="input-field cv-field">
+          <label class="cv-label" :for="ids.email">Email <span class="cv-comment-form__hint">(optional, not published)</span></label>
+          <input :id="ids.email" class="cv-input" type="email" v-model="comment.email" autocomplete="email">
+        </div>
+      </div>
+      <div class="input-field cv-field">
+        <label class="cv-label" :for="ids.title">Title <span class="cv-comment-form__hint">(optional)</span></label>
+        <input :id="ids.title" class="cv-input" type="text" v-model="comment.title">
+      </div>
+      <div class="input-field cv-field">
+        <label class="cv-label" :for="ids.comment">Comment</label>
+        <textarea :id="ids.comment" class="cv-textarea" v-model="comment.comment" required></textarea>
       </div>
       <div class="input-field">
-        <label for="femail">Mail Address: </label>
-        <input id="femail" type="text" v-model="comment.email" placeholder="Your email">
+        <button type="button" @click="submitComment" :disabled="pending || !isFormValid" class="submit-button cv-button cv-button--primary">
+          <span v-if="pending" class="cv-spinner" aria-hidden="true"></span>
+          {{ pending ? 'Sending…' : (parent ? 'Send reply' : 'Send comment') }}
+        </button>
       </div>
-      <div class="input-field">
-        <label for="ftitle">Title: </label>
-        <input id="ftitle" type="text" v-model="comment.title" placeholder="Title">
-      </div>
-      <div class="input-field">
-        <textarea v-model="comment.comment" placeholder="Add a comment..."></textarea>
-      </div>
-      <div class="input-field">
-        <button @click="submitComment" :disabled="pending || !isFormValid" class="submit-button">Submit</button>
-      </div>
-    </div>
+    </form>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType, computed, ref } from 'vue';
+import { defineComponent, reactive, PropType, computed, ref, useId } from 'vue';
 import { CommentInputData } from './types';
 
 export default defineComponent({
@@ -40,6 +47,9 @@ export default defineComponent({
             parent = props.parent.toString();
         }
         const comment = reactive({parent: parent, comment: "", name: "", email: "", title: ""} as CommentInputData)
+
+        const uid = useId();
+        const ids = { name: `${uid}-name`, email: `${uid}-email`, title: `${uid}-title`, comment: `${uid}-comment` };
 
         const pending = ref(false);
         const error = ref("");
@@ -59,6 +69,7 @@ export default defineComponent({
 
         return {
             comment,
+            ids,
             pending,
             error,
             isFormValid,
@@ -68,38 +79,3 @@ export default defineComponent({
     }
 });
 </script>
-<style scoped>
-.comment-form {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 5px;
-}
-
-.input-field {
-  margin-bottom: 20px;
-}
-
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-button.submit-button {
-  padding: 10px 20px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button.submit-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-</style>
