@@ -52,7 +52,12 @@
             <span
               class="cv-transcript__cue"
               :class="{ 'is-active': cue.index === activeCue }"
+              :role="cue.hit ? 'button' : undefined"
+              :tabindex="cue.hit ? 0 : undefined"
+              :aria-label="cue.hit ? `Play from ${spoken(cue.start)}: ${cue.text}` : undefined"
               @click="$emit('seek', cue.start)"
+              @keydown.enter.prevent.stop="cue.hit && $emit('seek', cue.start)"
+              @keydown.space.prevent.stop="cue.hit && $emit('seek', cue.start)"
             ><template v-for="(part, i) in cue.parts" :key="i"><mark v-if="part.hit">{{ part.text }}</mark><template v-else>{{ part.text }}</template></template></span>{{ ' ' }}
           </template>
         </p>
@@ -69,7 +74,7 @@ import { formatTime, spokenTime } from '../helpers/time';
 
 // Readable transcript: consecutive cues of one speaker form a paragraph with a
 // single heading row. Clicking text (or the time button, for keyboards) plays
-// from there. While the episode plays, the current paragraph is kept in view
+// from there; search matches are keyboard-operable themselves. While the episode plays, the current paragraph is kept in view
 // unless the reader scrolled the panel themselves a moment ago.
 
 const props = defineProps<{ cues: Cue[]; currentTime: number; active: boolean }>();
@@ -79,7 +84,7 @@ const MAX_RUN_CUES = 8; // paragraph length for transcripts without speaker chan
 const FOLLOW_PAUSE_MS = 5000;
 
 interface Part { text: string; hit: boolean }
-interface RunCue { index: number; start: number; parts: Part[]; hit: boolean }
+interface RunCue { index: number; start: number; text: string; parts: Part[]; hit: boolean }
 interface Run { index: number; speaker: string; start: number; cues: RunCue[] }
 
 const query = ref('');
@@ -109,7 +114,7 @@ const runs = computed<Run[]>(() => {
   props.cues.forEach((cue, index) => {
     const last = result[result.length - 1];
     const parts = split(cue.text, needle);
-    const entry = { index, start: cue.start, parts, hit: parts.some((part) => part.hit) };
+    const entry = { index, start: cue.start, text: cue.text, parts, hit: parts.some((part) => part.hit) };
     if (last && last.speaker === cue.speaker && last.cues.length < MAX_RUN_CUES) {
       last.cues.push(entry);
     } else {

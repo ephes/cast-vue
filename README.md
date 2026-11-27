@@ -12,8 +12,8 @@ To install the Vue.js theme, you will need to run the following command in your 
 pip install cast-vue
 ```
 
-The theme needs django-cast 0.2.52 or newer (it reads the cover image URL of
-posts from the API).
+The theme needs django-cast 0.2.55 or newer (it reads the cover image URL of
+posts from the API and asks for detail HTML with `render_for_feed=false`).
 
 ### 2. Add entries to INSTALLED_APPS
 
@@ -125,6 +125,10 @@ are removed before rendering, as before.
 - Keyboard, while the focus is inside the player: `K` play/pause, `J`/`L`
   back/forward, `←`/`→` 5 seconds, `M` mute. Lock-screen and headset controls
   work through the Media Session API.
+
+In the post list a play button appears for audio that is part of the post body
+(an audio block); the list API does not report an episode's podcast audio when
+it is not also in the body. The post page shows it either way.
 
 Seeking needs a media host that answers HTTP range requests (any production
 web server or object store does; Django's `runserver` does not).

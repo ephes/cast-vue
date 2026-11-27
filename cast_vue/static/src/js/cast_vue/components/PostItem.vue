@@ -216,7 +216,13 @@ export default {
       const target = this.modalImage[direction];
       if (!target) return;
       const image = document.getElementById("gallery-image-" + target.split("-")[1]) as HTMLImageElement | null;
-      if (image) this.setModalFromImage(image);
+      if (!image) return;
+      this.setModalFromImage(image);
+      // At either end the pressed button disappears: keep the focus in the dialog.
+      this.$nextTick(() => {
+        const modal = this.$refs.modal as HTMLElement | undefined;
+        if (modal && !modal.contains(document.activeElement)) modal.querySelector<HTMLElement>("button")?.focus();
+      });
     },
     trapFocus(event: KeyboardEvent) {
       const modal = this.$refs.modal as HTMLElement | undefined;

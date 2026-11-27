@@ -8,7 +8,7 @@
 - Post page: cover, title and player header, readable rich text, code blocks readable in both colour schemes, a keyboard-operable image viewer with previous/next, and restyled comments and comment forms with labelled fields.
 - Navigating to another page scrolls to the top; Back and Forward restore the previous scroll position.
 - Base template: valid document structure (assets inside `<head>`), page titles, `title`/`meta`/`head` blocks, and styled error pages. `post_body.html` no longer emits unused helper elements.
-- Require django-cast 0.2.52 or newer for the post cover image URL in the API.
+- Require django-cast 0.2.55 or newer (post cover image URL and `render_for_feed` in the API).
 - Remove the client-side DOMPurify rich-text sanitizer and its `dompurify` dependency; API HTML is rendered as delivered again.
 - Fence shared JSON cache publication against responses older than a refresh.
 - Bound streamed JSON bodies and both shared caches with deterministic eviction.
@@ -17,4 +17,3 @@
 - Restrict comment submissions to same-origin credential-free HTTP(S) URLs and refuse redirects.
 - Remove private comment, credential and moderation payloads from console output.
 - Validate bounded acyclic comment trees once, render replies through a shared parent index and hide only replies whose parent is missing.
-- Retire obsolete Podlove instances on source/config changes and offer bounded, retryable initialization failures.

@@ -58,7 +58,10 @@ function start() {
         history: createWebHistory(config.routerBase),
         routes,
         scrollBehavior(to, from, savedPosition) {
-            if (savedPosition) return contentRendered().then(() => savedPosition);
+            if (savedPosition) {
+                // Restore only if the reader is still on that page when its content arrives.
+                return contentRendered().then(() => (router.currentRoute.value.fullPath === to.fullPath ? savedPosition : false));
+            }
             if (to.hash) return { el: to.hash, top: 72 };
             if (to.path !== from.path || to.query.page !== from.query.page) return { top: 0 };
             return false;

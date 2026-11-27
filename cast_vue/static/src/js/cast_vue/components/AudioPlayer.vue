@@ -127,7 +127,7 @@
       >
         <cv-icon name="transcript" /> Transcript
       </button>
-      <a v-if="download" class="cv-player__tab" :href="download.url" download>
+      <a v-if="download" class="cv-player__tab" :href="download.url" download target="_blank" rel="noopener">
         <cv-icon name="download" /> Download<span v-if="download.label" class="cv-player__tab-count">{{ download.label }}</span>
       </a>
       <button

@@ -31,6 +31,14 @@ test("search narrows the transcript and highlights matches", async () => {
   expect(wrapper.findAll(".cv-transcript__run")).toHaveLength(2);
   expect(wrapper.findAll("mark").map((mark) => mark.text())).toEqual(["boring", "boring"]);
   expect(wrapper.find('[role="status"]').text()).toBe("2 matches");
+  // Matches can be reached and played from the keyboard; other lines stay out of the tab order.
+  const cueButtons = wrapper.findAll('.cv-transcript__cue[role="button"]');
+  expect(cueButtons.map((cue) => cue.attributes("tabindex"))).toEqual(["0", "0"]);
+  await cueButtons[1].trigger("keydown", { key: "Enter" });
+  expect(wrapper.emitted("seek")).toEqual([[9]]);
+  await wrapper.find("input").setValue("");
+  expect(wrapper.find(".cv-transcript__cue[tabindex]").exists()).toBe(false);
+  await wrapper.find("input").setValue("BORING");
   await wrapper.find("input").setValue("nothing like this");
   expect(wrapper.find(".cv-transcript__runs").exists()).toBe(false);
   expect(wrapper.text()).toContain("Nothing in the transcript matches");

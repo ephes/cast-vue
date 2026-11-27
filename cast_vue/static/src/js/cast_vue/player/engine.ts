@@ -65,7 +65,9 @@ export function savedPosition(apiUrl: string): number {
 }
 
 function savePosition(): void {
-  if (!player.key) return;
+  // Only while the audio element holds the loaded episode: during a switch the
+  // element still plays the previous one and its time is not this episode's.
+  if (!player.key || loadedKey !== player.key) return;
   const key = player.key;
   const time = player.currentTime;
   const finished = player.duration > 0 && time > player.duration - RESUME_MARGIN_SECONDS;
@@ -80,6 +82,10 @@ function savePosition(): void {
 }
 
 let audio: HTMLAudioElement | null = null;
+// Episode whose source the audio element currently holds; media events only
+// count while it is the loaded episode.
+let loadedKey = "";
+const ownsMedia = () => loadedKey !== "" && loadedKey === player.key;
 let generation = 0;
 let pendingSeek: number | null = null;
 let lastSaved = 0;
@@ -91,6 +97,7 @@ function ensureAudio(): HTMLAudioElement {
   const storedRate = readStored().rate;
   if (typeof storedRate === "number" && RATES.includes(storedRate)) player.rate = storedRate;
   element.addEventListener("loadedmetadata", () => {
+    if (!ownsMedia()) return;
     if (Number.isFinite(element.duration) && element.duration > 0) player.duration = element.duration;
     if (pendingSeek !== null) {
       element.currentTime = pendingSeek;
@@ -99,24 +106,34 @@ function ensureAudio(): HTMLAudioElement {
     element.playbackRate = player.rate;
   });
   element.addEventListener("durationchange", () => {
+    if (!ownsMedia()) return;
     if (Number.isFinite(element.duration) && element.duration > 0) player.duration = element.duration;
   });
   element.addEventListener("timeupdate", () => {
-    if (pendingSeek !== null) return;
+    if (pendingSeek !== null || !ownsMedia()) return;
     player.currentTime = element.currentTime;
     if (Math.abs(element.currentTime - lastSaved) >= SAVE_INTERVAL_SECONDS) {
       lastSaved = element.currentTime;
       savePosition();
     }
   });
-  element.addEventListener("play", () => { player.playing = true; });
-  element.addEventListener("pause", () => { player.playing = false; player.waiting = false; savePosition(); });
-  element.addEventListener("waiting", () => { player.waiting = true; });
-  element.addEventListener("playing", () => { player.waiting = false; });
-  element.addEventListener("canplay", () => { player.waiting = false; });
-  element.addEventListener("ended", () => { player.playing = false; savePosition(); });
+  element.addEventListener("play", () => { if (ownsMedia()) player.playing = true; });
+  element.addEventListener("pause", () => {
+    if (!ownsMedia()) return;
+    player.playing = false;
+    player.waiting = false;
+    savePosition();
+  });
+  element.addEventListener("waiting", () => { if (ownsMedia()) player.waiting = true; });
+  element.addEventListener("playing", () => { if (ownsMedia()) player.waiting = false; });
+  element.addEventListener("canplay", () => { if (ownsMedia()) player.waiting = false; });
+  element.addEventListener("ended", () => {
+    if (!ownsMedia()) return;
+    player.playing = false;
+    savePosition();
+  });
   element.addEventListener("error", () => {
-    if (!player.key) return;
+    if (!ownsMedia()) return;
     player.playing = false;
     player.waiting = false;
     player.status = "error";
@@ -173,7 +190,9 @@ export function isCurrent(apiUrl: string): boolean {
 }
 
 // Load an episode and start playing it, optionally at `startAt` seconds.
-export async function playEpisode(ref: EpisodeRef, startAt?: number): Promise<void> {
+// `refresh` asks the API again instead of reusing the episode data (after a
+// media error the audio URL may have expired).
+export async function playEpisode(ref: EpisodeRef, startAt?: number, refresh = false): Promise<void> {
   const key = absoluteApiUrl(ref.apiUrl);
   if (!key) return;
   const element = ensureAudio();
@@ -183,7 +202,10 @@ export async function playEpisode(ref: EpisodeRef, startAt?: number): Promise<vo
     return;
   }
   const id = ++generation;
+  // Keep the previous episode's position, then detach the element from it so
+  // its late media events cannot be taken for the new episode.
   savePosition();
+  loadedKey = "";
   element.pause();
   player.key = key;
   player.ref = { ...ref };
@@ -196,7 +218,7 @@ export async function playEpisode(ref: EpisodeRef, startAt?: number): Promise<vo
   player.duration = 0;
   let meta: EpisodeMeta;
   try {
-    meta = await loadEpisode(ref.apiUrl, false);
+    meta = await loadEpisode(ref.apiUrl, refresh);
   } catch {
     if (id !== generation) return;
     player.status = "error";
@@ -211,6 +233,7 @@ export async function playEpisode(ref: EpisodeRef, startAt?: number): Promise<vo
   pendingSeek = start > 0 ? start : null;
   lastSaved = start;
   element.src = pickSource(element, meta);
+  loadedKey = key;
   element.playbackRate = player.rate;
   element.muted = player.muted;
   updateMediaSession();
@@ -223,7 +246,7 @@ export async function resume(): Promise<void> {
     const ref = player.ref;
     const at = player.currentTime;
     player.key = "";
-    await playEpisode(ref, at > 0 ? at : undefined);
+    await playEpisode(ref, at > 0 ? at : undefined, true);
     return;
   }
   if (audio && player.status === "ready") await startPlayback(audio);
@@ -277,6 +300,7 @@ export function toggleMute(): void {
 export function closePlayer(): void {
   generation += 1;
   savePosition();
+  loadedKey = "";
   if (audio) {
     audio.pause();
     audio.removeAttribute("src");

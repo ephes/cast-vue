@@ -54,6 +54,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import CvIcon from './CvIcon.vue';
 import { RATES, closePlayer, player, resume, pause, seek, setRate, skip } from '../player/engine';
 import { formatTime, spokenTime } from '../helpers/time';
@@ -74,7 +75,9 @@ const shownTime = computed(() => scrubTime.value ?? player.currentTime);
 const progress = computed(() => (player.duration > 0 ? Math.min(100, (shownTime.value / player.duration) * 100) : 0));
 const busy = computed(() => player.status === 'loading' || player.waiting);
 const title = computed(() => player.meta?.title || player.ref?.title || 'Episode');
-const titleLink = computed(() => (player.ref?.slug ? { name: 'PostDetail', params: { slug: player.ref.slug } } : null));
+// The styleguide has no post route: the title stays plain text there.
+const router = useRouter();
+const titleLink = computed(() => (player.ref?.slug && router.hasRoute('PostDetail') ? { name: 'PostDetail', params: { slug: player.ref.slug } } : null));
 const chapter = computed(() => {
   let found = '';
   for (const candidate of player.meta?.chapters ?? []) {

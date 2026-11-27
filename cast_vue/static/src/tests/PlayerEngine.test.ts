@@ -90,4 +90,38 @@ describe("player engine", () => {
     expect(player.status).toBe("error");
     expect(player.playing).toBe(false);
   });
+
+  test("late media events of the previous episode never touch the next one's position", async () => {
+    const first = playEpisode({ apiUrl: A });
+    answer(A, "Episode A"); await first;
+    const audio = lastAudio();
+    Object.defineProperty(audio, "readyState", { value: 4, configurable: true });
+    seek(40);
+    window.localStorage.setItem("cast-vue:player", JSON.stringify({ positions: { ["http://localhost:3000" + B]: 70 } }));
+
+    const second = playEpisode({ apiUrl: B });
+    // The element still holds episode A while B loads.
+    audio.dispatchEvent(new Event("timeupdate"));
+    audio.dispatchEvent(new Event("pause"));
+    audio.dispatchEvent(new Event("ended"));
+    expect(savedPosition(B)).toBe(70);
+    expect(savedPosition(A)).toBe(40);
+    expect(player.currentTime).toBe(70);
+    answer(B, "Episode B"); await second;
+    expect(player.meta?.title).toBe("Episode B");
+    expect(savedPosition(B)).toBe(70);
+  });
+
+  test("retry after a media error asks the API for fresh episode data", async () => {
+    const started = playEpisode({ apiUrl: A });
+    answer(A, "Episode A"); await started;
+    expect(fetch).toHaveBeenCalledTimes(1);
+    lastAudio().dispatchEvent(new Event("error"));
+    expect(player.status).toBe("error");
+    toggle({ apiUrl: A }); await flushPromises();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    answer(A, "Episode A again"); await flushPromises();
+    expect(player.status).toBe("ready");
+    expect(player.meta?.title).toBe("Episode A again");
+  });
 });

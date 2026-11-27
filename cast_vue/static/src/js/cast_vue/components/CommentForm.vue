@@ -8,7 +8,7 @@
           <input :id="ids.name" class="cv-input" type="text" v-model="comment.name" autocomplete="name" required>
         </div>
         <div class="input-field cv-field">
-          <label class="cv-label" :for="ids.email">Email <span class="cv-comment-form__hint">(optional, not published)</span></label>
+          <label class="cv-label" :for="ids.email">Email <span class="cv-comment-form__hint">(not published)</span></label>
           <input :id="ids.email" class="cv-input" type="email" v-model="comment.email" autocomplete="email">
         </div>
       </div>

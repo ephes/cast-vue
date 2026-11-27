@@ -76,7 +76,9 @@ export default {
       // the page id instead of the slug and and either modify the API
       // to accept slugs or do a second request to get the page id. :/
       const postDetailUrl = new URL(wagtailApiUrl.href);
-      let pageType = config.pageType;
+      // Without a known page type (a session started on the list) ask for posts,
+      // which includes episodes.
+      let pageType = config.pageType || "cast.Post";
       if (postSlug in dataStore.slugToPost) {
         // FIXME we could also just use the post detail url?
         pageType = dataStore.slugToPost[postSlug].meta.type;
