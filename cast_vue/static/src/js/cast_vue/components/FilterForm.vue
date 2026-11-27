@@ -1,19 +1,21 @@
 <template>
-  <form class="cv-filters" role="search" @submit.prevent="submitForm">
+  <div class="cv-filters">
     <div class="cv-filters__top">
-      <label class="cv-search">
-        <span class="cv-sr-only">Search</span>
-        <cv-icon name="search" />
+      <form class="cv-search" role="search" @submit.prevent="apply({ search })">
+        <label for="id_search" class="cv-sr-only">Search posts</label>
         <input
-          v-model="form.search"
+          v-model="search"
           id="id_search"
           class="cv-input"
           type="search"
-          placeholder="Search"
+          placeholder="Search posts"
           enterkeyhint="search"
           autocomplete="off"
         />
-      </label>
+        <button type="submit" class="cv-icon-button" aria-label="Search posts" title="Search posts">
+          <cv-icon name="search" />
+        </button>
+      </form>
       <button
         type="button"
         class="cv-button cv-filters__toggle"
@@ -22,140 +24,150 @@
         @click="open = !open"
       >
         <cv-icon name="filter" /> Filters
-        <span v-if="activeCount > 0" class="cv-count" :aria-label="`${activeCount} active`">{{ activeCount }}</span>
+        <span v-if="activeCount" class="cv-count" :aria-label="`${activeCount} active`">{{ activeCount }}</span>
       </button>
     </div>
+
     <div :id="panelId" class="cv-filters__panel" :hidden="!open">
-      <fieldset v-for="group in facetGroups" :key="group.type">
-        <legend class="cv-label">{{ group.label }}</legend>
-        <ul class="cv-chips">
-          <li v-for="facet in group.facets" :key="facet.slug">
+      <facet-options
+        label="Categories"
+        find-label="Find a category"
+        :facets="facetCounts.category_facets ?? []"
+        :selected="form.category_facets || ''"
+        @select="apply({ category_facets: $event })"
+      />
+      <facet-options
+        label="Tags"
+        find-label="Find a tag"
+        :facets="facetCounts.tag_facets ?? []"
+        :selected="form.tag_facets || ''"
+        always-show-finder
+        @select="apply({ tag_facets: $event })"
+      />
+      <fieldset v-if="years.length || dateRangeEnabled">
+        <legend class="cv-label">Archive</legend>
+        <ul v-if="years.length" ref="yearList" class="cv-facet-list cv-facet-list--columns cv-archive__years" role="list">
+          <li v-for="entry in years" :key="entry.year">
             <button
               type="button"
-              class="cv-chip"
-              :aria-pressed="form[group.type] === facet.slug"
-              @click="selectFacet(group.type, form[group.type] === facet.slug ? '' : facet.slug)"
+              class="cv-facet-option"
+              :class="{ 'is-expanded': activeYear === entry.year }"
+              :aria-expanded="activeYear === entry.year"
+              :aria-controls="activeYear === entry.year ? monthsId : undefined"
+              :aria-pressed="dateRangeEnabled ? selectedYear === entry.year : undefined"
+              @click="chooseYear(entry.year)"
             >
-              {{ facet.label }} <span class="cv-chip__count">{{ facet.count }}</span>
-            </button>
-          </li>
-          <li v-if="group.hidden > 0">
-            <button type="button" class="cv-chip" :aria-expanded="false" @click="expanded[group.type] = true">
-              Show all <span class="cv-chip__count">+{{ group.hidden }}</span>
+              {{ entry.year }} <span class="cv-chip__count">{{ entry.count }}</span>
             </button>
           </li>
         </ul>
-      </fieldset>
-      <fieldset>
-        <legend class="cv-label">Date range</legend>
-        <div class="cv-filters__dates">
-          <label class="cv-field">
-            <span>From</span>
-            <input type="date" v-model="form.date_after" class="cv-input" id="id_date_0" />
-          </label>
-          <label class="cv-field">
-            <span>Until</span>
-            <input type="date" v-model="form.date_before" class="cv-input" id="id_date_1" />
-          </label>
+        <div v-if="activeMonths?.length" :id="monthsId" class="cv-archive__months">
+          <p class="cv-label">Months in {{ activeYear }}</p>
+          <ul class="cv-facet-list cv-facet-list--columns" :aria-label="`Months in ${activeYear}`" role="list">
+            <li v-for="month in activeMonths" :key="month.slug">
+              <button
+                type="button"
+                class="cv-facet-option"
+                :aria-pressed="form.date_facets === month.slug"
+                @click="chooseMonth(month.slug)"
+              >
+                {{ monthLabel(month.slug, locale, false) }} <span class="cv-chip__count">{{ month.count }}</span>
+              </button>
+            </li>
+          </ul>
         </div>
+        <details v-if="dateRangeEnabled" class="cv-filter-disclosure" :open="hasCustomRange">
+          <summary>Custom range</summary>
+          <form class="cv-filters__dates" @submit.prevent="apply(rangeFilter(from, until))">
+            <label class="cv-field">
+              <span>From</span>
+              <input id="id_date_0" v-model="from" type="date" :max="until || undefined" class="cv-input" />
+            </label>
+            <label class="cv-field">
+              <span>Until</span>
+              <input id="id_date_1" v-model="until" type="date" :min="from || undefined" class="cv-input" />
+            </label>
+            <button type="submit" class="cv-button cv-button--small">Apply range</button>
+          </form>
+        </details>
       </fieldset>
       <label class="cv-field">
         <span class="cv-label">Sort by</span>
-        <select v-model="form.order" name="order" id="id_o" class="cv-select" @change="submitForm">
+        <select :value="order" name="order" id="id_o" class="cv-select" @change="changeOrder">
           <option value="">Newest first</option>
           <option value="visible_date">Oldest first</option>
+          <option v-if="order && order !== 'visible_date'" :value="order">{{ orderLabel(order) }}</option>
         </select>
       </label>
-      <div class="cv-filters__actions">
-        <button type="submit" class="cv-button cv-button--primary cv-button--small">Apply</button>
-        <button v-if="activeCount > 0" type="button" class="cv-button cv-button--ghost cv-button--small" @click="clearAll">
-          Clear all
-        </button>
-      </div>
     </div>
-  </form>
+  </div>
 </template>
 
-<script lang="ts">
-import { computed, reactive, ref, useId, watchEffect } from 'vue';
+<script setup lang="ts">
+import { computed, ref, useId, watch } from 'vue';
 import CvIcon from './CvIcon.vue';
-import { Form, FacetCounts } from './types';
+import FacetOptions from './FacetOptions.vue';
+import type { Form, FacetCounts } from './types';
+import {
+  archiveYears, emptyDateFilters, expandedYear, filterChips, monthFilter, monthLabel, orderLabel,
+  rangeFilter, rangeYear, yearFilter,
+} from '../helpers/filters';
 
-type FacetType = 'date_facets' | 'category_facets' | 'tag_facets';
-const FACET_GROUPS: { type: FacetType; label: string }[] = [
-  { type: 'category_facets', label: 'Categories' },
-  { type: 'tag_facets', label: 'Tags' },
-  { type: 'date_facets', label: 'Archive' },
-];
-// Long facet lists start collapsed to this many entries.
-const FACET_LIMIT = 12;
-const FILTER_KEYS: (keyof Form)[] = ['date_after', 'date_before', 'date_facets', 'category_facets', 'tag_facets', 'order'];
+const props = defineProps<{ form: Form; facetCounts: FacetCounts; dateRangeEnabled: boolean }>();
+const emit = defineEmits<{ submitFilterForm: [form: Form] }>();
+const open = ref(false);
+const panelId = useId();
+const monthsId = useId();
+const yearList = ref<HTMLElement>();
+const locale = document.documentElement.lang || undefined;
 
-// "2026-11" -> "Nov 2026" in the page language; other names stay as they are.
-function facetLabel(type: FacetType, name: string): string {
-  const month = type === 'date_facets' ? /^(\d{4})-(\d{2})$/.exec(name) : null;
-  if (!month) return name;
-  const date = new Date(Date.UTC(Number(month[1]), Number(month[2]) - 1, 1));
-  try {
-    return new Intl.DateTimeFormat(document.documentElement.lang || undefined, { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(date);
-  } catch {
-    return name;
+const activeCount = computed(() => filterChips(props.form, props.facetCounts, locale).length);
+const years = computed(() => archiveYears(props.facetCounts.date_facets ?? []));
+const browsedYear = ref<string>();
+const activeYear = computed(() => props.dateRangeEnabled
+  ? expandedYear(props.form)
+  : browsedYear.value ?? expandedYear(monthFilter(props.form.date_facets)));
+const selectedYear = computed(() => props.form.date_facets ? '' : rangeYear(props.form));
+const activeMonths = computed(() => years.value.find((entry) => entry.year === activeYear.value)?.months);
+const hasCustomRange = computed(() => props.dateRangeEnabled && !rangeYear(props.form) && Boolean(props.form.date_after || props.form.date_before));
+const order = computed(() => props.form.order === '-visible_date' ? '' : props.form.order || '');
+
+const search = ref('');
+const from = ref('');
+const until = ref('');
+watch(() => props.form.search, (value) => { search.value = value; }, { immediate: true });
+watch(() => props.form.date_facets, () => { browsedYear.value = undefined; });
+watch(
+  [() => props.form.date_after, () => props.form.date_before, () => props.form.date_facets],
+  () => {
+    from.value = hasCustomRange.value ? props.form.date_after : '';
+    until.value = hasCustomRange.value ? props.form.date_before : '';
+  },
+  { immediate: true },
+);
+
+function apply(updates: Partial<Form>) {
+  emit('submitFilterForm', { ...props.form, ...updates });
+}
+
+function chooseYear(year: string) {
+  if (props.dateRangeEnabled) {
+    apply(selectedYear.value === year ? emptyDateFilters : yearFilter(year));
+  } else {
+    browsedYear.value = activeYear.value === year ? '' : year;
   }
 }
 
-export default {
-  components: { CvIcon },
-  props: {
-    form: {
-      type: Object as () => Form,
-      default: () => ({}),
-    },
-    facetCounts: {
-      type: Object as () => FacetCounts,
-      default: () => ({}),
-    },
-  },
-  setup(props, context) {
-    // A working copy: the applied filters only change through submitFilterForm.
-    const form = ref<Form>({ ...props.form });
-    const open = ref(false);
-    const panelId = useId();
-    const expanded = reactive<Record<FacetType, boolean>>({ date_facets: false, category_facets: false, tag_facets: false });
+function chooseMonth(month: string) {
+  if (props.form.date_facets === month) {
+    yearList.value?.querySelector<HTMLButtonElement>('[aria-expanded="true"]')?.focus();
+    apply(emptyDateFilters);
+  } else {
+    apply(monthFilter(month));
+  }
+}
 
-    watchEffect(() => {
-      // Update the working copy whenever the applied filters change.
-      const next = { ...props.form };
-      if (next.order === '-visible_date') next.order = '';
-      form.value = next;
-    });
-
-    const submitForm = () => {
-      context.emit("submitFilterForm", { ...form.value });
-    };
-
-    const selectFacet = (type: FacetType, value: string) => {
-      form.value[type] = value;
-      submitForm();
-    };
-
-    const clearAll = () => {
-      form.value = { ...form.value, search: '', date_after: '', date_before: '', date_facets: '', category_facets: '', tag_facets: '', order: '' };
-      submitForm();
-    };
-
-    const activeCount = computed(() => FILTER_KEYS.filter((key) => Boolean(props.form[key]) && props.form[key] !== '-visible_date').length);
-
-    const facetGroups = computed(() => FACET_GROUPS.map(({ type, label }) => {
-      const all = (props.facetCounts[type] ?? []).map((facet) => ({ ...facet, label: facetLabel(type, facet.name) }));
-      // Months read best newest first.
-      if (type === 'date_facets') all.sort((a, b) => (a.slug < b.slug ? 1 : a.slug > b.slug ? -1 : 0));
-      const selected = form.value[type];
-      const facets = expanded[type] ? all : all.filter((facet, index) => index < FACET_LIMIT || facet.slug === selected);
-      return { type, label, facets, hidden: all.length - facets.length };
-    }).filter((group) => group.facets.length > 0));
-
-    return { form, open, panelId, expanded, facetGroups, activeCount, submitForm, selectFacet, clearAll };
-  },
-  emits: ["submitFilterForm"],
-};
+function changeOrder(event: Event) {
+  apply({ order: (event.target as HTMLSelectElement).value });
+}
 </script>

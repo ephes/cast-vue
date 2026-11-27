@@ -14,6 +14,7 @@ function readConfiguration() {
     apiThemeUpdateUrl = "/",
     apiPodlovePlayerConfigUrl= "/",
     styleguideUrl = "",
+    dateRangeEnabled,
   } = document.getElementById("vue-configuration")?.dataset ?? {};
 
   let parsedBlogId = null;
@@ -67,6 +68,7 @@ function readConfiguration() {
     routerBase,
     styleguideUrl,
     styleguideData,
+    dateRangeEnabled: dateRangeEnabled === "true",
   };
 }
 

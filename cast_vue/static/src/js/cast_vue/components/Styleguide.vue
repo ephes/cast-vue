@@ -67,6 +67,7 @@
         <filter-form
           :form="form"
           :facetCounts="facetCounts"
+          :dateRangeEnabled="dateRangeEnabled"
           @submit-filter-form="handleSubmitFilterForm"
         />
       </section>
@@ -159,6 +160,7 @@ export default {
     const route = useRoute();
     const router = useRouter();
     const dataStore = useDataStore();
+    const dateRangeEnabled = config.dateRangeEnabled;
 
     const isListLoading = ref(true);
     const isDetailLoading = ref(true);
@@ -174,14 +176,16 @@ export default {
 
     const allowedQueryKeys = new Set([
       'search',
-      'date_after',
-      'date_before',
       'date_facets',
       'category_facets',
       'tag_facets',
       'order',
       'page',
     ]);
+    if (dateRangeEnabled) {
+      allowedQueryKeys.add('date_after');
+      allowedQueryKeys.add('date_before');
+    }
     const sanitizeQuery = (query: Record<string, any>) => {
       const params = getUrlSearchParams(query);
       Object.keys(params).forEach((key) => {
@@ -200,7 +204,7 @@ export default {
 
     const updateSearchParams = (url: URL, data: Form) => {
       const { page: _, ...params } = data;
-      setUrlSearchParams(url, params);
+      setUrlSearchParams(url, { ...params, order: data.order || '-visible_date' });
     };
 
     const calculateFirstOffset = (data: Form) => {
@@ -217,7 +221,6 @@ export default {
     wagtailApiUrl.searchParams.set('fields', 'html_overview,html_detail,visible_date,podlove_players');
     wagtailApiUrl.searchParams.set('offset', '0');
     wagtailApiUrl.searchParams.set('limit', itemsPerPage.toString());
-    wagtailApiUrl.searchParams.set('order', '-visible_date');
     wagtailApiUrl.searchParams.set('use_post_filter', 'true');
     wagtailApiUrl.searchParams.set('render_for_feed', 'false');
     if (templateBaseDir) {
@@ -226,7 +229,6 @@ export default {
     updateSearchParams(wagtailApiUrl, calculateFirstOffset(form.value) as unknown as Form);
 
     const facetCountsApiUrl = new URL(config.apiFacetCountsUrl.toString());
-    updateSearchParams(facetCountsApiUrl, calculateFirstOffset(form.value) as unknown as Form);
 
     const fetchListData = async () => {
       try {
@@ -271,11 +273,13 @@ export default {
 
     const handleSubmitFilterForm = async (data: Form) => {
       currentPage.value = 1;
-      updateSearchParams(wagtailApiUrl, data);
-      updateSearchParams(facetCountsApiUrl, data);
-      await fetchListData();
+      form.value = { ...sanitizeQuery(data), page: 1 } as Form;
+      updateSearchParams(wagtailApiUrl, form.value);
+      wagtailApiUrl.searchParams.set('offset', '0');
       const theme = route.query.theme ? { theme: route.query.theme } : {};
-      router.push({ query: { ...theme, ...(data as unknown as Record<string, string>) } });
+      const { order, ...query } = form.value;
+      await router.push({ query: { ...theme, ...query, order: order || undefined } });
+      await fetchListData();
     };
 
     const changePage = async (delta: number) => {
@@ -323,6 +327,7 @@ export default {
       postsFromApi,
       detailPost,
       facetCounts,
+      dateRangeEnabled,
       form,
       currentPage,
       totalPages,

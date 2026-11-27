@@ -1,0 +1,36 @@
+{% extends "./base.html" %}
+{% load i18n cast_vue_transcript %}
+
+{% block title %}{% if episode %}{% blocktranslate with title=episode.title %}Transcript: {{ title }}{% endblocktranslate %}{% else %}{% translate "Transcript" %}{% endif %}{% endblock title %}
+
+{% block content %}
+  <article class="cv-transcript-page">
+    <header>
+      {% if episode %}
+        {% with url=episode_url|default:episode.url %}
+          {% if url %}<a class="cv-back" href="{{ url }}">← {% translate "Back to episode" %}</a>{% endif %}
+        {% endwith %}
+        <p class="cv-eyebrow"><time datetime="{{ episode.visible_date|date:'c' }}">{{ episode.visible_date|date }}</time> · {% translate "Transcript" %}</p>
+        <h1>{{ episode.title }}</h1>
+      {% else %}
+        <h1>{% translate "Transcript" %}</h1>
+      {% endif %}
+    </header>
+
+    {% for segment in transcript.transcripts %}
+      <div class="cv-transcript-page__segment">
+        {% with timestamp=segment|transcript_timestamp %}
+          {% if segment.speaker or timestamp %}
+            <p class="cv-transcript-page__meta">
+              {% if timestamp %}<span class="cv-transcript-page__time">{{ timestamp }}</span>{% endif %}
+              {% if segment.speaker %}<strong>{{ segment.speaker }}</strong>{% endif %}
+            </p>
+          {% endif %}
+        {% endwith %}
+        <p>{{ segment.text }}</p>
+      </div>
+    {% empty %}
+      <p class="cv-transcript-page__segment">{% translate "No transcript segments available." %}</p>
+    {% endfor %}
+  </article>
+{% endblock content %}

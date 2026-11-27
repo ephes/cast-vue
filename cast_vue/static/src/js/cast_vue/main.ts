@@ -14,6 +14,8 @@ import Styleguide from "./components/Styleguide.vue";
 import { CONTENT_READY_EVENT, installRouteTransitions } from "./helpers/viewTransitions";
 import { initColorScheme } from "./helpers/colorScheme";
 
+import ColorSchemeButton from "./components/ColorSchemeButton.vue";
+
 import App from './App.vue';
 
 initColorScheme();
@@ -36,7 +38,7 @@ function contentRendered(): Promise<void> {
 // is dropped once the reader has navigated again.
 let navigationCount = 0;
 
-function start() {
+function start(mountPoint: HTMLElement) {
     const routes = config.pageType === "styleguide"
         ? [
             {
@@ -80,12 +82,18 @@ function start() {
     const pinia = createPinia()
     app.use(pinia);
 
-    app.mount("#app")
+    app.mount(mountPoint)
 }
 
-if (configError === null) {
-    start();
-} else if (document.getElementById("vue-configuration")?.dataset.blogId) {
-    // Blog data is present but unusable: say so instead of failing silently.
-    console.error("cast-vue: invalid configuration", configError);
+// django-cast supplies the styleguide template with its own page-type marker.
+const mountPoint = document.querySelector<HTMLElement>("[data-cv-spa]")
+    ?? (config?.pageType === "styleguide" ? document.getElementById("app") : null);
+if (mountPoint) {
+    if (configError === null) {
+        start(mountPoint);
+    } else {
+        console.error("cast-vue: invalid configuration", configError);
+    }
 }
+const switchMount = document.querySelector("[data-cv-color-scheme]");
+if (switchMount) createApp(ColorSchemeButton).mount(switchMount);

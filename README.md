@@ -63,19 +63,41 @@ restyle the theme by overriding them in its own stylesheet, for example
   header switches between system, light and dark; the choice is kept in
   `localStorage` (`cast-vue:color-scheme`) and applied as `data-theme` on
   `<html>`.
-- **Layout:** one reading column; on wide screens the post list gets a sticky
-  column with search, category/tag/month filters, date range and sort order,
-  on small screens the same controls open from a "Filters" button.
+- **Layout:** one reading column with a sticky filter column on wide screens.
+  On small screens, search stays visible and the other controls open from the
+  "Filters" button. Removable chips above the posts show the applied filters
+  and provide a "Clear all" action at any width.
+- **Filters:** the eight most-used tags appear first with counts. "Find a tag"
+  ignores case and accents and shows up to twenty matches. Exact matches come
+  first, then prefix matches, then other substring matches. Each group sorts
+  by count (highest first) and then by name. "All tags" opens a scrollable
+  alphabetical list. Categories get the same finder when there are more than
+  eight. The archive groups available months by year. Selecting a month
+  applies that month filter. When `CAST_FILTERSET_FACETS` includes `date`
+  (the django-cast default), selecting a year filters to that year and reveals
+  its months, and readers can also apply a custom range.
+  When the facet endpoint returns months and `date` is disabled, year controls
+  expand or collapse those months. A new date selection replaces the previous
+  one. Facet counts describe the full blog archive. If the facet endpoint fails,
+  the post list still shows posts and the available filters.
 - **States:** loading placeholders, error messages with Retry, and empty
-  results are styled; the image viewer for galleries is a keyboard-operable
-  dialog.
+  results are styled. Active filters can still be removed or cleared when
+  a post list request fails. Clearing the last filter restores keyboard focus
+  to the results summary or Retry. The gallery image viewer is a
+  keyboard-operable dialog.
 - **Accessibility:** skip link, visible focus, labelled controls, text contrast
   of at least 4.5:1 in both colour schemes, and no motion for readers who
   prefer reduced motion.
 
-The base template now sets the page `<title>` from the page and blog titles,
-offers `title`, `meta` and `head` blocks, and renders the theme's error pages
-(`400.html`, `403.html`, `404.html`, `500.html`) inside the same design.
+Django pages can extend `cast/vue/base.html` and fill the `content` block.
+They get the same header, colour scheme and reading typography as the post
+views, plus a footer with a link to the theme selector. The base also offers
+`title`, `meta`, `head` and `navigation` blocks. The theme ships
+`feed_detail.html`, `transcript.html` and error page templates that use this
+shell. The full-page theme selector uses the shell through django-cast's
+`select_theme_page.html`. The post list and detail mount the blog app through
+the `data-cv-spa` marker in `spa.html`.
+Django-cast controls which theme's error templates are selected.
 
 ## Route transitions
 
@@ -231,7 +253,9 @@ npx npm-check-updates -u
 Comment submissions retain their draft until the server confirms persistence.
 Validation, moderation and transport failures appear beside the form so readers
 can correct or retry it. Pending forms disable duplicate submission, including replies.
-Applying a filter in the blog list resets the displayed page, route and API offset to the first page.
+Applying a filter resets the displayed page, route and post API offset to the
+first page. The facet catalog is loaded from the existing facet endpoint with
+no filter or pagination arguments.
 
 The blog list follows filter and page query changes, including browser Back and
 Forward, updating its form and API requests together. Detail pages reload when

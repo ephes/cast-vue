@@ -1,0 +1,54 @@
+{% extends "./base.html" %}
+{% load i18n %}
+
+{% block title %}{% if is_podcast %}{% translate "Subscribe" %}{% else %}{% translate "Feeds" %}{% endif %} · {{ blog.title }}{% endblock title %}
+
+{% block content %}
+  <h1>{% if is_podcast %}{% translate "Subscribe" %}{% else %}{% translate "Feeds" %}{% endif %}</h1>
+
+  {% if is_podcast %}
+    {% if apple_podcasts_url or spotify_url or youtube_url %}
+      <section>
+        <h2>{% translate "Where to listen" %}</h2>
+        <div class="cv-feed-links">
+          {% if apple_podcasts_url %}<a class="cv-button" href="{{ apple_podcasts_url }}">Apple Podcasts</a>{% endif %}
+          {% if spotify_url %}<a class="cv-button" href="{{ spotify_url }}">Spotify</a>{% endif %}
+          {% if youtube_url %}<a class="cv-button" href="{{ youtube_url }}">YouTube</a>{% endif %}
+        </div>
+      </section>
+    {% endif %}
+    {% block podlove_subscribe_button %}{% endblock podlove_subscribe_button %}
+  {% endif %}
+
+  <section>
+    <h2>{% translate "Blog feeds" %}</h2>
+    <div class="cv-feed-links">
+      <a class="cv-button" href="{{ blog_feed_url }}">RSS</a>
+      <a class="cv-button" href="{{ blog_atom_feed_url }}">Atom</a>
+    </div>
+  </section>
+
+  {% if is_podcast and podcast_feeds %}
+    <section>
+      <h2>{% translate "Podcast feeds" %}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">{% translate "Format" %}</th>
+            <th scope="col">RSS</th>
+            <th scope="col">Atom</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for feed in podcast_feeds %}
+            <tr>
+              <th scope="row">{{ feed.format_label }}</th>
+              <td><a href="{{ feed.rss_url }}">{% blocktranslate with format=feed.format_label %}{{ format }} RSS{% endblocktranslate %}</a></td>
+              <td><a href="{{ feed.atom_url }}">{% blocktranslate with format=feed.format_label %}{{ format }} Atom{% endblocktranslate %}</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endif %}
+{% endblock content %}

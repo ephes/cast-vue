@@ -14,40 +14,48 @@
           </div>
         </div>
         <div v-else>
-          <div v-if="error" class="cv-alert" role="alert">
-            <p>{{ error }}</p>
-            <button type="button" class="cv-button" @click="fetchData(true)">Retry</button>
-          </div>
-          <template v-if="hasLoaded">
-            <header class="cv-hero">
-              <h1 class="cv-hero__title">{{ blog.title }}</h1>
-              <div v-if="blog.description" class="cv-hero__description cv-prose" v-html="blog.description"></div>
-            </header>
-            <div class="cv-list-layout">
-              <aside class="cv-list-layout__aside" aria-label="Search and filters">
-                <filter-form
-                    @submit-filter-form="handleSubmitFilterForm"
-                    :form="form"
-                    :facetCounts="facetCounts"
-                ></filter-form>
-              </aside>
-              <div class="cv-list-layout__main" :class="{ 'is-refreshing': isLoading }" :aria-busy="isLoading">
-                <div v-if="!error" class="cv-list-summary">
-                  <p class="cv-eyebrow" role="status">{{ summary }}</p>
-                  <button v-if="isFiltered" type="button" class="cv-button cv-button--ghost cv-button--small" @click="clearFilters">
-                    Clear filters
+          <header v-if="hasLoaded" class="cv-hero">
+            <h1 class="cv-hero__title">{{ blog.title }}</h1>
+            <div v-if="blog.description" class="cv-hero__description cv-prose" v-html="blog.description"></div>
+          </header>
+          <div :class="{ 'cv-list-layout': hasLoaded }">
+            <aside v-if="hasLoaded" class="cv-list-layout__aside" aria-label="Search and filters">
+              <filter-form
+                  @submit-filter-form="handleSubmitFilterForm"
+                  :form="form"
+                  :facetCounts="facetCounts"
+                  :dateRangeEnabled="dateRangeEnabled"
+              ></filter-form>
+            </aside>
+            <div class="cv-list-layout__main" :class="{ 'is-refreshing': isLoading }" :aria-busy="isLoading">
+              <div v-if="error" class="cv-alert" role="alert">
+                <p>{{ error }}</p>
+                <button ref="retryButton" type="button" class="cv-button" @click="fetchData(true)">Retry</button>
+              </div>
+              <div v-if="!error || isFiltered" class="cv-list-summary">
+                <p v-if="!error" ref="summaryStatus" class="cv-eyebrow" role="status" tabindex="-1">{{ summary }}</p>
+                <div v-if="isFiltered" ref="activeFilters" class="cv-active-filters" role="group" aria-label="Active filters">
+                  <ul class="cv-chips" role="list">
+                    <li v-for="(chip, index) in activeChips" :key="chip.label">
+                      <button type="button" class="cv-chip" :aria-label="`Remove filter: ${chip.label}`" @click="removeFilter(chip.clear, index)">
+                        {{ chip.label }} <span aria-hidden="true">×</span>
+                      </button>
+                    </li>
+                  </ul>
+                  <button type="button" class="cv-button cv-button--ghost cv-button--small" @click="clearFilters">
+                    Clear all
                   </button>
                 </div>
-                <div v-if="!error && postsFromApi.items.length === 0" class="cv-empty">
-                  <strong>No posts found.</strong>
-                  <span v-if="isFiltered">Try a different search or remove a filter.</span>
-                </div>
-                <post-list v-if="!error" :blog="blog" :posts="postsFromApi" />
-                <pagination-buttons v-if="!error && totalPages > 0" :currentPage="currentPage" :totalPages="totalPages" @change-page="changePage">
-                </pagination-buttons>
               </div>
+              <div v-if="!error && postsFromApi.items.length === 0" class="cv-empty">
+                <strong>No posts found.</strong>
+                <span v-if="isFiltered">Try a different search or remove a filter.</span>
+              </div>
+              <post-list v-if="!error" :blog="blog" :posts="postsFromApi" />
+              <pagination-buttons v-if="!error && totalPages > 0" :currentPage="currentPage" :totalPages="totalPages" @change-page="changePage">
+              </pagination-buttons>
             </div>
-          </template>
+          </div>
         </div>
     </div>
 </template>
@@ -66,6 +74,7 @@ import { setUrlSearchParams } from '../helpers/url';
 import { contentReadyToken, notifyContentReady, withViewTransition } from '../helpers/viewTransitions';
 import { Form } from './types';
 import { setBlogTitle, setPageTitle } from '../helpers/site';
+import { filterChips } from '../helpers/filters';
 
 
 export default {
@@ -90,7 +99,9 @@ export default {
         const form = ref({}) as Ref<Form>;
         const currentPage = ref(1);
         const itemsPerPage = config.paginationPageSize;
-        const filterKeys = ['search', 'date_after', 'date_before', 'date_facets', 'category_facets', 'tag_facets', 'order'];
+        const dateRangeEnabled = config.dateRangeEnabled;
+        const filterKeys = ['search', 'date_facets', 'category_facets', 'tag_facets', 'order'];
+        if (dateRangeEnabled) filterKeys.push('date_after', 'date_before');
         const normalizedQuery = computed(() => {
             const query: Record<string, string> = {};
             for (const key of filterKeys) {
@@ -102,24 +113,24 @@ export default {
             return query;
         });
         let wagtailApiUrl: URL;
-        let facetCountsApiUrl: URL;
+        // The API counts only the filtered posts when given filters. The
+        // complete catalog keeps other years and tags available after a choice.
+        const facetCountsApiUrl = new URL(config.apiFacetCountsUrl.toString());
         const applyQuery = () => {
             const query = normalizedQuery.value;
             currentPage.value = Number(query.page);
-            form.value = { ...query, page: currentPage.value } as unknown as Form;
+            form.value = { date_after: '', date_before: '', ...query, page: currentPage.value } as Form;
             wagtailApiUrl = new URL(config.postListUrl.toString());
             wagtailApiUrl.searchParams.set('type', 'cast.Post');
             wagtailApiUrl.searchParams.set('fields', 'html_overview,html_detail,visible_date,podlove_players,cover_image_poster_url,cover_alt_text');
             wagtailApiUrl.searchParams.set('limit', itemsPerPage.toString());
             wagtailApiUrl.searchParams.set('order', '-visible_date');
             wagtailApiUrl.searchParams.set('use_post_filter', 'true');
-            facetCountsApiUrl = new URL(config.apiFacetCountsUrl.toString());
             const { page, ...filters } = query;
             // Empty ordering uses the configured descending default.
             if (!filters.order) delete filters.order;
             const params = { ...filters, offset: String((Number(page) - 1) * itemsPerPage) };
             setUrlSearchParams(wagtailApiUrl, params);
-            setUrlSearchParams(facetCountsApiUrl, params);
         };
 
         const fetchData = async (invalidateCache: boolean = false) => {
@@ -136,7 +147,9 @@ export default {
             try {
                 const dataStore = useDataStore();
                 const [blogResult, facetResult, posts] = await Promise.all([
-                    dataStore.fetchJson(blogUrl, invalidateCache, owner.signal), dataStore.fetchJson(facetUrl, invalidateCache, owner.signal), dataStore.fetchJson(postUrl, invalidateCache, owner.signal)
+                    dataStore.fetchJson(blogUrl, invalidateCache, owner.signal),
+                    dataStore.fetchJson(facetUrl, invalidateCache, owner.signal).catch(() => null),
+                    dataStore.fetchJson(postUrl, invalidateCache, owner.signal),
                 ]);
                 if (id !== requestId) return;
                 const meta = posts.meta;
@@ -148,7 +161,7 @@ export default {
                 blog.value = blogResult;
                 setBlogTitle(blogResult.title);
                 setPageTitle();
-                facetCounts.value = (facetResult.facet_counts || {}) as FacetCounts;
+                if (facetResult) facetCounts.value = (facetResult.facet_counts || {}) as FacetCounts;
                 postsFromApi.value = posts as unknown as PostsFromApi;
                 hasLoaded.value = true;
             } catch (cause) {
@@ -165,16 +178,32 @@ export default {
             }
         };
 
-        const handleSubmitFilterForm = async (data: Form) => {
+        const handleSubmitFilterForm = (data: Form) => {
             // Empty values are the defaults: keep them out of the address.
             const query: Record<string, string> = {};
             for (const [key, value] of Object.entries({ ...data, page: 1 })) {
                 if (value !== '' && value !== null && value !== undefined) query[key] = String(value);
             }
-            await router.push({ query: query as LocationQueryRaw });
+            return router.push({ query: query as LocationQueryRaw });
+        };
+        const activeFilters = ref<HTMLElement>();
+        const summaryStatus = ref<HTMLElement>();
+        const retryButton = ref<HTMLButtonElement>();
+        const activeChips = computed(() => filterChips(form.value, facetCounts.value, document.documentElement.lang || undefined));
+        let listRequest: Promise<void>;
+        const restoreFilterFocus = async (index?: number) => {
+            const request = listRequest;
+            await request;
+            if (request !== listRequest || document.activeElement !== document.body) return;
+            const nextControl = index === undefined ? undefined : activeFilters.value?.querySelectorAll('button')[index];
+            const target = nextControl ?? summaryStatus.value ?? retryButton.value;
+            target?.focus();
+        };
+        const removeFilter = async (updates: Partial<Form>, index: number) => {
+            if (!await handleSubmitFilterForm({ ...form.value, ...updates })) await restoreFilterFocus(index);
         };
         const clearFilters = async () => {
-            await router.push({ query: {} });
+            if (!await router.push({ query: {} })) await restoreFilterFocus();
         };
         const changePage = async (delta: number) => {
             await router.push({ query: { ...route.query, page: Math.max(1, currentPage.value + delta) } });
@@ -184,7 +213,7 @@ export default {
             return Math.ceil(postsFromApi.value.meta.total_count / itemsPerPage);
         });
 
-        const isFiltered = computed(() => filterKeys.some((key) => normalizedQuery.value[key] !== ''));
+        const isFiltered = computed(() => activeChips.value.length > 0);
         const summary = computed(() => {
             const count = postsFromApi.value.meta.total_count;
             const noun = count === 1 ? 'post' : 'posts';
@@ -195,12 +224,8 @@ export default {
         let initialLoad = true;
         watch(() => JSON.stringify(normalizedQuery.value), () => {
             applyQuery();
-            if (initialLoad) {
-                initialLoad = false;
-                void fetchData();
-            } else {
-                void withViewTransition(fetchData);
-            }
+            listRequest = initialLoad ? fetchData() : withViewTransition(fetchData);
+            initialLoad = false;
         }, { immediate: true });
 
         return {
@@ -213,9 +238,15 @@ export default {
             blog,
             postsFromApi,
             facetCounts,
+            dateRangeEnabled,
             form,
             handleSubmitFilterForm,
             clearFilters,
+            removeFilter,
+            activeFilters,
+            activeChips,
+            summaryStatus,
+            retryButton,
             isFiltered,
             summary,
             changePage

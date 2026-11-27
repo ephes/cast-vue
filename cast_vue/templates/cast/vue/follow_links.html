@@ -1,0 +1,22 @@
+{% load i18n %}
+
+{% if follow_links.feed_detail %}
+  <a href="{{ follow_links.feed_detail }}">{% translate "Feeds" %}</a>
+{% elif follow_links.rss %}
+  <a href="{{ follow_links.rss }}">{% translate "RSS feed" %}</a>
+{% endif %}
+{% if follow_links.mastodon %}
+  <a href="{{ follow_links.mastodon }}" rel="me">Mastodon</a>
+{% endif %}
+{% if follow_links.github %}
+  <a href="{{ follow_links.github }}">GitHub</a>
+{% endif %}
+{% if follow_links.bluesky %}
+  <a href="{{ follow_links.bluesky }}">Bluesky</a>
+{% endif %}
+{% if follow_links.linkedin %}
+  <a href="{{ follow_links.linkedin }}">LinkedIn</a>
+{% endif %}
+{% if follow_links.email %}
+  <a href="{{ follow_links.email }}">{% translate "Email" %}</a>
+{% endif %}

@@ -1,18 +1,20 @@
-{% load static %}
-{% load django_vite %}
+{% load i18n wagtailcore_tags %}
+{% load django_vite cast_vue_filters %}
+{% wagtail_site as cv_site %}
+{% cast_vue_date_range_enabled as cv_date_range_enabled %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:"en" }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <title>{% block title %}{% if page.title %}{{ page.seo_title|default:page.title }}{% if blog.title and blog.title != page.title %} · {{ blog.title }}{% endif %}{% else %}{{ blog.title }}{% endif %}{% endblock title %}</title>
+    <title>{% block title %}{% if page.title %}{{ page.seo_title|default:page.title }}{% if blog.title and blog.title != page.title %} · {{ blog.title }}{% endif %}{% else %}{% firstof blog.title cv_site.site_name _("Home") %}{% endif %}{% endblock title %}</title>
     {% block meta %}
       {% if page.search_description %}<meta name="description" content="{{ page.search_description }}">{% endif %}
     {% endblock meta %}
 
     <!-- Try to set all vue configuration values in one go / script tag -->
-    <script id="vue-configuration"
+    <script id="vue-configuration" data-date-range-enabled="{{ cv_date_range_enabled|yesno:'true,false' }}"
             {% block vuejs-data %}
               data-blog-url="{{ blog.url }}" {# Used for vue router base url #}
               data-csrf-token="{{ csrf_token }}" {# Used for posting comments #}
@@ -38,9 +40,40 @@
   </head>
   <body>
     {% block main %}
-      {# The Vue app replaces this content; pages without blog data (errors) keep it. #}
-      <div id="app"><div class="cv-static">{% block content %}{% endblock content %}</div></div>
+      <div class="cv-app">
+        <a class="cv-skip" href="#cv-main">{% translate "Skip to content" %}</a>
+        <header class="cv-header">
+          <div class="cv-container cv-header__inner">
+            <a class="cv-brand" href="{{ blog.url|default:'/' }}">
+              <span class="cv-brand__mark" aria-hidden="true"></span>
+              <span class="cv-brand__name">{% firstof blog.title cv_site.site_name _("Home") %}</span>
+            </a>
+            <div data-cv-color-scheme></div>
+          </div>
+        </header>
+        <main id="cv-main" class="cv-main" tabindex="-1">
+          <div class="cv-container">
+            <div class="cv-static cv-prose">{% block content %}{% endblock content %}</div>
+          </div>
+        </main>
+        <footer class="cv-footer">
+          <div class="cv-container cv-footer__inner">
+            {% block navigation %}
+              <nav class="cv-footer__links" aria-label="{% translate 'Site links' %}">
+                {% for url, label in root_nav_links %}
+                  {% if url %}<a href="{{ url }}">{{ label }}</a>{% endif %}
+                {% endfor %}
+                {% if follow_links %}
+                  {% include "./follow_links.html" %}
+                {% elif default_follow_links %}
+                  {% include "./follow_links.html" with follow_links=default_follow_links %}
+                {% endif %}
+                <a href="{% url 'cast:select-theme' %}">{% translate "Select theme" %}</a>
+              </nav>
+            {% endblock navigation %}
+          </div>
+        </footer>
+      </div>
     {% endblock main %}
-    <noscript><p class="cv-static">This theme needs JavaScript to show its content.</p></noscript>
   </body>
 </html>

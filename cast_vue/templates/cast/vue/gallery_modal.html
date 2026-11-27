@@ -1,0 +1,66 @@
+{% load i18n %}
+<div
+  class="cv-gallery-fragment cast-gallery-modal-content"
+  role="dialog"
+  aria-label="{% translate 'Image gallery' %}"
+  aria-live="polite"
+  data-hx-on-click="event.stopPropagation()"
+>
+  <button
+    class="cv-icon-button cast-gallery-modal-close"
+    type="button"
+    aria-label="{% translate 'Close gallery' %}"
+    data-hx-on-click="this.closest('.cast-gallery-modal').innerHTML=''"
+  >
+    &times;
+  </button>
+  <div class="cast-gallery-modal-body">
+    <a class="cast-gallery-modal-link" href="{{ current_image.modal.src.jpeg }}">
+      <picture class="cast-gallery-modal-picture">
+        <source
+          class="cast-gallery-modal-source"
+          srcset="{{ current_image.modal.srcset.avif }}"
+          sizes="{{ current_image.modal.sizes }}"
+          type="image/avif"
+        >
+        <img
+          class="cast-gallery-modal-image"
+          alt="{{ current_image.default_alt_text }}"
+          src="{{ current_image.modal.src.jpeg }}"
+          srcset="{{ current_image.modal.srcset.jpeg }}"
+          sizes="{{ current_image.modal.sizes }}"
+        >
+      </picture>
+    </a>
+  </div>
+  <nav class="cast-gallery-modal-controls" aria-label="{% translate 'Gallery navigation' %}">
+    {% if prev_image %}
+      <a
+        class="cv-button cv-button--small cast-gallery-modal-prev"
+        href="{{ prev_image.modal.src.jpeg }}"
+        data-hx-get="{% url 'cast:gallery-modal' template_base_dir=template_base_dir %}?image_pks={{ image_pks }}&current_image_index={{ prev_image.gallery_index }}&block_id={{ block_id }}&gallery_token={{ gallery_token|urlencode }}"
+        data-hx-trigger="click, keyup[key=='ArrowLeft'] from:#imageGalleryModal-{{ block_id }}"
+        data-hx-target="#imageGalleryModal-{{ block_id }}"
+        data-hx-swap="innerHTML"
+      >
+        {% translate "Previous" %}
+      </a>
+    {% else %}
+      <span class="cv-button cv-button--small cast-gallery-modal-prev" aria-disabled="true">{% translate "Previous" %}</span>
+    {% endif %}
+    {% if next_image %}
+      <a
+        class="cv-button cv-button--small cast-gallery-modal-next"
+        href="{{ next_image.modal.src.jpeg }}"
+        data-hx-get="{% url 'cast:gallery-modal' template_base_dir=template_base_dir %}?image_pks={{ image_pks }}&current_image_index={{ next_image.gallery_index }}&block_id={{ block_id }}&gallery_token={{ gallery_token|urlencode }}"
+        data-hx-trigger="click, keyup[key=='ArrowRight'] from:#imageGalleryModal-{{ block_id }}"
+        data-hx-target="#imageGalleryModal-{{ block_id }}"
+        data-hx-swap="innerHTML"
+      >
+        {% translate "Next" %}
+      </a>
+    {% else %}
+      <span class="cv-button cv-button--small cast-gallery-modal-next" aria-disabled="true">{% translate "Next" %}</span>
+    {% endif %}
+  </nav>
+</div>

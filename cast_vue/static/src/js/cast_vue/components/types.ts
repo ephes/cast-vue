@@ -119,7 +119,7 @@ export interface ArticleData {
   articleAuthor: string;
 }
 
-interface Facet {
+export interface Facet {
   slug: string;
   name: string;
   count: number;

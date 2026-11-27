@@ -19,24 +19,20 @@ test.each(['success', 'error'])('obsolete %s cannot replace the latest posts, fa
   await flushPromises();
   await router.push('/?search=new'); await flushPromises();
   const ready = vi.fn(); window.addEventListener(CONTENT_READY_EVENT, ready);
-  // Each load starts with the blog. Supply results for both generations; the
-  // remaining facet/post requests may be sequential in the original code.
-  for (let generation = 0; generation < 2; generation++) {
-    const blogCalls = calls.filter(call => call.url.pathname === '/blog');
-    blogCalls[generation].task.resolve({ title: generation ? 'new blog' : 'old blog' });
-  }
-  await flushPromises();
-  function finish(name: string, fail = false) {
-    for (const call of calls.filter(call => call.url.pathname !== '/blog' && (call.url.searchParams.get('search') === 'new') === (name === 'new'))) {
-      if (fail) call.task.reject(new Error('obsolete failure'));
-      else call.task.resolve(call.url.pathname === '/posts' ? { items: [{ id: 1, title: name, meta: { slug: name } }], meta: { total_count: 1 } } : { facet_counts: { tag_facets: [{ slug: name, name, count: 1 }] } });
+  function finish(generation: number, name: string, fail = false) {
+    for (const path of ['/blog', '/facets', '/posts']) {
+      const { task } = calls.filter((call) => call.url.pathname === path)[generation];
+      if (fail) task.reject(new Error('obsolete failure'));
+      else if (path === '/blog') task.resolve({ title: `${name} blog` });
+      else if (path === '/facets') task.resolve({ facet_counts: { tag_facets: [{ slug: name, name, count: 1 }] } });
+      else task.resolve({ items: [{ id: 1, title: name, meta: { slug: name } }], meta: { total_count: 1 } });
     }
   }
-  finish('new'); await flushPromises(); finish('new'); await flushPromises();
+  finish(1, 'new'); await flushPromises();
   expect(wrapper.text()).toContain('new blog new');
   expect(wrapper.findComponent(FilterForm).props('facetCounts')!.tag_facets[0].name).toBe('new');
   const readyCount = ready.mock.calls.length;
-  finish('old', outcome === 'error'); await flushPromises(); finish('old', outcome === 'error'); await flushPromises();
+  finish(0, 'old', outcome === 'error'); await flushPromises();
   expect(wrapper.text()).toContain('new blog new');
   expect(wrapper.findComponent(FilterForm).props('facetCounts')!.tag_facets[0].name).toBe('new');
   expect(wrapper.find('[role="alert"]').exists()).toBe(false);
