@@ -16,7 +16,7 @@ import { CONTENT_READY_EVENT, installRouteTransitions } from "./helpers/viewTran
 import { initColorScheme } from "./helpers/colorScheme";
 import { initFeedCopy } from "./helpers/feedCopy";
 
-import ColorSchemeButton from "./components/ColorSchemeButton.vue";
+import AppearanceMenu from "./components/AppearanceMenu.vue";
 
 import App from './App.vue';
 
@@ -98,5 +98,4 @@ if (mountPoint) {
         console.error("cast-vue: invalid configuration", configError);
     }
 }
-const switchMount = document.querySelector("[data-cv-color-scheme]");
-if (switchMount) createApp(ColorSchemeButton).mount(switchMount);
+document.querySelectorAll("[data-cv-color-scheme]").forEach((mount) => createApp(AppearanceMenu).mount(mount));

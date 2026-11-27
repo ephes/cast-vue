@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Replace the header colour-scheme cycle with an Appearance menu for Light, Dark, and System on Vue and Django-rendered pages. Share the saved preference with cast-react and clear both themes' legacy keys on any selection. The inline script applies the saved choice before styles load and renders Django 6's CSP nonce even when the script is its first consumer.
+- Keep closed gallery dialogs in rendered post bodies from covering the page, and scope the Vue image viewer styles to its own dialog.
 - Fix Vue links and navigation when Wagtail supplies an absolute same-origin blog or styleguide URL (multi-site installs); links no longer start with `/https://`.
 - Add Subscribe links to the Vue and Django headers for public blogs, podcast app links on the archive and episode pages, and configured follow links in the Vue footer. Standalone pages can supply a feed-page URL. The subscribe page recommends the first available format in MP3, M4A, OGA, Opus order and offers RSS, Atom and RSS copy controls for formats with published, public episode audio, alongside separate blog feeds.
 - Give the sort and theme selects inset chevrons and shared pill styling, refine the archive and filter controls, and give the sticky header a solid background. Stack the footer on phones and offer "Keep this theme" to save Vue from its preview. Preserve focus while saving a theme and make the "Current" marker accessible on the responsive theme selection page. Keep the preview active while sorting or filtering and use the saved theme after switching.

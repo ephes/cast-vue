@@ -11,7 +11,7 @@
           <a v-if="subscribe" class="cv-header__subscribe cv-button" :href="subscribe.feedPageUrl">
             <cv-icon name="rss" /> Subscribe
           </a>
-          <color-scheme-button />
+          <appearance-menu />
         </div>
       </div>
     </header>
@@ -40,7 +40,7 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import config from './config';
-import ColorSchemeButton from './components/ColorSchemeButton.vue';
+import AppearanceMenu from './components/AppearanceMenu.vue';
 import CvIcon from './components/CvIcon.vue';
 import PlayerBar from './components/PlayerBar.vue';
 import SelectTheme from './components/SelectTheme.vue';

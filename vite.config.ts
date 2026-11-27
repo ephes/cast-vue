@@ -7,6 +7,7 @@ const vitestConfig: VitestUserConfigInterface = {
   test: {
     globals: true,
     environment: "jsdom",
+    css: { include: [/\.css\?raw$/] },
   },
 }
 

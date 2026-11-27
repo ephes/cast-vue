@@ -59,11 +59,6 @@ top of `cast_vue/static/src/css/cast_vue/styles.css` (`--cv-*`); a site can
 restyle the theme by overriding them in its own stylesheet, for example
 `:root { --cv-accent: #0b6e4f; }`.
 
-- **Light and dark:** the theme follows the device setting. The button in the
-  header switches between system, light and dark; the choice is kept in
-  `localStorage` (`cast-vue:color-scheme`) and applied as `data-theme` on
-  `<html>`. The sticky header has a solid background and native form controls
-  follow the active colour scheme.
 - **Layout:** one reading column with a sticky filter column on wide screens.
   On small screens, search stays visible and the other controls open from the
   "Filters" button. Removable chips above the posts show the applied filters
@@ -131,6 +126,25 @@ Django embeds the subscription data as JSON in the SPA template, so rendering
 the links needs no API request. The SPA's podcast RSS URL uses the same format
 preference and defaults to MP3 when no published audio format is available.
 Sites can still fill the feed template's `podlove_subscribe_button` block.
+
+### Appearance
+
+Open the header's **Appearance** menu and choose **Light**, **Dark**, or
+**System**. System is the default and follows changes to the device setting as
+they happen. The button shows the current choice. Use the arrow keys to move
+through the menu, Enter or Space to choose, and Escape to return to the button.
+The same menu is available on Vue and Django-rendered pages with the theme header.
+
+Light and Dark are saved on the current origin under `cast-color-scheme`, the
+key shared with cast-react. Choosing System clears the preference. Vue reads
+the old `cast-vue:color-scheme` key when the shared key is absent. Choosing any
+option clears both legacy keys, `cast-vue:color-scheme` and
+`cast-react-color-scheme`. The base template applies a saved
+choice as `data-theme` on `<html>` before stylesheets load. Open tabs stay in
+sync, and the choice lasts for the current page when storage is unavailable.
+When Django 6 provides `csp_nonce` in the template context, the inline appearance
+script renders it even as the first consumer, so Django can include the same
+nonce in the Content-Security-Policy response header.
 
 ## Route transitions
 

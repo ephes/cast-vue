@@ -1,5 +1,6 @@
 import { afterEach, describe, test, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
+import styles from "../css/cast_vue/styles.css?raw";
 
 vi.mock("@/config", () => ({
   default: {
@@ -100,13 +101,13 @@ describe("PostItem.vue rendered rich text", () => {
     await wrapper.find("#gallery-image-1").trigger("click");
     expect(wrapper.find("#modal-image").attributes("src")).toBe("/full-a.jpg");
     expect(wrapper.find("#modal-image").attributes("srcset")).toBe("/full-a.jpg 1200w");
-    expect(wrapper.find(".modal source").attributes("src")).toBe("/full-a.avif");
-    expect(wrapper.find(".modal source").attributes("srcset")).toBe("/full-a.avif 1200w");
+    expect(wrapper.find(".cv-lightbox source").attributes("src")).toBe("/full-a.avif");
+    expect(wrapper.find(".cv-lightbox source").attributes("srcset")).toBe("/full-a.avif 1200w");
     await wrapper.find("#gallery-image-2").trigger("click");
     expect(wrapper.find("#modal-image").attributes("src")).toBeUndefined();
     expect(wrapper.find("#modal-image").attributes("srcset")).toBeUndefined();
-    expect(wrapper.find(".modal source").attributes("src")).toBeUndefined();
-    expect(wrapper.find(".modal source").attributes("srcset")).toBeUndefined();
+    expect(wrapper.find(".cv-lightbox source").attributes("src")).toBeUndefined();
+    expect(wrapper.find(".cv-lightbox source").attributes("srcset")).toBeUndefined();
   });
 });
 
@@ -134,6 +135,38 @@ describe("PostItem.vue players, cover and image viewer", () => {
     expect(mountPost(true, { cover_image_poster_url: "/media/cover.webp", cover_alt_text: "Cover" }).find(".cv-post__cover").attributes()).toMatchObject({ src: "http://localhost:3000/media/cover.webp", alt: "Cover" });
     expect(mountPost(true, { cover_image_poster_url: "javascript:alert(1)" }).find(".cv-post__cover").exists()).toBe(false);
     expect(mountPost(true, { cover_image_poster_url: null }).find(".cv-post__cover").exists()).toBe(false);
+  });
+
+  test("closed server-rendered gallery modals stay hidden while thumbnails open the Vue lightbox", async () => {
+    const stylesheet = document.head.appendChild(document.createElement('style'));
+    stylesheet.textContent = styles;
+    try {
+      const serverModals = `
+        <div tabindex="-1" role="dialog" class="modal fade" aria-hidden="true" id="imageGalleryModal-first"></div>
+        <div tabindex="-1" role="dialog" class="modal fade" id="imageGalleryModal-second"></div>
+        <div role="dialog" class="modal fade show" aria-modal="true" id="imageGalleryModal-open">
+          <div class="modal-content">Server gallery</div>
+        </div>`;
+      const wrapper = mountPost(true, { html_detail: gallery + serverModals });
+      for (const id of ['first', 'second']) {
+        const modal = wrapper.get(`#imageGalleryModal-${id}`).element;
+        expect(getComputedStyle(modal).display).toBe('none');
+        expect(getComputedStyle(modal).pointerEvents).toBe('none');
+      }
+      const open = wrapper.get('#imageGalleryModal-open').element;
+      expect(getComputedStyle(open).display).not.toBe('none');
+      expect(getComputedStyle(open).position).not.toBe('fixed');
+      expect(getComputedStyle(wrapper.get('.modal-content').element).cursor).not.toBe('zoom-in');
+      expect(wrapper.find('.cv-lightbox').exists()).toBe(false);
+
+      await wrapper.get('#gallery-image-1').trigger('click');
+      expect(getComputedStyle(wrapper.get('.cv-lightbox').element).position).toBe('fixed');
+      expect(wrapper.get('.cv-lightbox img').attributes('src')).toBe('/full-a.jpg');
+      await wrapper.get('[aria-label="Close image viewer"]').trigger('click');
+      expect(wrapper.find('.cv-lightbox').exists()).toBe(false);
+    } finally {
+      stylesheet.remove();
+    }
   });
 
   test("the image viewer works from the keyboard and returns focus", async () => {

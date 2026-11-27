@@ -9,6 +9,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
+    {# Keep this read in sync with helpers/colorScheme.ts. #}
+    <script{% if csp_nonce is not None %} nonce="{{ csp_nonce }}"{% endif %}>
+      try {
+        const saved = localStorage.getItem('cast-color-scheme');
+        const scheme = saved === null ? localStorage.getItem('cast-vue:color-scheme') : saved;
+        if (scheme === 'light' || scheme === 'dark') document.documentElement.dataset.theme = scheme;
+      } catch {}
+    </script>
     <title>{% block title %}{% if page.title %}{{ page.seo_title|default:page.title }}{% if blog.title and blog.title != page.title %} · {{ blog.title }}{% endif %}{% else %}{% firstof blog.title cv_site.site_name _("Home") %}{% endif %}{% endblock title %}</title>
     {% block meta %}
       {% if page.search_description %}<meta name="description" content="{{ page.search_description }}">{% endif %}

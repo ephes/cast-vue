@@ -1,6 +1,7 @@
 import { flushPromises } from '@vue/test-utils';
 import type { App } from 'vue';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { memoryStorage } from './fixtures';
 
 vi.mock('@/components/Styleguide.vue', () => ({ default: { template: '<p>Styleguide</p>' } }));
 
@@ -19,6 +20,7 @@ const blogConfig = `
 
 beforeEach(() => {
   vi.resetModules();
+  vi.stubGlobal('localStorage', memoryStorage());
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   mocks.fetchJson.mockReset().mockImplementation(async (url: URL) => {
     switch (url.pathname) {
@@ -44,11 +46,13 @@ afterEach(() => {
   document.querySelectorAll<Element & { __vue_app__: App }>('[data-v-app]')
     .forEach((element) => element.__vue_app__.unmount());
   document.body.replaceChildren();
+  delete document.documentElement.dataset.theme;
   window.history.replaceState(null, '', '/');
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
-test.each([false, true])('preserves an unrelated #app and mounts the colour scheme switch with blog config: %s', async (hasBlog) => {
+test.each([false, true])('preserves an unrelated #app and mounts the Django Appearance menu with blog config: %s', async (hasBlog) => {
   document.body.innerHTML = `
     <script id="vue-configuration" ${hasBlog ? blogConfig : ''}></script>
     <div data-cv-color-scheme></div>
@@ -56,7 +60,48 @@ test.each([false, true])('preserves an unrelated #app and mounts the colour sche
   `;
   await import('@/main');
   expect(document.querySelector('#app')?.textContent).toBe('Flat page content');
-  expect(document.querySelector('[data-cv-color-scheme] button')?.getAttribute('aria-label')).toContain('Colour scheme');
+  const mount = document.querySelector('[data-cv-color-scheme]')!;
+  const trigger = mount.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')!;
+  expect(trigger.getAttribute('aria-label')).toBe('Appearance: System');
+  trigger.click();
+  await flushPromises();
+  expect(mount.querySelector('[role="menu"]')?.hasAttribute('hidden')).toBe(false);
+  expect(document.activeElement?.textContent?.trim()).toBe('System');
+  mount.querySelector<HTMLButtonElement>('[role="menuitemradio"]')!.click();
+  await flushPromises();
+  expect(trigger.getAttribute('aria-label')).toBe('Appearance: Light');
+  expect(document.documentElement.dataset.theme).toBe('light');
+  expect(window.localStorage.getItem('cast-color-scheme')).toBe('light');
+  expect(document.activeElement).toBe(trigger);
+});
+
+test('SPA and Django Appearance menus share the setting and only one opens at a time', async () => {
+  window.history.replaceState(null, '', '/show/');
+  document.body.innerHTML = `
+    <script id="vue-configuration" ${blogConfig} data-blog-url="/show/"></script>
+    <div id="app" data-cv-spa></div>
+    <div data-cv-color-scheme></div>
+  `;
+  await import('@/main');
+  await flushPromises();
+
+  const [spa, django] = Array.from(document.querySelectorAll<HTMLButtonElement>('button[aria-haspopup="menu"]'));
+  const [spaMenu, djangoMenu] = [spa, django].map(button => document.getElementById(button.getAttribute('aria-controls')!)!);
+  expect(spaMenu).not.toBe(djangoMenu);
+  spa.click();
+  await flushPromises();
+  expect(spaMenu.hidden).toBe(false);
+  expect(djangoMenu.hidden).toBe(true);
+
+  django.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+  await flushPromises();
+  expect(spaMenu.hidden).toBe(true);
+  expect(djangoMenu.hidden).toBe(false);
+  djangoMenu.querySelectorAll('button')[1].click();
+  await flushPromises();
+  expect([spa, django].map(button => button.getAttribute('aria-label'))).toEqual(['Appearance: Dark', 'Appearance: Dark']);
+  expect(spaMenu.querySelector('[aria-checked="true"]')?.textContent?.trim()).toBe('Dark');
+  expect(djangoMenu.hidden).toBe(true);
 });
 
 test.each(['/show/', '/blogs/ephes_blog/'])('uses the blog pathname %s in real router links', async (base) => {

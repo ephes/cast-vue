@@ -83,20 +83,20 @@
       v-if="isModalOpen"
       id="modal-div"
       ref="modal"
-      class="modal"
+      class="cv-lightbox"
       role="dialog"
       aria-modal="true"
       aria-label="Image viewer"
       @click="handleModalClick"
       @keydown.tab="trapFocus"
     >
-      <button type="button" class="close modal__button modal__button--close" aria-label="Close image viewer" @click.stop="closeModal">
+      <button type="button" class="cv-lightbox__button cv-lightbox__button--close" aria-label="Close image viewer" @click.stop="closeModal">
         <cv-icon name="close" />
       </button>
-      <button v-if="modalImage.prev" type="button" class="modal__button modal__button--prev" aria-label="Previous image" @click.stop="showNeighbour('prev')">
+      <button v-if="modalImage.prev" type="button" class="cv-lightbox__button cv-lightbox__button--prev" aria-label="Previous image" @click.stop="showNeighbour('prev')">
         <cv-icon name="left" />
       </button>
-      <button v-if="modalImage.next" type="button" class="modal__button modal__button--next" aria-label="Next image" @click.stop="showNeighbour('next')">
+      <button v-if="modalImage.next" type="button" class="cv-lightbox__button cv-lightbox__button--next" aria-label="Next image" @click.stop="showNeighbour('next')">
         <cv-icon name="right" />
       </button>
       <picture>
@@ -108,7 +108,7 @@
         />
         <img
           id="modal-image"
-          class="modal-content"
+          class="cv-lightbox__image"
           :src="modalImage.src"
           :srcset="modalImage.srcset"
           :sizes="modalImage.sizes"
@@ -118,7 +118,7 @@
           title="Open the full-sized image in a new tab"
         />
       </picture>
-      <p v-if="modalImage.alt" class="modal__caption">{{ modalImage.alt }}</p>
+      <p v-if="modalImage.alt" class="cv-lightbox__caption">{{ modalImage.alt }}</p>
     </div>
   </article>
 </template>
