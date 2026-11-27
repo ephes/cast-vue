@@ -309,19 +309,26 @@ textarea {
 }
 
 .cv-footer {
-  border-top: 1px solid var(--cv-line);
-  background: var(--cv-surface);
   color: var(--cv-muted);
   font-size: 0.875rem;
 }
 
 .cv-footer__inner {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem 1.5rem;
   padding-block: 1.25rem;
+}
+
+.cv-footer__inner::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--cv-gutter);
+  border-block-start: 1px solid var(--cv-line);
 }
 
 .cv-footer__title {

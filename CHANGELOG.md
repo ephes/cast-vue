@@ -12,6 +12,7 @@
 - Post page: cover, title and player header, readable rich text, code blocks readable in both colour schemes, a keyboard-operable image viewer with previous/next, and restyled comments and comment forms with labelled fields.
 - Navigating to another page scrolls to the top; Back and Forward restore the previous scroll position.
 - Give Django-rendered pages a shared header, colour-scheme control, reading column and footer. Mount the blog app on elements marked by `spa.html`. Style the theme selector and error pages, and add Vue templates for feed details, standalone transcripts and the server-rendered gallery fragment. The base retains page titles and `title`/`meta`/`head` blocks. `post_body.html` no longer emits unused helper elements.
+- Blend the footer into the page background in both colour schemes, with a thin divider aligned to the content column.
 - Require django-cast 0.2.55 or newer (post cover image URL and `render_for_feed` in the API) and, like django-cast, Python 3.11 or newer.
 - Remove the client-side DOMPurify rich-text sanitizer and its `dompurify` dependency; API HTML is rendered as delivered again.
 - Fence shared JSON cache publication against responses older than a refresh.
