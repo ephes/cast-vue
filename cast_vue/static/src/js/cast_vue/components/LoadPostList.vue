@@ -38,7 +38,7 @@
                   <ul class="cv-chips" role="list">
                     <li v-for="(chip, index) in activeChips" :key="chip.label">
                       <button type="button" class="cv-chip" :aria-label="`Remove filter: ${chip.label}`" @click="removeFilter(chip.clear, index)">
-                        {{ chip.label }} <span aria-hidden="true">×</span>
+                        {{ chip.label }} <cv-icon name="close" />
                       </button>
                     </li>
                   </ul>
@@ -64,11 +64,11 @@
 import config from '../config';
 import { FacetCounts, PostsFromApi } from './types';
 import { ref, watch, computed, Ref, nextTick, onBeforeUnmount } from 'vue';
-import { LocationQueryRaw, useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import CvIcon from './CvIcon.vue';
 import FilterForm from './FilterForm.vue';
 import PostList from './PostList.vue';
 import PaginationButtons from './PaginationButtons.vue';
-import SelectTheme from './SelectTheme.vue';
 import { useDataStore } from '../stores/dataStore';
 import { setUrlSearchParams } from '../helpers/url';
 import { contentReadyToken, notifyContentReady, withViewTransition } from '../helpers/viewTransitions';
@@ -79,10 +79,10 @@ import { filterChips } from '../helpers/filters';
 
 export default {
     components: {
+        CvIcon,
         FilterForm,
         PostList,
         PaginationButtons,
-        SelectTheme,
     },
     setup() {
         const route = useRoute();
@@ -100,6 +100,10 @@ export default {
         const currentPage = ref(1);
         const itemsPerPage = config.paginationPageSize;
         const dateRangeEnabled = config.dateRangeEnabled;
+        const themePreview = computed(() => ({
+            theme: route.query.theme,
+            template_base_dir: route.query.template_base_dir,
+        }));
         const filterKeys = ['search', 'date_facets', 'category_facets', 'tag_facets', 'order'];
         if (dateRangeEnabled) filterKeys.push('date_after', 'date_before');
         const normalizedQuery = computed(() => {
@@ -184,7 +188,7 @@ export default {
             for (const [key, value] of Object.entries({ ...data, page: 1 })) {
                 if (value !== '' && value !== null && value !== undefined) query[key] = String(value);
             }
-            return router.push({ query: query as LocationQueryRaw });
+            return router.push({ query: { ...themePreview.value, ...query } });
         };
         const activeFilters = ref<HTMLElement>();
         const summaryStatus = ref<HTMLElement>();
@@ -203,7 +207,7 @@ export default {
             if (!await handleSubmitFilterForm({ ...form.value, ...updates })) await restoreFilterFocus(index);
         };
         const clearFilters = async () => {
-            if (!await router.push({ query: {} })) await restoreFilterFocus();
+            if (!await router.push({ query: themePreview.value })) await restoreFilterFocus();
         };
         const changePage = async (delta: number) => {
             await router.push({ query: { ...route.query, page: Math.max(1, currentPage.value + delta) } });

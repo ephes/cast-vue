@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="cv-icon-button"
+    class="cv-icon-button cv-color-scheme"
     :aria-label="`Colour scheme: ${colorScheme}. Switch to ${nextScheme}.`"
     :title="`Colour scheme: ${colorScheme}`"
     @click="setColorScheme(nextScheme)"

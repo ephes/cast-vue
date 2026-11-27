@@ -29,6 +29,17 @@
     </div>
 
     <div :id="panelId" class="cv-filters__panel" :hidden="!open">
+      <label class="cv-field">
+        <span class="cv-label">Sort by</span>
+        <span class="cv-select-wrap">
+          <select :value="order" name="order" id="id_o" class="cv-select" @change="changeOrder">
+            <option value="">Newest first</option>
+            <option value="visible_date">Oldest first</option>
+            <option v-if="order && order !== 'visible_date'" :value="order">{{ orderLabel(order) }}</option>
+          </select>
+          <cv-icon name="down" />
+        </span>
+      </label>
       <facet-options
         label="Categories"
         find-label="Find a category"
@@ -46,7 +57,7 @@
       />
       <fieldset v-if="years.length || dateRangeEnabled">
         <legend class="cv-label">Archive</legend>
-        <ul v-if="years.length" ref="yearList" class="cv-facet-list cv-facet-list--columns cv-archive__years" role="list">
+        <ul v-if="years.length" ref="yearList" class="cv-facet-list cv-archive__years" role="list">
           <li v-for="entry in years" :key="entry.year">
             <button
               type="button"
@@ -63,7 +74,7 @@
         </ul>
         <div v-if="activeMonths?.length" :id="monthsId" class="cv-archive__months">
           <p class="cv-label">Months in {{ activeYear }}</p>
-          <ul class="cv-facet-list cv-facet-list--columns" :aria-label="`Months in ${activeYear}`" role="list">
+          <ul class="cv-facet-list" :aria-label="`Months in ${activeYear}`" role="list">
             <li v-for="month in activeMonths" :key="month.slug">
               <button
                 type="button"
@@ -91,14 +102,6 @@
           </form>
         </details>
       </fieldset>
-      <label class="cv-field">
-        <span class="cv-label">Sort by</span>
-        <select :value="order" name="order" id="id_o" class="cv-select" @change="changeOrder">
-          <option value="">Newest first</option>
-          <option value="visible_date">Oldest first</option>
-          <option v-if="order && order !== 'visible_date'" :value="order">{{ orderLabel(order) }}</option>
-        </select>
-      </label>
     </div>
   </div>
 </template>

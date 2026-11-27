@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Give the sort and theme selects inset chevrons and shared pill styling, refine the archive and filter controls, and give the sticky header a solid background. Stack the footer on phones and offer "Keep this theme" to save Vue from its preview. Preserve focus while saving a theme and make the "Current" marker accessible on the responsive theme selection page. Keep the preview active while sorting or filtering and use the saved theme after switching.
 - Redesign the theme: own typography, spacing and colour tokens (`--cv-*`), light and dark colour schemes with a switch in the header, a sticky header, styled loading, error and empty states, and a responsive layout from phone to large desktop.
 - Replace the Podlove Web Player with the theme's own lightweight audio player: full player with chapters, searchable transcript, speed, skip and download on post pages, one play button per post in lists, and a player bar that keeps playing while browsing. `embed.5.js` is no longer loaded. Position and speed are remembered per browser.
 - Add cover images, linked titles, search, sort order and numbered pagination to the post list. Label custom sort orders with their query value. Removable filter chips stay available on desktop and phone when a request fails. Empty filter values no longer appear in the address.

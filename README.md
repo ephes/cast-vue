@@ -62,11 +62,18 @@ restyle the theme by overriding them in its own stylesheet, for example
 - **Light and dark:** the theme follows the device setting. The button in the
   header switches between system, light and dark; the choice is kept in
   `localStorage` (`cast-vue:color-scheme`) and applied as `data-theme` on
-  `<html>`.
+  `<html>`. The sticky header has a solid background and native form controls
+  follow the active colour scheme.
 - **Layout:** one reading column with a sticky filter column on wide screens.
   On small screens, search stays visible and the other controls open from the
   "Filters" button. Removable chips above the posts show the applied filters
   and provide a "Clear all" action at any width.
+- **Theme switching:** the footer's native "Site theme" select shows Vue when
+  it renders the page, including during a request-only preview. Use "Keep this
+  theme" to save Vue when the session or site default selects a different theme.
+  Choosing a theme saves it to the session and reloads the page with that
+  choice. The full-page selector aligns its choices to the site grid and marks
+  Vue as current when rendered in Vue.
 - **Filters:** the eight most-used tags appear first with counts. "Find a tag"
   ignores case and accents and shows up to twenty matches. Exact matches come
   first, then prefix matches, then other substring matches. Each group sorts
@@ -79,7 +86,9 @@ restyle the theme by overriding them in its own stylesheet, for example
   When the facet endpoint returns months and `date` is disabled, year controls
   expand or collapse those months. A new date selection replaces the previous
   one. Facet counts describe the full blog archive. If the facet endpoint fails,
-  the post list still shows posts and the available filters.
+  the post list still shows posts and the available filters. "Sort by" sits
+  above the facets and uses newest first by default. Sorting and filtering
+  keep a theme preview in the URL so the list can be reloaded in the same theme.
 - **States:** loading placeholders, error messages with Retry, and empty
   results are styled. Active filters can still be removed or cleared when
   a post list request fails. Clearing the last filter restores keyboard focus

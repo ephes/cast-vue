@@ -17,7 +17,7 @@
     </main>
     <footer class="cv-footer">
       <div class="cv-container cv-footer__inner">
-        <span>{{ blogTitle }}</span>
+        <span v-if="blogTitle" class="cv-footer__title">{{ blogTitle }}</span>
         <select-theme v-if="showThemeSelect"></select-theme>
       </div>
     </footer>

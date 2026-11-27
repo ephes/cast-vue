@@ -47,6 +47,25 @@ test('filter resets the post offset and keeps the facet catalog unfiltered', asy
   expect(urls[2].searchParams.get('offset')).toBe('0');
 });
 
+test('sort changes the post request while keeping the theme preview in the route', async () => {
+  const { wrapper, router } = await setupList('?theme=vue&page=3');
+  const sort = wrapper.get<HTMLSelectElement>('#id_o');
+  await sort.setValue('visible_date');
+  await flushPromises();
+
+  expect(router.currentRoute.value.query).toEqual({ theme: 'vue', order: 'visible_date', page: '1' });
+  let postUrl = mocks.fetchJson.mock.calls.at(-1)![0] as URL;
+  expect(postUrl.searchParams.get('order')).toBe('visible_date');
+  expect(postUrl.searchParams.has('theme')).toBe(false);
+
+  await wrapper.get('.cv-active-filters .cv-button').trigger('click');
+  await flushPromises();
+  expect(router.currentRoute.value.query).toEqual({ theme: 'vue' });
+  postUrl = mocks.fetchJson.mock.calls.at(-1)![0] as URL;
+  expect(postUrl.searchParams.get('order')).toBe('-visible_date');
+  expect(sort.element.value).toBe('');
+});
+
 test('posts and available controls render when the facet counts request fails', async () => {
   const { wrapper } = await setupList('?tag_facets=django', { dateRangeEnabled: false, failFacetRequest: true });
   expect(wrapper.find('[role="alert"]').exists()).toBe(false);

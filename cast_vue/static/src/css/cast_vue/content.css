@@ -371,36 +371,87 @@
   min-height: 1.75rem;
 }
 
-.cv-static .cast-select-theme .list-unstyled {
+.cv-static:has(> .cast-select-theme) {
+  max-width: none;
+}
+
+.cv-static .cast-select-theme > .list-unstyled {
   display: grid;
-  gap: 0.65rem;
-  max-width: 26rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+  gap: 0.75rem;
   padding: 0;
-  margin-top: 1.5rem;
+  margin: clamp(1.25rem, 3vw, 2rem) 0 0;
   list-style: none;
 }
 
-.cast-select-theme .list-unstyled li {
+.cast-select-theme > .list-unstyled > li {
   margin: 0;
 }
 
-.cast-select-theme .btn {
+.cast-select-theme form {
+  height: 100%;
+}
+
+.cast-select-theme .btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   width: 100%;
-  min-height: 2.75rem;
-  padding: 0.65rem 1rem;
+  height: 100%;
+  min-height: 3.5rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--cv-control);
-  border-radius: var(--cv-radius-s);
+  border-radius: var(--cv-radius);
   background: var(--cv-surface);
   color: var(--cv-ink);
+  font-size: 1rem;
   font-weight: 600;
   text-align: start;
   cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 
-.cast-select-theme .btn:hover {
+.cast-select-theme .btn-primary::after {
+  content: "";
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-inline-end: 0.25rem;
+  border: solid var(--cv-muted);
+  border-width: 1.5px 1.5px 0 0;
+  transform: rotate(45deg);
+}
+
+.cast-select-theme .btn-primary:hover {
+  background: var(--cv-surface-2);
+  border-color: var(--cv-ink-2);
+}
+
+.cast-select-theme .btn-primary:active,
+.cast-select-theme input[name="template_base_dir"][value="vue"] ~ .btn-primary {
   background: var(--cv-accent-soft);
   border-color: var(--cv-accent);
   color: var(--cv-accent);
+}
+
+.cast-select-theme input[name="template_base_dir"][value="vue"] ~ .btn-primary:hover {
+  background: color-mix(in srgb, var(--cv-accent) 10%, var(--cv-accent-soft));
+}
+
+.cast-select-theme input[name="template_base_dir"][value="vue"] ~ .btn-primary::after {
+  content: "Current";
+  content: "✓ Current" / "Current";
+  width: auto;
+  height: auto;
+  margin-inline-end: 0;
+  padding: 0.15rem 0.55rem;
+  border: 0;
+  border-radius: var(--cv-radius-pill);
+  background: var(--cv-surface);
+  color: var(--cv-accent);
+  font-size: 0.8125rem;
+  transform: none;
 }
 
 .cv-transcript-page .cv-back {

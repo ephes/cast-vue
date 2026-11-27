@@ -573,8 +573,9 @@
 .cv-player__compact-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.25rem 1.1rem 0.25rem 0.25rem;
+  gap: 0.6rem;
+  padding-block: 0.25rem;
+  padding-inline: 0.25rem 1rem;
   border: 1px solid var(--cv-control);
   border-radius: var(--cv-radius-pill);
   background: var(--cv-surface);
@@ -583,11 +584,12 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, background-color 0.15s;
 }
 
 .cv-player__compact-button:hover {
   border-color: var(--cv-accent);
+  background: var(--cv-accent-soft);
 }
 
 .cv-player__compact-button:hover .cv-player__play {
