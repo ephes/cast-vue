@@ -49,6 +49,12 @@ function readSubscribeData() {
   }
 }
 
+function readRouterBase(value: string): string {
+  if (!/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value)) return value;
+  const url = new URL(value, window.location.origin);
+  return url.origin === window.location.origin && url.protocol === window.location.protocol ? url.pathname : "/";
+}
+
 function readConfiguration() {
   const {
     blogUrl = "/",
@@ -93,7 +99,7 @@ function readConfiguration() {
 
   const parsedApiFacetCountsUrl = new URL(apiFacetCountsUrl);
   const parsedPostCommentUrl = new URL(postCommentUrl);
-  const routerBase = pageType === "styleguide" && styleguideUrl ? styleguideUrl : blogUrl;
+  const routerBase = readRouterBase(pageType === "styleguide" && styleguideUrl ? styleguideUrl : blogUrl);
   const styleguideDataElement = document.getElementById("cast-vue-styleguide-data");
   let styleguideData = null;
   if (styleguideDataElement?.textContent) {
