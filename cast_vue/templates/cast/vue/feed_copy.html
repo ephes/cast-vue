@@ -1,0 +1,11 @@
+{% load cast_vue_filters %}
+{% cast_vue_absolute_link feed.rss_url as absolute_url %}
+{% if absolute_url %}
+  <input class="cv-input cv-feed-copy__url" type="text" value="{{ absolute_url }}"
+         aria-label="{{ feed.format_label }} RSS feed URL" spellcheck="false" readonly data-cv-copy-url{% if not show_url %} hidden{% endif %}>
+  <button class="cv-button cv-button--small cv-feed-copy__button" type="button" data-cv-copy-button hidden>
+    <span data-cv-copy-label>Copy</span><span class="cv-sr-only"> {{ feed.format_label }} RSS</span>
+  </button>
+  <span class="cv-feed-copy__status cv-sr-only" role="status" data-cv-copy-status
+        data-copied="Copied" data-selected="URL selected. Copy it using your device."></span>
+{% endif %}

@@ -7,7 +7,12 @@
           <span class="cv-brand__mark" aria-hidden="true"></span>
           <span class="cv-brand__name">{{ blogTitle || 'Home' }}</span>
         </router-link>
-        <color-scheme-button />
+        <div class="cv-header__actions">
+          <a v-if="subscribe" class="cv-header__subscribe cv-button" :href="subscribe.feedPageUrl">
+            <cv-icon name="rss" /> Subscribe
+          </a>
+          <color-scheme-button />
+        </div>
       </div>
     </header>
     <main id="cv-main" ref="main" class="cv-main" tabindex="-1">
@@ -17,7 +22,13 @@
     </main>
     <footer class="cv-footer">
       <div class="cv-container cv-footer__inner">
-        <span v-if="blogTitle" class="cv-footer__title">{{ blogTitle }}</span>
+        <div v-if="blogTitle || subscribe" class="cv-footer__site">
+          <span v-if="blogTitle" class="cv-footer__title">{{ blogTitle }}</span>
+          <nav v-if="subscribe" class="cv-footer__links" aria-label="Follow and subscribe">
+            <a :href="subscribe.feedPageUrl">Feeds</a>
+            <a v-for="link in subscribe.followLinks" :key="link.label" :href="link.url" :rel="link.rel">{{ link.label }}</a>
+          </nav>
+        </div>
         <select-theme v-if="showThemeSelect"></select-theme>
       </div>
     </footer>
@@ -30,6 +41,7 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import config from './config';
 import ColorSchemeButton from './components/ColorSchemeButton.vue';
+import CvIcon from './components/CvIcon.vue';
 import PlayerBar from './components/PlayerBar.vue';
 import SelectTheme from './components/SelectTheme.vue';
 import { useDataStore } from './stores/dataStore';
@@ -38,6 +50,7 @@ import { blogTitle, setBlogTitle } from './helpers/site';
 const router = useRouter();
 const main = ref<HTMLElement | null>(null);
 const showThemeSelect = config.pageType !== 'styleguide';
+const subscribe = config.subscribe;
 
 function getQueryParameters() {
   const searchParams = new URLSearchParams(window.location.search);

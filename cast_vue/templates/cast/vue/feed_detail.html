@@ -1,54 +1,72 @@
 {% extends "./base.html" %}
-{% load i18n %}
+{% load i18n wagtailcore_tags %}
 
-{% block title %}{% if is_podcast %}{% translate "Subscribe" %}{% else %}{% translate "Feeds" %}{% endif %} · {{ blog.title }}{% endblock title %}
+{% block title %}{% translate "Subscribe" %} · {{ blog.title }}{% endblock title %}
+{% block subscribe_current %} aria-current="page"{% endblock subscribe_current %}
 
 {% block content %}
-  <h1>{% if is_podcast %}{% translate "Subscribe" %}{% else %}{% translate "Feeds" %}{% endif %}</h1>
+  <header class="cv-feed-intro">
+    {% if is_podcast and blog.itunes_artwork.original %}
+      <img class="cv-feed-intro__cover" src="{{ blog.itunes_artwork.original.url }}" alt="" width="96" height="96" decoding="async">
+    {% endif %}
+    <div>
+      <h1>{% translate "Subscribe" %}</h1>
+      <p class="cv-feed-intro__title">{{ blog.title }}</p>
+      {% if blog.description %}<div class="cv-feed-intro__description">{{ blog.description|richtext }}</div>{% endif %}
+    </div>
+  </header>
 
   {% if is_podcast %}
-    {% if apple_podcasts_url or spotify_url or youtube_url %}
+    {% if cv_subscribe.platformLinks %}
       <section>
-        <h2>{% translate "Where to listen" %}</h2>
+        <h2>{% translate "Listen in your podcast app" %}</h2>
         <div class="cv-feed-links">
-          {% if apple_podcasts_url %}<a class="cv-button" href="{{ apple_podcasts_url }}">Apple Podcasts</a>{% endif %}
-          {% if spotify_url %}<a class="cv-button" href="{{ spotify_url }}">Spotify</a>{% endif %}
-          {% if youtube_url %}<a class="cv-button" href="{{ youtube_url }}">YouTube</a>{% endif %}
+          {% for link in cv_subscribe.platformLinks %}
+            <a class="cv-button" href="{{ link.url }}">
+              {% include "./subscribe_icon.html" with icon=link.icon only %} {{ link.label }}
+            </a>
+          {% endfor %}
         </div>
       </section>
     {% endif %}
     {% block podlove_subscribe_button %}{% endblock podlove_subscribe_button %}
+
+    {% if podcast_feeds %}
+      <section class="cv-feed-formats">
+        <h2>{% translate "Use the feed in any other app" %}</h2>
+        <p>{% translate "Copy the RSS URL into your podcast app to subscribe directly." %}</p>
+        {% for feed in podcast_feeds %}
+          {% if feed.format == "mp3" %}
+            <div class="cv-feed-recommended">
+              <h3>Recommended: {{ feed.format_label }}</h3>
+              <div class="cv-feed-recommended__copy" data-cv-feed-copy>
+                {% include "./feed_copy.html" with show_url=True %}
+              </div>
+              <div class="cv-feed-format__links">
+                <a href="{{ feed.rss_url }}" aria-label="{{ feed.format_label }} RSS">RSS</a>
+                <a href="{{ feed.atom_url }}" aria-label="{{ feed.format_label }} Atom">Atom</a>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+        <h3 class="cv-feed-other-heading">Other formats</h3>
+        <ul class="cv-feed-format-list" role="list">
+          {% for feed in podcast_feeds %}
+            {% if feed.format != "mp3" %}
+              {% include "./podcast_feed_format.html" %}
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
   {% endif %}
 
   <section>
     <h2>{% translate "Blog feeds" %}</h2>
+    <p class="cv-feed-blog-description">{% translate "Follow the written posts in a feed reader." %}</p>
     <div class="cv-feed-links">
-      <a class="cv-button" href="{{ blog_feed_url }}">RSS</a>
+      <a class="cv-button" href="{{ blog_feed_url }}">{% include "./subscribe_icon.html" with icon="rss" only %} RSS</a>
       <a class="cv-button" href="{{ blog_atom_feed_url }}">Atom</a>
     </div>
   </section>
-
-  {% if is_podcast and podcast_feeds %}
-    <section>
-      <h2>{% translate "Podcast feeds" %}</h2>
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">{% translate "Format" %}</th>
-            <th scope="col">RSS</th>
-            <th scope="col">Atom</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for feed in podcast_feeds %}
-            <tr>
-              <th scope="row">{{ feed.format_label }}</th>
-              <td><a href="{{ feed.rss_url }}">{% blocktranslate with format=feed.format_label %}{{ format }} RSS{% endblocktranslate %}</a></td>
-              <td><a href="{{ feed.atom_url }}">{% blocktranslate with format=feed.format_label %}{{ format }} Atom{% endblocktranslate %}</a></td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
-  {% endif %}
 {% endblock content %}

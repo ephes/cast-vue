@@ -2,6 +2,7 @@ import '../../css/cast_vue/styles.css';
 import '../../css/cast_vue/pygments.css';
 import '../../css/cast_vue/content.css';
 import '../../css/cast_vue/player.css';
+import '../../css/cast_vue/subscribe.css';
 import 'vite/modulepreload-polyfill';  // recommended by django-vite, dunno why
 
 import { createApp } from 'vue';
@@ -13,12 +14,14 @@ import PostDetail from "./components/PostDetail.vue";
 import Styleguide from "./components/Styleguide.vue";
 import { CONTENT_READY_EVENT, installRouteTransitions } from "./helpers/viewTransitions";
 import { initColorScheme } from "./helpers/colorScheme";
+import { initFeedCopy } from "./helpers/feedCopy";
 
 import ColorSchemeButton from "./components/ColorSchemeButton.vue";
 
 import App from './App.vue';
 
 initColorScheme();
+initFeedCopy();
 
 // Back/forward restores the scroll position once the page's data is rendered.
 const RESTORE_SCROLL_TIMEOUT_MS = 1500;

@@ -357,8 +357,7 @@
   margin-bottom: 0.75rem;
 }
 
-.cv-footer__links,
-.cv-feed-links {
+.cv-footer__links {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem 1rem;

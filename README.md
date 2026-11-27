@@ -68,6 +68,15 @@ restyle the theme by overriding them in its own stylesheet, for example
   On small screens, search stays visible and the other controls open from the
   "Filters" button. Removable chips above the posts show the applied filters
   and provide a "Clear all" action at any width.
+- The **Subscribe** link in the header opens the Django subscribe page. The
+  footer shows configured follow links. Podcast archives and episodes offer
+  direct app links. When more than three apps are available, phones show the
+  first three alongside "More options". Written blogs offer a feed link.
+  The subscribe page shows all available apps, including Castro, and recommends
+  MP3 with a single-line, selectable RSS URL. Other formats appear in a compact
+  list. RSS and Atom links for every format and for written posts work without
+  JavaScript. The copy buttons copy RSS URLs and select the URL for manual copying
+  if clipboard access is unavailable.
 - **Theme switching:** the footer's native "Site theme" select shows Vue when
   it renders the page, including during a request-only preview. Use "Keep this
   theme" to save Vue when the session or site default selects a different theme.
@@ -107,6 +116,17 @@ shell. The full-page theme selector uses the shell through django-cast's
 `select_theme_page.html`. The post list and detail mount the blog app through
 the `data-cv-spa` marker in `spa.html`.
 Django-cast controls which theme's error templates are selected.
+
+The subscription UI reads the current django-cast blog, its podcast flag and
+its `follow_links` context, falling back to django-cast's blog follow-link
+helper. That helper uses `CAST_FOLLOW_LINKS` and the blog email. Configure
+`apple_podcasts`, `spotify` and `youtube` for podcast app links, and
+`mastodon`, `linkedin`, `github`, `bluesky` and `email` for the footer.
+An Apple Podcasts URL with an `/id<digits>` path segment also enables Overcast,
+Pocket Casts and Castro. The theme accepts HTTP(S) links and mailto links for
+email. Feed URLs come from django-cast's routes. Django embeds the subscription
+data as JSON in the SPA template, so rendering the links needs no API request.
+Sites can still fill the feed template's `podlove_subscribe_button` block.
 
 ## Route transitions
 

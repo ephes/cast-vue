@@ -41,6 +41,11 @@ const ICONS: Record<string, string[]> = {
   moon: ['M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z'],
   system: ['M3 5h18v11H3z', 'M8 20h8', 'M12 16v4'],
   reply: ['M9 14 4 9l5-5', 'M4 9h9a7 7 0 0 1 7 7v3'],
+  rss: ['M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M4 20h.01'],
+  podcast: ['M9 14a4 4 0 1 1 6 0m-8 3a8 8 0 1 1 10 0m-5-5h.01M12 16v5'],
+  headphones: ['M4 14v-2a8 8 0 0 1 16 0v2M4 14h4v6H6a2 2 0 0 1-2-2zm16 0h-4v6h2a2 2 0 0 0 2-2z'],
+  music: ['M9 18V6l11-2v12M9 18a2.5 2.5 0 1 1-2.5-2.5H9zm11-2a2.5 2.5 0 1 1-2.5-2.5H20z'],
+  video: ['M3 5h18v14H3zM10 9l5 3-5 3z'],
 };
 const FILLED = new Set(['play', 'pause']);
 

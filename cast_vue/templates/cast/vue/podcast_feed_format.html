@@ -1,0 +1,15 @@
+<li class="cv-feed-format" data-cv-feed-copy>
+  <strong class="cv-feed-format__name">{{ feed.format_label }}</strong>
+  {% if feed.format == "m4a" %}
+    <p class="cv-feed-format__hint">AAC audio for Apple devices.</p>
+  {% elif feed.format == "oga" %}
+    <p class="cv-feed-format__hint">Smaller files with Ogg audio.</p>
+  {% elif feed.format == "opus" %}
+    <p class="cv-feed-format__hint">Smaller files with Opus audio.</p>
+  {% endif %}
+  <div class="cv-feed-format__links">
+    <a href="{{ feed.rss_url }}" aria-label="{{ feed.format_label }} RSS">RSS</a>
+    <a href="{{ feed.atom_url }}" aria-label="{{ feed.format_label }} Atom">Atom</a>
+  </div>
+  {% include "./feed_copy.html" with show_url=False %}
+</li>

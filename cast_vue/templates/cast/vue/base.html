@@ -2,6 +2,7 @@
 {% load django_vite cast_vue_filters %}
 {% wagtail_site as cv_site %}
 {% cast_vue_date_range_enabled as cv_date_range_enabled %}
+{% cast_vue_subscribe as cv_subscribe %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:"en" }}">
   <head>
@@ -48,7 +49,14 @@
               <span class="cv-brand__mark" aria-hidden="true"></span>
               <span class="cv-brand__name">{% firstof blog.title cv_site.site_name _("Home") %}</span>
             </a>
-            <div data-cv-color-scheme></div>
+            <div class="cv-header__actions">
+              {% if cv_subscribe.feedPageUrl %}
+                <a class="cv-header__subscribe cv-button" href="{{ cv_subscribe.feedPageUrl }}"{% block subscribe_current %}{% endblock subscribe_current %}>
+                  {% include "./subscribe_icon.html" with icon="rss" only %} {% translate "Subscribe" %}
+                </a>
+              {% endif %}
+              <div data-cv-color-scheme></div>
+            </div>
           </div>
         </header>
         <main id="cv-main" class="cv-main" tabindex="-1">
@@ -63,11 +71,7 @@
                 {% for url, label in root_nav_links %}
                   {% if url %}<a href="{{ url }}">{{ label }}</a>{% endif %}
                 {% endfor %}
-                {% if follow_links %}
-                  {% include "./follow_links.html" %}
-                {% elif default_follow_links %}
-                  {% include "./follow_links.html" with follow_links=default_follow_links %}
-                {% endif %}
+                {% include "./follow_links.html" %}
                 <a href="{% url 'cast:select-theme' %}">{% translate "Select theme" %}</a>
               </nav>
             {% endblock navigation %}

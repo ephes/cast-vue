@@ -19,7 +19,11 @@
         <strong>Post not found.</strong>
         <span>It may have been moved or unpublished.</span>
       </div>
-      <post-item v-if="post" :post="post" :detail="true" @comment-posted="handleCommentPosted"></post-item>
+      <post-item v-if="post" :post="post" :detail="true" @comment-posted="handleCommentPosted">
+        <template v-if="post.meta.type === 'cast.Episode'" #after-player>
+          <subscribe-links episode :blog-title="blogTitle" />
+        </template>
+      </post-item>
     </div>
   </div>
 </template>
@@ -28,6 +32,7 @@
 import config from '../config';
 import { useRoute } from 'vue-router';
 import PostItem from './PostItem.vue';
+import SubscribeLinks from './SubscribeLinks.vue';
 import CvIcon from './CvIcon.vue';
 import { blogTitle, setPageTitle } from '../helpers/site';
 import { useDataStore } from '../stores/dataStore';
@@ -39,6 +44,7 @@ export default {
   name: "PostDetail",
   components: {
     PostItem,
+    SubscribeLinks,
     CvIcon,
   },
   methods: {

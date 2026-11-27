@@ -17,6 +17,7 @@
           <header v-if="hasLoaded" class="cv-hero">
             <h1 class="cv-hero__title">{{ blog.title }}</h1>
             <div v-if="blog.description" class="cv-hero__description cv-prose" v-html="blog.description"></div>
+            <subscribe-links />
           </header>
           <div :class="{ 'cv-list-layout': hasLoaded }">
             <aside v-if="hasLoaded" class="cv-list-layout__aside" aria-label="Search and filters">
@@ -68,6 +69,7 @@ import { useRoute, useRouter } from 'vue-router';
 import CvIcon from './CvIcon.vue';
 import FilterForm from './FilterForm.vue';
 import PostList from './PostList.vue';
+import SubscribeLinks from './SubscribeLinks.vue';
 import PaginationButtons from './PaginationButtons.vue';
 import { useDataStore } from '../stores/dataStore';
 import { setUrlSearchParams } from '../helpers/url';
@@ -82,6 +84,7 @@ export default {
         CvIcon,
         FilterForm,
         PostList,
+        SubscribeLinks,
         PaginationButtons,
     },
     setup() {

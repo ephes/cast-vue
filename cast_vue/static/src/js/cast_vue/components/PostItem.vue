@@ -38,6 +38,7 @@
         :slug="post.meta.slug"
       ></audio-player>
     </div>
+    <slot name="after-player"></slot>
     <div
       ref="body"
       class="cv-post__body cv-prose"
