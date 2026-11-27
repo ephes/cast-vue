@@ -125,7 +125,9 @@ export function loadEpisode(apiUrl: string, refresh = false): Promise<EpisodeMet
   if (!key) return Promise.reject(new Error("Invalid episode URL"));
   const cached = cache.get(key);
   if (cached && !refresh) return cached;
-  const request = fetchJson(new URL(key)).then((data) => parseEpisode(data, key));
+  // A refresh also bypasses the browser's HTTP cache: a cached response may
+  // carry audio URLs that have expired.
+  const request = fetchJson(new URL(key), refresh ? { cache: "reload" } : {}).then((data) => parseEpisode(data, key));
   cache.delete(key);
   cache.set(key, request);
   request.catch(() => {

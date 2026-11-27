@@ -32,6 +32,10 @@ function contentRendered(): Promise<void> {
     });
 }
 
+// Counts navigations, so a restoration still waiting for its page's content
+// is dropped once the reader has navigated again.
+let navigationCount = 0;
+
 function start() {
     const routes = config.pageType === "styleguide"
         ? [
@@ -58,9 +62,10 @@ function start() {
         history: createWebHistory(config.routerBase),
         routes,
         scrollBehavior(to, from, savedPosition) {
+            const navigation = ++navigationCount;
             if (savedPosition) {
-                // Restore only if the reader is still on that page when its content arrives.
-                return contentRendered().then(() => (router.currentRoute.value.fullPath === to.fullPath ? savedPosition : false));
+                // Restore only if this is still the latest navigation when its content arrives.
+                return contentRendered().then(() => (navigation === navigationCount ? savedPosition : false));
             }
             if (to.hash) return { el: to.hash, top: 72 };
             if (to.path !== from.path || to.query.page !== from.query.page) return { top: 0 };

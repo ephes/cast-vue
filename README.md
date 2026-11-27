@@ -12,7 +12,7 @@ To install the Vue.js theme, you will need to run the following command in your 
 pip install cast-vue
 ```
 
-The theme needs django-cast 0.2.55 or newer (it reads the cover image URL of
+The theme needs Python 3.11 or newer and django-cast 0.2.55 or newer (it reads the cover image URL of
 posts from the API and asks for detail HTML with `render_for_feed=false`).
 
 ### 2. Add entries to INSTALLED_APPS

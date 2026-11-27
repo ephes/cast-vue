@@ -45,6 +45,9 @@ describe("loadEpisode", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     await loadEpisode(API, true);
     expect(fetchMock).toHaveBeenCalledTimes(3);
+    // A refresh must not be answered from the browser's HTTP cache.
+    expect((fetchMock.mock.calls as any[][])[1][1].cache).toBeUndefined();
+    expect((fetchMock.mock.calls as any[][])[2][1].cache).toBe("reload");
     await expect(loadEpisode("javascript:alert(1)")).rejects.toThrow();
   });
 });

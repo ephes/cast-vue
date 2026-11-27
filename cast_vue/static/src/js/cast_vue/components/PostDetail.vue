@@ -76,19 +76,30 @@ export default {
       // the page id instead of the slug and and either modify the API
       // to accept slugs or do a second request to get the page id. :/
       const postDetailUrl = new URL(wagtailApiUrl.href);
-      // Without a known page type (a session started on the list) ask for posts,
-      // which includes episodes.
-      let pageType = config.pageType || "cast.Post";
+      let pageType = config.pageType;
       if (postSlug in dataStore.slugToPost) {
         // FIXME we could also just use the post detail url?
         pageType = dataStore.slugToPost[postSlug].meta.type;
       }
-      postDetailUrl.searchParams.set("type", pageType);
       postDetailUrl.searchParams.set("slug", postSlug);
       postDetailUrl.searchParams.set("fields", "html_detail,visible_date,comments,comments_security_data,comments_are_enabled,podlove_players,cover_image_poster_url,cover_alt_text");
       postDetailUrl.searchParams.set("render_for_feed", "false");
 
       try {
+        if (!pageType) {
+          // The page type is unknown (a session started on the list, slug not
+          // among the recently listed posts): ask which type the post has, so an
+          // episode is read as an episode (its audio, its comment target).
+          const lookupUrl = new URL(wagtailApiUrl.href);
+          lookupUrl.searchParams.set("type", "cast.Post");
+          lookupUrl.searchParams.set("slug", postSlug);
+          const found = await dataStore.fetchJson(lookupUrl, invalidateCache, owner.signal) as unknown as PostsFromApi;
+          if (id !== requestId) return;
+          if (!Array.isArray(found.items)) throw new Error('Invalid detail response');
+          const foundType = found.items[0]?.meta?.type;
+          pageType = typeof foundType === 'string' && foundType ? foundType : "cast.Post";
+        }
+        postDetailUrl.searchParams.set("type", pageType);
         const posts = await dataStore.fetchJson(postDetailUrl, invalidateCache, owner.signal) as unknown as PostsFromApi;
         if (id !== requestId) return;
         if (!Array.isArray(posts.items)) throw new Error('Invalid detail response');

@@ -87,4 +87,22 @@ describe("PostDetail.vue", () => {
     expect(url.searchParams.get("fields")).toContain("html_detail");
     expect(url.searchParams.get("render_for_feed")).toBe("false");
   });
+
+  test("looks up the page type first when none is known, so an episode is read as an episode", async () => {
+    const config = (await import("@/config")).default as { pageType: string };
+    config.pageType = "";
+    mocks.fetchJson.mockImplementation(async (url: URL) => ({ items: [url.searchParams.get("fields") ? apiPost : { id: 1, title: "Test Episode", meta: { type: "cast.Episode", slug: "test-episode" } }] }));
+    try {
+      mount(PostDetail, { global: { stubs: { "router-link": { template: "<a><slot /></a>" }, "post-item": { template: "<article></article>", props: ["post", "detail"] } } } });
+      await flushPromises();
+      const [lookup, detail] = mocks.fetchJson.mock.calls.map((call) => call[0] as URL);
+      expect(mocks.fetchJson).toHaveBeenCalledTimes(2);
+      expect(lookup.searchParams.get("type")).toBe("cast.Post");
+      expect(lookup.searchParams.get("fields")).toBeNull();
+      expect(detail.searchParams.get("type")).toBe("cast.Episode");
+      expect(detail.searchParams.get("fields")).toContain("comments_security_data");
+    } finally {
+      config.pageType = "cast.Episode";
+    }
+  });
 });
