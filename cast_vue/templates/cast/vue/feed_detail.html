@@ -40,6 +40,9 @@
             {% if feed.format == recommended %}
               <div class="cv-feed-recommended">
                 <h3>Recommended: {{ feed.format_label }}</h3>
+                {% if feed.format == "m4a" %}
+                  <p class="cv-feed-recommended__hint">AAC audio: better sound than MP3 at the same size, and it plays in every common podcast app.</p>
+                {% endif %}
                 <div class="cv-feed-recommended__copy" data-cv-feed-copy>
                   {% include "./feed_copy.html" with show_url=True %}
                 </div>

@@ -155,6 +155,13 @@
   font-size: 1.2rem;
 }
 
+.cv-feed-recommended__hint {
+  margin: -0.3rem 0 0.6rem;
+  color: var(--cv-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .cv-feed-recommended__copy {
   display: grid;
   grid-template: "url copy" "status status" / minmax(0, 1fr) auto;

@@ -1,7 +1,9 @@
 <li class="cv-feed-format" data-cv-feed-copy>
   <strong class="cv-feed-format__name">{{ feed.format_label }}</strong>
   {% if feed.format == "m4a" %}
-    <p class="cv-feed-format__hint">AAC audio for Apple devices.</p>
+    <p class="cv-feed-format__hint">AAC audio, best sound for its size.</p>
+  {% elif feed.format == "mp3" %}
+    <p class="cv-feed-format__hint">For older players and devices.</p>
   {% elif feed.format == "oga" %}
     <p class="cv-feed-format__hint">Smaller files with Ogg audio.</p>
   {% elif feed.format == "opus" %}

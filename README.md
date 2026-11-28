@@ -68,8 +68,10 @@ restyle the theme by overriding them in its own stylesheet, for example
   direct app links. When more than three apps are available, phones show the
   first three alongside "More options". Written blogs offer a feed link.
   The subscribe page shows all available apps, including Castro, and recommends
-  the first format with audio in a published, public episode, in the order MP3,
-  M4A, Ogg (OGA), and Opus. Its RSS URL is selectable on a single line. Other
+  the format that the most published, public episodes have, so subscribers get
+  the whole back catalogue. Among equally complete formats it prefers M4A, then
+  MP3, Ogg (OGA), and Opus: AAC sounds better than MP3 at the same file size and
+  every common podcast app plays it. Its RSS URL is selectable on a single line. Other
   available formats appear in a compact list. RSS and Atom links for available
   formats and written posts work without JavaScript. The copy buttons copy RSS
   URLs and select the URL for manual copying if clipboard access is unavailable.
@@ -124,7 +126,7 @@ email. Feed URLs come from django-cast's routes. Standalone pages can supply
 a feed-page URL through `follow_links.feed_detail` or `default_follow_links.feed_detail`.
 Django embeds the subscription data as JSON in the SPA template, so rendering
 the links needs no API request. The SPA's podcast RSS URL uses the same format
-preference and defaults to MP3 when no published audio format is available.
+preference and defaults to M4A when no published audio format is available.
 Sites can still fill the feed template's `podlove_subscribe_button` block.
 
 ### Appearance

@@ -26,7 +26,9 @@ except ModuleNotFoundError as exc:
 
 register = template.Library()
 
-PODCAST_FORMATS = ("mp3", "m4a", "oga", "opus")
+# Preference order for the recommended feed. M4A (AAC) sounds better than MP3
+# at the same size and plays in every common podcast app.
+PODCAST_FORMATS = ("m4a", "mp3", "oga", "opus")
 PLATFORMS = (
     ("apple_podcasts", "Apple Podcasts", "podcast"),
     ("overcast", "Overcast", "headphones"),
@@ -92,7 +94,14 @@ def published_podcast_formats(blog):
         field = f"podcast_audio__{audio_format}"
         counts_by_format[audio_format] = Count(field, filter=~Q(**{field: ""}))
     counts = episodes.filter(podcast_audio__isnull=False).aggregate(**counts_by_format)
-    return [audio_format for audio_format in PODCAST_FORMATS if counts[audio_format]]
+    available = [audio_format for audio_format in PODCAST_FORMATS if counts[audio_format]]
+    if not available:
+        return []
+    # Recommend the most complete feed, so subscribers get the whole back catalogue;
+    # among equally complete feeds the preference order decides. It comes first.
+    most = max(counts[audio_format] for audio_format in available)
+    recommended = next(audio_format for audio_format in available if counts[audio_format] == most)
+    return [recommended, *(audio_format for audio_format in available if audio_format != recommended)]
 
 
 def configured_feed_page(context, request, unavailable_url):
@@ -137,7 +146,7 @@ def cast_vue_subscribe(context):
         blog_rss = feed_url("latest_entries_feed", slug)
         if is_podcast:
             podcast_formats = published_podcast_formats(public_blog)
-            recommended_format = next(iter(podcast_formats), "mp3")
+            recommended_format = next(iter(podcast_formats), "m4a")
             podcast_rss = feed_url("podcast_feed_rss", slug, audio_format=recommended_format)
 
     platform_urls = {}
