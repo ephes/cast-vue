@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   isPodcast: true,
   showSubscribe: true,
   vueRouteName: 'PostList',
+  coverUrl: '',
 }));
 
 vi.mock('@/stores/dataStore', () => ({ useDataStore: () => mocks }));
@@ -35,6 +36,7 @@ vi.mock('@/config', () => ({
           { label: 'Overcast', url: 'https://overcast.fm/itunes42', icon: 'headphones' },
           { id: 'castro', label: 'Castro', url: 'https://castro.fm/itunes/42', icon: 'headphones' },
         ],
+        coverUrl: mocks.coverUrl,
         followLinks: [
           { label: 'Mastodon', url: 'https://social.example/@show', rel: 'me' },
           { label: 'LinkedIn', url: 'https://www.linkedin.com/company/show/' },
@@ -52,6 +54,7 @@ beforeEach(() => {
   mocks.showSubscribe = true;
   mocks.isPodcast = true;
   mocks.vueRouteName = 'PostList';
+  mocks.coverUrl = '';
   mocks.fetchJson.mockReset().mockImplementation(async (url: URL) => {
     if (url.pathname === '/blog') return { title: 'Test Podcast', description: '<p>Podcast intro</p>' };
     if (url.pathname === '/facets') return { facet_counts: {} };
@@ -110,6 +113,34 @@ test('the podcast app row follows the blog intro on the archive', async () => {
   expect(row.findAll('a').map(link => link.attributes('href'))).toEqual([
     'https://podcasts.apple.com/podcast/id42', 'https://overcast.fm/itunes42', '/show/feed/',
   ]);
+});
+
+test('the show masthead has the cover, the apps and then the follow links', async () => {
+  mocks.coverUrl = 'https://show.example/media/cover.png';
+  const wrapper = await mountBlog();
+  const hero = wrapper.get('.cv-hero');
+  expect(hero.element.firstElementChild?.getAttribute('src')).toBe('https://show.example/media/cover.png');
+  const follow = hero.get('.cv-subscribe + .cv-follow');
+  expect(follow.attributes('aria-label')).toBe('Follow');
+  expect(follow.findAll('a').map(link => [link.text(), link.attributes('href')])).toEqual([
+    ['Mastodon', 'https://social.example/@show'],
+    ['LinkedIn', 'https://www.linkedin.com/company/show/'],
+    ['Email', 'mailto:show@example.com'],
+  ]);
+  expect(follow.get('a[rel="me"]').text()).toBe('Mastodon');
+  // The newest post on the first, unfiltered page is the lead story.
+  expect(wrapper.get('.cv-post-list').classes()).toContain('cv-post-list--lead');
+  // List and post requests ask the pages API for this theme's HTML.
+  const postRequests = mocks.fetchJson.mock.calls.map(([url]) => url as URL).filter(url => url.pathname === '/posts');
+  expect(postRequests.length).toBeGreaterThan(0);
+  expect(postRequests.every(url => url.searchParams.get('theme') === 'vue')).toBe(true);
+});
+
+test('the masthead leaves out the cover and follow line without data', async () => {
+  mocks.showSubscribe = false;
+  const wrapper = await mountBlog();
+  expect(wrapper.find('.cv-hero__cover').exists()).toBe(false);
+  expect(wrapper.find('.cv-follow').exists()).toBe(false);
 });
 
 test('the archive of a written blog offers only a feed link', async () => {

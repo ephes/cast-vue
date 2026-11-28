@@ -41,6 +41,7 @@ function readSubscribeData() {
       isPodcast: data.isPodcast === true,
       podcastRssUrl: subscribeUrl(data.podcastRssUrl),
       blogRssUrl: subscribeUrl(data.blogRssUrl),
+      coverUrl: data.isPodcast === true ? subscribeUrl(data.coverUrl) : "",
       platformLinks: readSubscribeLinks(data.platformLinks),
       followLinks: readSubscribeLinks(data.followLinks, true),
     };

@@ -59,12 +59,17 @@ top of `cast_vue/static/src/css/cast_vue/styles.css` (`--cv-*`); a site can
 restyle the theme by overriding them in its own stylesheet, for example
 `:root { --cv-accent: #0b6e4f; }`.
 
-- **Layout:** one reading column with a sticky filter column on wide screens.
-  On small screens, search stays visible and the other controls open from the
-  "Filters" button. Removable chips above the posts show the applied filters
-  and provide a "Clear all" action at any width.
-- For public blogs, the **Subscribe** link in the header opens the Django subscribe page. The
-  footer shows configured follow links. Podcast archives and episodes offer
+- **Layout:** a magazine-style single, centred column. The post list opens with
+  a masthead (podcast cover, title, description, podcast apps and follow links)
+  and features the newest post on the first unfiltered page as the lead story.
+  Search stays visible above the posts; the other controls open from the
+  "Filters" button at every width (two columns on wide screens). Removable
+  chips above the posts show the applied filters and provide a "Clear all"
+  action.
+- For public blogs, the **Subscribe** link in the header opens the Django subscribe page.
+  Configured follow links (Mastodon, LinkedIn, ...) appear below the podcast
+  apps in the masthead, in a "Follow the show" section on the subscribe page
+  ("Follow" on the feeds page of a written blog) and in the footer. Podcast archives and episodes offer
   direct app links. When more than three apps are available, phones show the
   first three alongside "More options". Written blogs offer a feed link.
   The subscribe page shows all available apps, including Castro, and recommends

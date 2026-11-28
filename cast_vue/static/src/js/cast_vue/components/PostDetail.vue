@@ -30,6 +30,7 @@
 
 <script lang="ts">
 import config from '../config';
+import { THEME_SLUG } from '../helpers/theme';
 import { useRoute } from 'vue-router';
 import PostItem from './PostItem.vue';
 import SubscribeLinks from './SubscribeLinks.vue';
@@ -57,6 +58,7 @@ export default {
     const route = useRoute();
     const dataStore = useDataStore();
     const wagtailApiUrl = new URL(config.postListUrl.toString()); // make a copy to not modify the original url
+    wagtailApiUrl.searchParams.set('theme', THEME_SLUG);
 
     const isLoading = ref(true);
     const post = ref<Post | null>(null);

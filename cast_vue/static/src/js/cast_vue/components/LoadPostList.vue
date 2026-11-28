@@ -15,9 +15,11 @@
         </div>
         <div v-else>
           <header v-if="hasLoaded" class="cv-hero">
+            <img v-if="coverUrl" class="cv-hero__cover" :src="coverUrl" alt="" width="320" height="320" decoding="async" />
             <h1 class="cv-hero__title">{{ blog.title }}</h1>
             <div v-if="blog.description" class="cv-hero__description cv-prose" v-html="blog.description"></div>
             <subscribe-links />
+            <follow-links />
           </header>
           <div :class="{ 'cv-list-layout': hasLoaded }">
             <aside v-if="hasLoaded" class="cv-list-layout__aside" aria-label="Search and filters">
@@ -52,7 +54,7 @@
                 <strong>No posts found.</strong>
                 <span v-if="isFiltered">Try a different search or remove a filter.</span>
               </div>
-              <post-list v-if="!error" :blog="blog" :posts="postsFromApi" />
+              <post-list v-if="!error" :blog="blog" :posts="postsFromApi" :lead="!isFiltered && currentPage <= 1" />
               <pagination-buttons v-if="!error && totalPages > 0" :currentPage="currentPage" :totalPages="totalPages" @change-page="changePage">
               </pagination-buttons>
             </div>
@@ -63,6 +65,7 @@
 
 <script lang="ts">
 import config from '../config';
+import { THEME_SLUG } from '../helpers/theme';
 import { FacetCounts, PostsFromApi } from './types';
 import { ref, watch, computed, Ref, nextTick, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -70,6 +73,7 @@ import CvIcon from './CvIcon.vue';
 import FilterForm from './FilterForm.vue';
 import PostList from './PostList.vue';
 import SubscribeLinks from './SubscribeLinks.vue';
+import FollowLinks from './FollowLinks.vue';
 import PaginationButtons from './PaginationButtons.vue';
 import { useDataStore } from '../stores/dataStore';
 import { setUrlSearchParams } from '../helpers/url';
@@ -85,6 +89,7 @@ export default {
         FilterForm,
         PostList,
         SubscribeLinks,
+        FollowLinks,
         PaginationButtons,
     },
     setup() {
@@ -101,6 +106,7 @@ export default {
         const facetCounts = ref({} as FacetCounts);
         const form = ref({}) as Ref<Form>;
         const currentPage = ref(1);
+        const coverUrl = config.subscribe?.coverUrl ?? '';
         const itemsPerPage = config.paginationPageSize;
         const dateRangeEnabled = config.dateRangeEnabled;
         const themePreview = computed(() => ({
@@ -128,6 +134,7 @@ export default {
             currentPage.value = Number(query.page);
             form.value = { date_after: '', date_before: '', ...query, page: currentPage.value } as Form;
             wagtailApiUrl = new URL(config.postListUrl.toString());
+            wagtailApiUrl.searchParams.set('theme', THEME_SLUG);
             wagtailApiUrl.searchParams.set('type', 'cast.Post');
             wagtailApiUrl.searchParams.set('fields', 'html_overview,html_detail,visible_date,podlove_players,cover_image_poster_url,cover_alt_text');
             wagtailApiUrl.searchParams.set('limit', itemsPerPage.toString());
@@ -241,6 +248,7 @@ export default {
             fetchData,
             hasLoaded,
             currentPage,
+            coverUrl,
             totalPages,
             blog,
             postsFromApi,

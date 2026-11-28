@@ -114,6 +114,16 @@ def configured_feed_page(context, request, unavailable_url):
     return ""
 
 
+def cover_url(blog):
+    """The podcast artwork URL, or "" when the blog has none."""
+    artwork = getattr(blog, "itunes_artwork", None)
+    original = getattr(artwork, "original", None)
+    try:
+        return original.url if original else ""
+    except ValueError:
+        return ""
+
+
 @register.simple_tag(takes_context=True)
 def cast_vue_subscribe(context):
     blog = context.get("blog")
@@ -169,6 +179,7 @@ def cast_vue_subscribe(context):
         "isPodcast": is_podcast,
         "podcastFormats": podcast_formats,
         "podcastRssUrl": safe_link(podcast_rss, request),
+        "coverUrl": safe_link(cover_url(blog), request) if is_podcast else "",
         "blogRssUrl": safe_link(blog_rss, request),
         "platformLinks": [
             {"id": key, "label": label, "icon": icon, "url": platform_urls[key]}

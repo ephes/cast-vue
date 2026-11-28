@@ -56,7 +56,8 @@ test('sort changes the post request while keeping the theme preview in the route
   expect(router.currentRoute.value.query).toEqual({ theme: 'vue', order: 'visible_date', page: '1' });
   let postUrl = mocks.fetchJson.mock.calls.at(-1)![0] as URL;
   expect(postUrl.searchParams.get('order')).toBe('visible_date');
-  expect(postUrl.searchParams.has('theme')).toBe(false);
+  // The API renders the post HTML with this theme, as in the preview.
+  expect(postUrl.searchParams.get('theme')).toBe('vue');
 
   await wrapper.get('.cv-active-filters .cv-button').trigger('click');
   await flushPromises();

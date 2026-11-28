@@ -68,6 +68,18 @@
     {% endif %}
   {% endif %}
 
+  {% if cv_subscribe.followLinks %}
+    <section class="cv-feed-follow">
+      <h2>{% if is_podcast %}{% translate "Follow the show" %}{% else %}{% translate "Follow" %}{% endif %}</h2>
+      <p>{% if is_podcast %}{% translate "News, episode announcements and conversation with the hosts." %}{% else %}{% translate "News and conversation beyond the feed." %}{% endif %}</p>
+      <ul class="cv-follow__links" role="list">
+        {% for link in cv_subscribe.followLinks %}
+          <li><a href="{{ link.url }}"{% if link.rel %} rel="{{ link.rel }}"{% endif %}>{{ link.label }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
   <section>
     <h2>{% translate "Blog feeds" %}</h2>
     <p class="cv-feed-blog-description">{% translate "Follow the written posts in a feed reader." %}</p>

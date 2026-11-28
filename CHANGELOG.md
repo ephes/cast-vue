@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Give the post list its own magazine character, distinct from cast-react: one centred column with a masthead (podcast cover, title, description, apps, follow links), the newest post as the lead story on the first unfiltered page, and search plus a "Filters" panel above the posts on every screen size instead of a sidebar.
+- Show follow links (Mastodon, LinkedIn, ...) below the podcast apps and in a "Follow the show" section on the subscribe page ("Follow" for written blogs), not only in the footer. The subscription data includes the podcast cover (`coverUrl`).
+- Request this theme's post HTML from the pages API (`theme=vue`), so a `?theme=vue` preview no longer shows posts rendered by the site's default theme (with a second title).
 - The subscribe page recommends the M4A (AAC) feed instead of MP3 when M4A covers as many published episodes as any other format; otherwise it recommends the most complete feed. MP3 appears among the other formats with a short hint for older players.
 - Replace the header colour-scheme cycle with an Appearance menu for Light, Dark, and System on Vue and Django-rendered pages. Share the saved preference with cast-react and clear both themes' legacy keys on any selection. The inline script applies the saved choice before styles load and renders Django 6's CSP nonce even when the script is its first consumer.
 - Keep closed gallery dialogs in rendered post bodies from covering the page, and scope the Vue image viewer styles to its own dialog.

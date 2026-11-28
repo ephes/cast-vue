@@ -273,3 +273,19 @@
     padding-bottom: 0.6rem;
   }
 }
+
+.cv-feed-follow p {
+  color: var(--cv-ink-2);
+}
+
+.cv-feed-follow ul.cv-follow__links {
+  justify-content: flex-start;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  font-size: 1rem;
+  list-style: none;
+}
+
+.cv-feed-follow .cv-follow__links li {
+  margin: 0;
+}

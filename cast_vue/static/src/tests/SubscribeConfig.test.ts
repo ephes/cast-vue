@@ -26,6 +26,7 @@ test('reads the feed URLs and omits links with invalid URLs or schemes', async (
     isPodcast: true,
     podcastRssUrl: 'https://show.example/show/feed/podcast/mp3/rss.xml',
     blogRssUrl: '/show/feed/rss.xml',
+    coverUrl: 'https://show.example/media/cover.png',
     platformLinks: [
       { label: 'Apple Podcasts', url: 'https://podcasts.apple.com/show/id42', icon: 'podcast' },
       { label: 'JavaScript', url: 'javascript:alert(1)' },
@@ -47,6 +48,7 @@ test('reads the feed URLs and omits links with invalid URLs or schemes', async (
     feedPageUrl: '/show/feed/',
     podcastRssUrl: 'https://show.example/show/feed/podcast/mp3/rss.xml',
     blogRssUrl: '/show/feed/rss.xml',
+    coverUrl: 'https://show.example/media/cover.png',
     isPodcast: true,
     platformLinks: [{ label: 'Apple Podcasts', url: 'https://podcasts.apple.com/show/id42', icon: 'podcast' }],
     followLinks: [
@@ -66,3 +68,11 @@ test.each([null, '{', 'null', '{"feedPageUrl":"javascript:alert(1)"}'])(
     expect(config.subscribe).toBeNull();
   },
 );
+
+test('drops an unsafe cover URL', async () => {
+  setSubscribeScript(JSON.stringify({ feedPageUrl: '/show/feed/', isPodcast: true, coverUrl: 'javascript:alert(1)' }));
+  const { default: config } = await import('@/config');
+  expect(config.subscribe?.coverUrl).toBe('');
+  // The shared base URL stays theme-neutral; the styleguide picks its own theme.
+  expect(config.postListUrl.searchParams.has('theme')).toBe(false);
+});

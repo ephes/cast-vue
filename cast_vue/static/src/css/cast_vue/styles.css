@@ -714,9 +714,31 @@ textarea {
 
 /* ---------------------------------------------------------------- list page */
 
+/* The list page reads like a magazine: one centred column, the show's cover
+   and title as the masthead, filters folded into a bar above the posts. */
+.cv-list {
+  max-width: calc(var(--cv-measure) + 2rem);
+  margin-inline: auto;
+}
+
 .cv-hero {
-  max-width: var(--cv-measure);
-  margin-bottom: clamp(1.5rem, 4vw, 2.75rem);
+  display: grid;
+  justify-items: center;
+  margin-bottom: clamp(1.75rem, 5vw, 3rem);
+  padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--cv-line);
+  text-align: center;
+}
+
+.cv-hero__cover {
+  width: clamp(6.5rem, 28vw, 13rem);
+  height: auto;
+  aspect-ratio: 1;
+  margin-bottom: 1.25rem;
+  border-radius: var(--cv-radius);
+  background: var(--cv-surface-2);
+  object-fit: cover;
+  box-shadow: var(--cv-shadow), 0 18px 40px -22px rgb(60 30 10 / 0.45);
 }
 
 .cv-hero__title {
@@ -726,10 +748,26 @@ textarea {
 }
 
 .cv-hero__description {
+  max-width: 36rem;
   margin-top: 0.9rem;
   color: var(--cv-ink-2);
   font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
   line-height: 1.55;
+}
+
+@media (max-width: 36rem) {
+  .cv-hero__cover {
+    margin-bottom: 0.9rem;
+  }
+
+  .cv-hero__title {
+    font-size: 2.25rem;
+  }
+
+  .cv-hero__description {
+    margin-top: 0.6rem;
+    font-size: 1rem;
+  }
 }
 
 .cv-hero__description > :first-child {
@@ -740,9 +778,44 @@ textarea {
   margin-bottom: 0;
 }
 
+.cv-hero .cv-subscribe__links {
+  justify-content: center;
+}
+
+.cv-follow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+}
+
+.cv-follow__label {
+  color: var(--cv-ink-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.cv-follow__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cv-follow__links a {
+  display: inline-block;
+  padding-block: 0.2rem;
+}
+
 .cv-list-layout {
   display: grid;
-  gap: 1.75rem;
+  gap: 1.5rem;
 }
 
 .cv-list-layout__main,
@@ -753,33 +826,6 @@ textarea {
 .cv-list-layout__main.is-refreshing .cv-post-list {
   opacity: 0.55;
   transition: opacity 0.2s 0.15s;
-}
-
-@media (min-width: 64rem) {
-  .cv-list-layout {
-    grid-template-columns: minmax(0, 1fr) 21rem;
-    column-gap: clamp(2.5rem, 5vw, 5rem);
-    align-items: start;
-  }
-
-  .cv-list-layout__main {
-    grid-column: 1;
-    grid-row: 1;
-    max-width: var(--cv-measure);
-  }
-
-  .cv-list-layout__aside {
-    grid-column: 2;
-    grid-row: 1;
-    position: sticky;
-    top: calc(var(--cv-header-h) + 1.5rem);
-    max-height: calc(100vh - var(--cv-header-h) - var(--cv-bar-h) - 3rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    /* room for focus rings inside the scroll container */
-    padding: 3px;
-    margin: -3px;
-  }
 }
 
 .cv-list-summary {
@@ -801,6 +847,24 @@ textarea {
 .cv-post-list > li {
   padding-block: clamp(1.5rem, 3vw, 2.25rem);
   border-bottom: 1px solid var(--cv-line);
+}
+
+/* The newest post on the first page is the lead story. */
+.cv-post-list--lead > li:first-child {
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+  border-bottom-width: 3px;
+  border-bottom-style: double;
+}
+
+.cv-post-list--lead > li:first-child .cv-post__title {
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.6rem);
+  line-height: 1.1;
+}
+
+@media (min-width: 40rem) {
+  .cv-post-list--lead > li:first-child .cv-post__header--cover {
+    grid-template-columns: 9rem minmax(0, 1fr);
+  }
 }
 
 /* ---------------------------------------------------------------- filters */
@@ -1163,18 +1227,12 @@ textarea {
   margin-inline-start: 2.75rem;
 }
 
-@media (min-width: 64rem) {
-  .cv-filters__toggle {
-    display: none;
-  }
-
-  .cv-filters__panel,
-  .cv-filters__panel[hidden] {
-    display: grid;
-    gap: 0.85rem;
-    padding: 0;
-    border: 0;
-    background: transparent;
+@media (min-width: 48rem) {
+  /* Wide screens keep the bar; the open panel uses two columns. */
+  .cv-filters__panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 2rem;
+    padding: 1.25rem;
   }
 
   .cv-archive__years {
